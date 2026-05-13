@@ -437,5 +437,47 @@ def create_pr_cmd(
     typer.echo(_json.dumps(result))
 
 
+# ---------------------------------------------------------------------------
+# fix-bug
+# ---------------------------------------------------------------------------
+
+
+@app.command("fix-bug")
+def fix_bug(
+    bug: str = typer.Option(..., "--bug", help="Free-text bug description"),
+    repo_path: str = typer.Option(".", "--repo-path"),
+    languages: str = typer.Option("python", "--languages"),
+    mode: str = typer.Option("dry-run", "--mode"),
+    executor: str = typer.Option("auto", "--executor"),
+    allow_mock_executor: Optional[str] = typer.Option(None, "--allow-mock-executor"),
+) -> None:
+    """Run the 4-stage bug-fix flow (reproduce → locate → patch → verify)."""
+    from .flows.bug_fix_flow import BugFixFlow, BugFixInput
+
+    pmode = _parse_mode(mode)
+    langs = _parse_languages(languages)
+    _parse_backend(executor)  # validated but overridden by router per task
+    cfg = _build_config(
+        mode=pmode,
+        allow_mock=_parse_tri_bool(allow_mock_executor),
+        fail_fast=True,
+        continue_and_report=False,
+        concurrency=1,
+        codex_timeout=600,
+        claude_timeout=900,
+    )
+    run = BugFixFlow(cfg).run(BugFixInput(
+        bug_description=bug,
+        repo_path=repo_path,
+        languages=langs,
+        mode=pmode,
+        allow_mock=cfg.allow_mock_executor,
+    ))
+    impl_results = run.state.implementation_results
+    success = impl_results[0].success if impl_results else False
+    mock = impl_results[0].mock_used if impl_results else False
+    typer.echo(f"run_id={run.run_id} success={success} mock={mock}")
+
+
 if __name__ == "__main__":  # pragma: no cover
     app()
