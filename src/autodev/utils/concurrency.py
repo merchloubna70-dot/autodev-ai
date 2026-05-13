@@ -52,3 +52,25 @@ def topological_batches(
             for other in list(remaining):
                 incoming[other].discard(n)
     return batches
+
+
+def wave_stats(waves: list[list[str]]) -> dict:
+    """Return audit statistics for a list of waves.
+
+    Returns a dict with keys:
+        num_waves         - total number of waves
+        max_width         - size of the widest wave
+        avg_width         - average wave width (float)
+        single_task_waves - number of waves that contain exactly one task
+    """
+    num_waves = len(waves)
+    widths = [len(w) for w in waves]
+    max_width = max(widths, default=0)
+    avg_width = sum(widths) / num_waves if num_waves else 0.0
+    single_task_waves = sum(1 for w in widths if w == 1)
+    return {
+        "num_waves": num_waves,
+        "max_width": max_width,
+        "avg_width": avg_width,
+        "single_task_waves": single_task_waves,
+    }
