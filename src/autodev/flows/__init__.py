@@ -15,3 +15,5 @@ try:
     from .project_delivery_crewflow import ProjectDeliveryCrewFlow  # noqa: F401
 except Exception:  # pragma: no cover — crewai may not be installed
     pass
+
+from .ux_design_flow import UXDesignFlow  # noqa: F401

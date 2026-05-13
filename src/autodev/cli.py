@@ -788,5 +788,51 @@ def next_cmd(
 
 # --- END BMAD-3 NEXT-ADVISOR ---
 
+# --- BMAD-8 UX-DESIGN ---
+
+
+@app.command("design-ux")
+def design_ux_cmd(
+    project_brief: Optional[str] = typer.Option(None, "--project-brief"),
+    project_name: Optional[str] = typer.Option(None, "--project-name"),
+    repo_path: str = typer.Option(".", "--repo-path"),
+    languages: str = typer.Option("python", "--languages"),
+) -> None:
+    """Run BMAD-Sally-style UX design workflow (7 steps, deterministic)."""
+    import _json as _json_mod
+
+    from .flows.ux_design_flow import UXDesignFlow
+    from .schemas import Language, UXDesignInput
+
+    lang_list: list[Language] = []
+    for raw in languages.split(","):
+        raw = raw.strip().lower()
+        try:
+            lang_list.append(Language(raw))
+        except ValueError:
+            lang_list.append(Language.UNKNOWN)
+
+    name = project_name or "Product"
+
+    inputs = UXDesignInput(
+        product_name=name,
+        languages=lang_list,
+        repo_path=repo_path,
+    )
+
+    flow = UXDesignFlow(use_llm=False)
+    spec = flow.run(inputs)
+
+    typer.echo(f"[design-ux] Sally completed 7-step UX design for '{spec.product_name}'.")
+    typer.echo(f"  Personas   : {len(spec.personas)}")
+    typer.echo(f"  Journeys   : {len(spec.journeys)}")
+    typer.echo(f"  Tokens     : {len(spec.design_tokens)}")
+    typer.echo(f"  Components : {len(spec.components)}")
+    typer.echo(f"  Patterns   : {len(spec.patterns)}")
+    typer.echo(f"  Written to : {repo_path}/product/ux_design.md")
+
+
+# --- END BMAD-8 UX-DESIGN ---
+
 if __name__ == "__main__":  # pragma: no cover
     app()

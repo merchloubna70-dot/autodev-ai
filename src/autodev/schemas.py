@@ -1167,3 +1167,71 @@ class EditorialReport(BaseModel):
 
 
 # === MARKER BMAD8 UX-SALLY ===
+
+
+class UserPersona(BaseModel):
+    name: str
+    role: str = ""
+    needs: list[str] = Field(default_factory=list)
+    pain_points: list[str] = Field(default_factory=list)
+
+
+class UserJourneyStep(BaseModel):
+    step_number: int
+    action: str
+    thought: str = ""
+    feeling: str = ""
+    touchpoint: str = ""
+
+
+class UserJourney(BaseModel):
+    name: str
+    persona_name: str
+    steps: list[UserJourneyStep] = Field(default_factory=list)
+
+
+class DesignToken(BaseModel):
+    category: str  # "color" / "typography" / "spacing" / "radius"
+    name: str
+    value: str
+    usage: str = ""
+
+
+class ComponentSpec(BaseModel):
+    name: str  # "Button" / "FormField" / "DataTable" / "Modal"
+    purpose: str = ""
+    states: list[str] = Field(default_factory=list)  # "default" / "hover" / "disabled" / "loading"
+    a11y_notes: list[str] = Field(default_factory=list)
+
+
+class UXPattern(BaseModel):
+    name: str  # "progressive-disclosure" / "wizard" / "dashboard" / "search-then-filter"
+    rationale: str = ""
+    applied_to: list[str] = Field(default_factory=list)  # screen names
+
+
+class ResponsiveBreakpoint(BaseModel):
+    name: str  # "mobile" / "tablet" / "desktop"
+    min_width_px: int
+    max_width_px: int | None = None
+
+
+class UXDesignSpec(BaseModel):
+    product_name: str
+    personas: list[UserPersona] = Field(default_factory=list)
+    journeys: list[UserJourney] = Field(default_factory=list)
+    design_tokens: list[DesignToken] = Field(default_factory=list)
+    components: list[ComponentSpec] = Field(default_factory=list)
+    patterns: list[UXPattern] = Field(default_factory=list)
+    breakpoints: list[ResponsiveBreakpoint] = Field(default_factory=list)
+    a11y_checks: list[str] = Field(default_factory=list)
+    notes: list[str] = Field(default_factory=list)
+    generated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
+class UXDesignInput(BaseModel):
+    prd: PRD | None = None
+    product_brief: ProductBrief | None = None
+    product_name: str = ""
+    languages: list[Language] = Field(default_factory=list)
+    repo_path: str = "."

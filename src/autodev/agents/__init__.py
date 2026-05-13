@@ -38,3 +38,4 @@ from .next_step_advisor import NextStepAdvisor  # noqa: F401
 from .adversarial_reviewer import AdversarialReviewer  # noqa: F401
 from .edge_case_hunter import EdgeCaseHunter  # noqa: F401
 from .editorial_reviewer import EditorialReviewer  # noqa: F401
+from .ux_designer import UXDesignerAgent  # noqa: F401
