@@ -86,7 +86,7 @@ class SecurityReviewerAgent:
             if not p.is_file():
                 continue
             rel = str(p.relative_to(root))
-            if any(skip in rel.split("/") for skip in ("target", "node_modules", ".dev-factory", ".git")):
+            if any(skip in rel.split("/") for skip in ("target", "node_modules", ".dev-factory", ".git", ".venv", "venv", ".pytest_cache", ".mypy_cache", ".ruff_cache", "__pycache__", "dist", "build")):
                 continue
             if p.stat().st_size > 1_500_000:
                 continue
