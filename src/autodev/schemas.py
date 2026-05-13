@@ -356,6 +356,8 @@ class ExecutionResult(BaseModel):
     safety_flags: list[str] = Field(default_factory=list)
     mode: PipelineMode = PipelineMode.DRY_RUN
     started_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    # BF2: inner steps recorded by executors that support structured JSON output
+    inner_steps: list[dict] = Field(default_factory=list)
 
 
 class CodexCallResult(ExecutionResult):
@@ -886,4 +888,66 @@ class PydanticAIBridgeStatus(BaseModel):
     pydantic_ai_available: bool = False
     fallback_to_stub: bool = True
     stub_reason: str = ""
+
+
+# === MARKER BF1 PROMPT === (Bugfix agent BF1 appends task-prompt-context models below)
+
+
+class TaskPromptContext(BaseModel):
+    product_name: str = ""
+    prd_overview: str = ""
+    acceptance_criteria: list[str] = Field(default_factory=list)
+    delivery_boundary: str = ""
+    non_goals: list[str] = Field(default_factory=list)
+    include_in_prompt: bool = True
+
+
+def render_task_prompt(
+    *,
+    task_id: str,
+    title: str,
+    description: str,
+    target_files: list[str],
+    context: "TaskPromptContext | None" = None,
+) -> str:
+    """Pure helper: assemble structured task prompt. Stable, testable."""
+    lines = [f"[{task_id}] {title}"]
+    if context and context.include_in_prompt:
+        if context.product_name:
+            lines.append(f"PRODUCT: {context.product_name}")
+        if context.prd_overview:
+            lines.append(f"OVERVIEW: {context.prd_overview}")
+        if context.acceptance_criteria:
+            lines.append("ACCEPTANCE CRITERIA:")
+            for ac in context.acceptance_criteria:
+                lines.append(f"  - {ac}")
+        if context.delivery_boundary:
+            lines.append(f"DELIVERY BOUNDARY: {context.delivery_boundary}")
+        if context.non_goals:
+            lines.append("NON-GOALS: " + "; ".join(context.non_goals))
+    lines.append(f"YOUR TASK: {description}")
+    if target_files:
+        lines.append(f"TARGET FILES: {target_files}")
+    return "\n".join(lines)
+
+
+# === MARKER BF2 EXECUTOR === (Bugfix agent BF2 appends executor inner-audit models below)
+
+
+class CodexInnerStep(BaseModel):
+    step_index: int
+    kind: str = ""              # "tool" / "thinking" / "shell" / "patch" / "result"
+    content_summary: str = ""
+    command: str | None = None
+    exit_code: int | None = None
+    duration_ms: int = 0
+
+
+class FilesystemObservation(BaseModel):
+    method: str = "none"         # "git" / "mtime-walk" / "none"
+    before_count: int = 0
+    after_count: int = 0
+    added: list[str] = Field(default_factory=list)
+    modified: list[str] = Field(default_factory=list)
+    deleted: list[str] = Field(default_factory=list)
 

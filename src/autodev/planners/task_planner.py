@@ -7,8 +7,12 @@ from ..schemas import (
     ExecutionBackend,
     Language,
     Milestone,
+    PRD,
+    ProductBrief,
     RiskLevel,
+    TaskPromptContext,
     TaskType,
+    render_task_prompt,
 )
 
 
@@ -19,15 +23,45 @@ class TaskPlanner:
         milestones: list[Milestone],
         architecture: ArchitectureSpec,
         languages: list[Language],
+        prd: PRD | None = None,
+        product_brief: ProductBrief | None = None,
+        product_name: str | None = None,
+        skip_m0_redundant_arch: bool = True,
     ) -> list[DeliveryTask]:
+        # Build a shared context from provided kwargs
+        ctx = self._build_context(prd=prd, product_brief=product_brief, product_name=product_name)
+
         tasks: list[DeliveryTask] = []
         for m in milestones:
             if m.milestone_id == "M0":
-                tasks.append(self._mk(
-                    m, 1, "Lock PRD and architecture", "architecture",
-                    TaskType.ARCHITECTURE, RiskLevel.LOW, ExecutionBackend.CLAUDE_CODE,
-                    target=[".dev-factory/runs/<run_id>/architecture/architecture.md"],
-                ))
+                if skip_m0_redundant_arch:
+                    # Collapsed M0: single cheap verify task
+                    tasks.append(self._mk(
+                        m, 1,
+                        "Verify architecture artifacts present",
+                        (
+                            "Verify .dev-factory/runs/<run>/architecture/"
+                            "{architecture.md,architecture.json,module_map.json,"
+                            "api_contract.json,dependency_graph.json} exist and validate as JSON"
+                        ),
+                        TaskType.TEST, RiskLevel.LOW, ExecutionBackend.CODEX,
+                        target=[
+                            ".dev-factory/runs/<run>/architecture/architecture.md",
+                            ".dev-factory/runs/<run>/architecture/architecture.json",
+                            ".dev-factory/runs/<run>/architecture/module_map.json",
+                            ".dev-factory/runs/<run>/architecture/api_contract.json",
+                            ".dev-factory/runs/<run>/architecture/dependency_graph.json",
+                        ],
+                        context=ctx,
+                    ))
+                else:
+                    # Legacy M0 behavior
+                    tasks.append(self._mk(
+                        m, 1, "Lock PRD and architecture", "architecture",
+                        TaskType.ARCHITECTURE, RiskLevel.LOW, ExecutionBackend.CLAUDE_CODE,
+                        target=[".dev-factory/runs/<run_id>/architecture/architecture.md"],
+                        context=ctx,
+                    ))
             elif m.milestone_id == "M1":
                 for lang in languages:
                     tasks.append(self._mk(
@@ -37,6 +71,7 @@ class TaskPlanner:
                         TaskType.SCAFFOLD, RiskLevel.LOW, ExecutionBackend.CODEX,
                         language=lang,
                         target=self._scaffold_files(lang),
+                        context=ctx,
                     ))
             elif m.milestone_id == "M2":
                 for lang in languages:
@@ -46,35 +81,79 @@ class TaskPlanner:
                         f"Implement core domain entities and business logic with unit tests in {lang.value}.",
                         TaskType.FEATURE, RiskLevel.MEDIUM, ExecutionBackend.AUTO,
                         language=lang,
+                        context=ctx,
                     ))
             elif m.milestone_id == "M3":
                 tasks.append(self._mk(
                     m, len(tasks) + 1, "Cross-language integration",
                     "Wire modules together; cross-language contract checks; integration tests.",
                     TaskType.INTEGRATION, RiskLevel.MEDIUM, ExecutionBackend.CLAUDE_CODE,
+                    context=ctx,
                 ))
             elif m.milestone_id == "M4":
                 tasks.append(self._mk(
                     m, len(tasks) + 1, "Security review", "Static security review across changed surface.",
                     TaskType.SECURITY, RiskLevel.HIGH, ExecutionBackend.CLAUDE_CODE,
+                    context=ctx,
                 ))
                 tasks.append(self._mk(
                     m, len(tasks) + 1, "Lint & typecheck cleanup",
                     "Pass language-specific lint and typecheck.",
                     TaskType.BUGFIX, RiskLevel.LOW, ExecutionBackend.CODEX,
+                    context=ctx,
                 ))
             elif m.milestone_id == "M5":
                 tasks.append(self._mk(
                     m, len(tasks) + 1, "Documentation", "README, usage, architecture docs.",
                     TaskType.DOCS, RiskLevel.LOW, ExecutionBackend.CLAUDE_CODE,
+                    context=ctx,
                 ))
                 tasks.append(self._mk(
                     m, len(tasks) + 1, "Release prep", "Release notes + delivery report.",
                     TaskType.RELEASE, RiskLevel.LOW, ExecutionBackend.CLAUDE_CODE,
+                    context=ctx,
                 ))
             # collect ids on milestone
             m.task_ids = [t.task_id for t in tasks if t.milestone_id == m.milestone_id]
         return tasks
+
+    # ------------------------------------------------------------------
+    # Internal helpers
+    # ------------------------------------------------------------------
+
+    def _build_context(
+        self,
+        *,
+        prd: PRD | None,
+        product_brief: ProductBrief | None,
+        product_name: str | None,
+    ) -> TaskPromptContext | None:
+        """Build a TaskPromptContext from optional PRD/brief/name kwargs.
+        Returns None when no meaningful context is available (backward compat)."""
+        # Collect fields from available sources, preferring PRD > brief > name
+        resolved_name = (
+            product_name
+            or (prd.product_name if prd else None)
+            or (product_brief.product_name if product_brief else None)
+            or ""
+        )
+        prd_overview = prd.overview if prd else ""
+        ac: list[str] = []
+        if prd and prd.acceptance_criteria:
+            ac = [a.description for a in prd.acceptance_criteria]
+        delivery_boundary = product_brief.delivery_boundary if product_brief else ""
+        non_goals = product_brief.non_goals if product_brief else []
+
+        if not any([resolved_name, prd_overview, ac, delivery_boundary, non_goals]):
+            return None
+
+        return TaskPromptContext(
+            product_name=resolved_name,
+            prd_overview=prd_overview,
+            acceptance_criteria=ac,
+            delivery_boundary=delivery_boundary,
+            non_goals=non_goals,
+        )
 
     def _mk(
         self,
@@ -88,23 +167,41 @@ class TaskPlanner:
         *,
         language: Language = Language.UNKNOWN,
         target: list[str] | None = None,
+        context: TaskPromptContext | None = None,
     ) -> DeliveryTask:
         tid = f"{m.milestone_id}-T{n}"
+        target_files = target or []
+
+        codex_prompt = render_task_prompt(
+            task_id=tid,
+            title=title,
+            description=description,
+            target_files=target_files,
+            context=context,
+        )
+        claude_prompt = render_task_prompt(
+            task_id=tid,
+            title=title,
+            description=description,
+            target_files=target_files,
+            context=context,
+        ) + "\nProduce a small, scoped, reviewable change."
+
         return DeliveryTask(
             task_id=tid,
             milestone_id=m.milestone_id,
             title=title,
             description=description,
-            target_files=target or [],
-            allowed_files=target or [],
+            target_files=target_files,
+            allowed_files=target_files,
             forbidden_files=[".env", ".env.*", "**/secrets/**"],
             context_files=[],
             language=language,
             task_type=ttype,
             dependencies=[],
-            codex_prompt=f"[{tid}] {title}: {description}",
-            claude_prompt=f"[{tid}] {title}: {description}\nProduce a small, scoped, reviewable change.",
-            expected_outputs=target or [],
+            codex_prompt=codex_prompt,
+            claude_prompt=claude_prompt,
+            expected_outputs=target_files,
             acceptance_criteria=[f"{tid} acceptance satisfied"],
             required_tests=[],
             risk_level=risk,
