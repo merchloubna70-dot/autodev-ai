@@ -479,5 +479,79 @@ def fix_bug(
     typer.echo(f"run_id={run.run_id} success={success} mock={mock}")
 
 
+# ---------------------------------------------------------------------------
+# multi-patch-fix-bug
+# ---------------------------------------------------------------------------
+
+
+@app.command("multi-patch-fix-bug")
+def multi_patch_fix_bug(
+    bug: str = typer.Option(..., "--bug", help="Free-text bug description"),
+    repo_path: str = typer.Option(".", "--repo-path"),
+    candidates: int = typer.Option(3, "--candidates", help="Number of patch candidates to generate"),
+    mode: str = typer.Option("dry-run", "--mode"),
+    allow_mock_executor: Optional[str] = typer.Option(None, "--allow-mock-executor"),
+    languages: str = typer.Option("python", "--languages"),
+    executor: str = typer.Option("auto", "--executor"),
+) -> None:
+    """Run multi-patch self-consistency: generate N candidates and vote for the best."""
+    from .flows.multi_patch_flow import MultiPatchFlow, MultiPatchInput
+
+    pmode = _parse_mode(mode)
+    langs = _parse_languages(languages)
+    backend = _parse_backend(executor)
+    cfg = _build_config(
+        mode=pmode,
+        allow_mock=_parse_tri_bool(allow_mock_executor),
+        fail_fast=False,
+        continue_and_report=True,
+        concurrency=1,
+        codex_timeout=600,
+        claude_timeout=900,
+    )
+    run = MultiPatchFlow(cfg).run(MultiPatchInput(
+        bug_description=bug,
+        repo_path=repo_path,
+        n_candidates=candidates,
+        languages=langs,
+        mode=pmode,
+        backend=backend,
+        allow_mock=cfg.allow_mock_executor,
+    ))
+    typer.echo(f"run_id={run.run_id} candidates={candidates} mock={run.state.mock_execution_used}")
+
+
+# ---------------------------------------------------------------------------
+# review
+# ---------------------------------------------------------------------------
+
+
+@app.command("review")
+def review_cmd(
+    run_id: str = typer.Option(..., "--run-id", help="Run ID whose pending review to resolve"),
+    decision: str = typer.Option(..., "--decision", help="approve or reject"),
+    repo_path: str = typer.Option(".", "--repo-path"),
+) -> None:
+    """Write an approved/rejected sentinel so a paused HumanReviewGate can resume."""
+    import json as _json
+
+    decision = decision.strip().lower()
+    if decision not in ("approve", "reject", "approved", "rejected"):
+        typer.echo(_json.dumps({"success": False, "reason": f"invalid decision: {decision!r}; use approve or reject"}))
+        raise typer.Exit(code=2)
+
+    # Normalise to approved / rejected
+    sentinel_name = "approved" if decision.startswith("approve") else "rejected"
+
+    run_dir = Path(repo_path) / ".dev-factory" / "runs" / run_id
+    if not run_dir.exists():
+        typer.echo(_json.dumps({"success": False, "reason": f"run_dir not found: {run_dir}"}))
+        raise typer.Exit(code=2)
+
+    sentinel = run_dir / sentinel_name
+    sentinel.touch()
+    typer.echo(_json.dumps({"success": True, "run_id": run_id, "decision": sentinel_name, "sentinel": str(sentinel)}))
+
+
 if __name__ == "__main__":  # pragma: no cover
     app()
