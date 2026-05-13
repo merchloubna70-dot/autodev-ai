@@ -1,0 +1,15 @@
+# Exclude heavy / sensitive directories
+.venv/
+.git/
+tests/
+.dev-factory/
+docs/
+node_modules/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Keep the pre-built wheel — this is the only build artefact needed
+!dist/autodev_ai-0.1.0-py3-none-any.whl
