@@ -27,3 +27,9 @@ from .task_decomposer import TaskDecomposerAgent  # noqa: F401
 from .test_designer import TestDesignerAgent  # noqa: F401
 from .verifier import VerifierAgent  # noqa: F401
 from .quality_gate import QualityGateAgent  # noqa: F401
+from .critic import CriticAgent  # noqa: F401
+from .navigator import NavigatorAgent  # noqa: F401
+from .parallel_section_reviewer import ParallelSectionReviewer  # noqa: F401
+from .human_review_gate import HumanReviewGate  # noqa: F401
+from .clarification_gate import ClarificationGate  # noqa: F401
+from .property_test_designer import PropertyTestDesigner  # noqa: F401

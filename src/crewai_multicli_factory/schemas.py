@@ -414,12 +414,14 @@ class SecurityReviewReport(BaseModel):
     blocked_commands: list[str] = Field(default_factory=list)
     severity: RiskLevel = RiskLevel.LOW
     status: GateStatus = GateStatus.PASSED
+    severity_findings: list["SeverityFinding"] = Field(default_factory=list)
 
 
 class CodeReviewReport(BaseModel):
     findings: list[str] = Field(default_factory=list)
     coverage_summary: str = ""
     status: GateStatus = GateStatus.PASSED
+    severity_findings: list["SeverityFinding"] = Field(default_factory=list)
 
 
 class IntegrationReviewReport(BaseModel):
@@ -428,6 +430,7 @@ class IntegrationReviewReport(BaseModel):
     schema_drift_detected: bool = False
     findings: list[str] = Field(default_factory=list)
     status: GateStatus = GateStatus.PASSED
+    severity_findings: list["SeverityFinding"] = Field(default_factory=list)
 
 
 class VerificationReport(BaseModel):
@@ -862,4 +865,25 @@ class HumanReviewDecision(BaseModel):
 
 
 # === MARKER W8 FRAMEWORK-MOD === (Wave 8 — CrewAI Flow rewrite + SandboxedExecutor + Pydantic-AI models below)
+
+
+class CrewFlowNodeRecord(BaseModel):
+    node_name: str
+    started_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    finished_at: str | None = None
+    success: bool = True
+    listener_of: list[str] = Field(default_factory=list)
+
+
+class SandboxedExecutionContext(BaseModel):
+    inner_backend: str
+    network_audit_only: bool = True
+    allow_domains: list[str] = Field(default_factory=list)
+    sandbox_provider: str = "none"  # "none" / "e2b" / "modal" / "anthropic-sandbox-runtime"
+
+
+class PydanticAIBridgeStatus(BaseModel):
+    pydantic_ai_available: bool = False
+    fallback_to_stub: bool = True
+    stub_reason: str = ""
 
