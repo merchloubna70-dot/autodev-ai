@@ -1235,3 +1235,188 @@ class UXDesignInput(BaseModel):
     product_name: str = ""
     languages: list[Language] = Field(default_factory=list)
     repo_path: str = "."
+
+
+# === MARKER BMAD9 READINESS-GATE ===
+
+
+class ReadinessCheckResult(BaseModel):
+    check_name: str
+    passed: bool
+    severity: Severity = Severity.MINOR
+    details: list[str] = Field(default_factory=list)
+
+
+class ImplementationReadinessReport(BaseModel):
+    checks: list[ReadinessCheckResult] = Field(default_factory=list)
+    passed_count: int = 0
+    failed_count: int = 0
+    blocking_count: int = 0
+    overall_passed: bool = False
+    summary: str = ""
+
+
+# === MARKER BMAD10 INVESTIGATE ===
+
+
+class InvestigationInputKind(str, Enum):
+    TICKET_ID = "ticket-id"
+    LOG_PATH = "log-path"
+    ERROR_MSG = "error-msg"
+    CODE_AREA = "code-area"
+    PROBLEM_DESC = "problem-description"
+    RESUME = "resume"
+
+
+class EvidenceEntry(BaseModel):
+    kind: str  # "file" / "log-sample" / "git-blame" / "grep-hit" / "issue" / "url"
+    path: str | None = None
+    snippet: str = ""
+    reference: str | None = None
+    collected_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
+class CaseFile(BaseModel):
+    case_id: str
+    slug: str
+    input_token: str
+    input_kind: InvestigationInputKind
+    mode: str = "calibrating"  # "defect-chasing" / "area-exploration" / "calibrating"
+    hypotheses: list[str] = Field(default_factory=list)
+    evidence: list[EvidenceEntry] = Field(default_factory=list)
+    next_steps: list[str] = Field(default_factory=list)
+    outcomes: list[str] = Field(default_factory=list)
+    summary: str = ""
+    file_path: str | None = None
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    updated_at: str | None = None
+
+
+class InvestigationInput(BaseModel):
+    input_token: str
+    repo_path: str = "."
+
+
+# === MARKER BMAD11 PROJECT-CONTEXT ===
+
+
+class ContextRule(BaseModel):
+    rule_id: str
+    statement: str
+    rationale: str = ""
+    sources: list[str] = Field(default_factory=list)
+    category: str = "general"  # "lint" / "build" / "test" / "deploy" / "commit-style" / "lang-idiom" / "domain"
+    severity_hint: str = "must"  # "must" / "should" / "may"
+
+
+class DiscoveryReport(BaseModel):
+    languages_detected: list[str] = Field(default_factory=list)
+    package_manager: str | None = None
+    lint_tools: list[str] = Field(default_factory=list)
+    test_frameworks: list[str] = Field(default_factory=list)
+    pre_commit_hooks: list[str] = Field(default_factory=list)
+    commit_style: str | None = None  # "conventional" / "free-form" / "unknown"
+    existing_conventions_files: list[str] = Field(default_factory=list)
+    notes: list[str] = Field(default_factory=list)
+
+
+class ProjectContextDraft(BaseModel):
+    rules: list[ContextRule] = Field(default_factory=list)
+    discovery: DiscoveryReport | None = None
+
+
+class ProjectContext(BaseModel):
+    product_name: str = ""
+    generated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    rules: list[ContextRule] = Field(default_factory=list)
+    discovery: DiscoveryReport | None = None
+    file_path: str | None = None
+
+
+class ProjectContextInput(BaseModel):
+    repo_path: str = "."
+    product_name: str = ""
+    brief_path: str | None = None
+
+
+# === MARKER BMAD12 TASK-READINESS ===
+
+
+class ReadinessDimension(str, Enum):
+    ACTIONABLE = "actionable"
+    LOGICAL = "logical"
+    TESTABLE = "testable"
+    COMPLETE = "complete"
+    SINGLE_GOAL = "single-goal"
+    TOKEN_BUDGET = "token-budget"
+
+
+class ReadinessCheck(BaseModel):
+    dimension: ReadinessDimension
+    passed: bool
+    reasons: list[str] = Field(default_factory=list)
+
+
+class TaskReadinessReport(BaseModel):
+    task_id: str
+    checks: list[ReadinessCheck] = Field(default_factory=list)
+    passed: bool = False
+    blocker_count: int = 0
+
+
+class ReadinessSweepReport(BaseModel):
+    total_tasks: int = 0
+    passing_tasks: int = 0
+    failing_tasks: int = 0
+    per_task: list[TaskReadinessReport] = Field(default_factory=list)
+    overall_passed: bool = False
+
+
+# === MARKER BMAD13 DOC-PROJECT ===
+
+
+class BrownfieldDocSection(BaseModel):
+    name: str  # "overview" / "architecture-overview" / "entry-points" / ...
+    title: str
+    body_markdown: str
+    file_path: str | None = None
+
+
+class BrownfieldDoc(BaseModel):
+    repo_path: str
+    sections: list[BrownfieldDocSection] = Field(default_factory=list)
+    generated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    output_dir: str | None = None
+    languages: list[str] = Field(default_factory=list)
+
+
+class BrownfieldDocInput(BaseModel):
+    repo_path: str = "."
+    languages: list[Language] = Field(default_factory=list)
+
+
+# === MARKER BMAD14 ELICITATION ===
+
+
+class ElicitationMethod(BaseModel):
+    category: str
+    method_name: str
+    description: str
+    prompt_template: str = ""
+    tags: list[str] = Field(default_factory=list)
+
+
+class ElicitationOutput(BaseModel):
+    method: ElicitationMethod
+    input_content: str
+    output_text: str
+    generated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
+# === MARKER BMAD15 MICROFILE ===
+
+# === MARKER BMAD16 HOOKS ===
+
+# === MARKER BMAD17 AGENT-MENU ===
+
+# === MARKER BMAD18 SKILL-CUSTOMIZE ===
