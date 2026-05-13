@@ -20,15 +20,17 @@ from ..state import RunState
 from ..utils.concurrency import run_parallel
 from ..utils.logging import get_logger
 from ._crewai_bridge import make_agent
+from .failure_cluster_reviewer import FailureClusterReviewer
 
 _logger = get_logger("implementer")
 
 
 class ImplementerAgent:
-    def __init__(self, router: ExecutorRouter):
+    def __init__(self, router: ExecutorRouter, failure_cluster_threshold: int = 2):
         # The router is the ONLY way this agent reaches Codex/Claude.
         self.router = router
         self.dep_planner = DependencyPlanner()
+        self.failure_cluster_threshold = failure_cluster_threshold
         self.agent = make_agent(
             role="Implementer",
             goal="Execute delivery tasks via the multi-CLI ExecutorRouter, never directly.",
@@ -83,6 +85,32 @@ class ImplementerAgent:
             failed_task_ids=failed,
         )
         run.save_json(f"execution/milestone_{milestone_id}_results.json", impl)
+
+        # Failure-cluster review: auto-trigger OpusConsultAgent when ≥ threshold tasks fail.
+        threshold = self.failure_cluster_threshold
+        if threshold > 0 and len(failed) >= threshold:
+            failed_results = [r for r in results if not r.success]
+            reviewer = FailureClusterReviewer(threshold=threshold)
+            cluster_report = reviewer.review(
+                milestone_id=milestone_id,
+                failed_results=failed_results,
+            )
+            run.save_text(
+                "quality/failure_cluster_review.md",
+                cluster_report.review_text,
+            )
+            if cluster_report.opus_result is not None:
+                run.save_json(
+                    "quality/failure_cluster_opus_result.json",
+                    cluster_report.opus_result,
+                )
+            _logger.info(
+                "failure cluster review: milestone=%s failures=%d opus_consulted=%s",
+                milestone_id,
+                cluster_report.failure_count,
+                cluster_report.opus_consulted,
+            )
+
         return impl
 
     def _to_request(self, task: DeliveryTask, *, run: RunState, mode: PipelineMode) -> ExecutionRequest:

@@ -599,3 +599,48 @@ class BudgetHint(BaseModel):
     max_cost_cents: float | None = None
     prefer_cheaper_backend: bool = False
 
+
+# === MARKER OPUS === (Agent E appends OpusConsult / FailureCluster models below this line)
+
+
+class OpusConsultMode(str, Enum):
+    ARCHITECT = "architect"
+    REVIEWER = "reviewer"
+
+
+class OpusConsultResult(BaseModel):
+    mode: OpusConsultMode
+    prompt_sha: str
+    response_text: str
+    exit_code: int = 0
+    duration_ms: int = 0
+    mock_used: bool = False
+    verdict: str | None = None  # APPROVE / REQUEST_CHANGES / REJECT — reviewer only
+
+
+class FailureClusterReport(BaseModel):
+    milestone_id: str
+    failure_count: int
+    failed_task_ids: list[str]
+    review_text: str = ""
+    opus_consulted: bool = False
+    opus_result: OpusConsultResult | None = None
+
+
+# === MARKER FOURSTAGE === (Agent F appends 4-stage bug fix / WorkerIsolation models below this line)
+
+
+class FourStagePlan(BaseModel):
+    bug_description: str
+    repo_path: str
+    tasks: list[DeliveryTask] = Field(default_factory=list)
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
+class WorkerIsolationManifest(BaseModel):
+    worker_id: str
+    worker_codex_home: str
+    worker_worktree: str | None = None
+    symlinks_created: list[str] = Field(default_factory=list)
+    private_dirs_created: list[str] = Field(default_factory=list)
+

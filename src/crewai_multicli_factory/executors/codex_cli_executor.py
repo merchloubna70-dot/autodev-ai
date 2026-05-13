@@ -22,6 +22,14 @@ SAFETY BOUNDARY (mandatory):
 - Do not bypass tests.
 - Do not falsify "passed" / "release-ready" without evidence.
 - Do not expand scope beyond the current task_id.
+
+ESCALATION_HINT — 4 categories MUST call ask_opus before implementing:
+  1. architecture / cross-module redesign / cross-subsystem design
+  2. race condition / data race / concurrency / lifetime
+  3. security boundary / permission boundary / RLS / tenant isolation
+  4. final review / merge gate / release review
+Call: ask_opus architect "<question>"  (planning, read-only plan)
+Call: ask_opus reviewer  "<diff+scope>" (verdict: APPROVE/REQUEST_CHANGES/REJECT)
 """
 
 
