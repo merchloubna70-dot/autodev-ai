@@ -136,7 +136,14 @@ class ProjectDeliveryFlow:
         # 7) milestones
         milestones = self.mplanner.plan(architecture=arch, languages=languages, max_milestones=6)
         # 8) tasks
-        tasks = self.decomposer.decompose(milestones=milestones, architecture=arch, languages=languages)
+        tasks = self.decomposer.decompose(
+            milestones=milestones,
+            architecture=arch,
+            languages=languages,
+            prd=prd,
+            product_brief=brief,
+            product_name=brief.product_name,
+        )
         plan = MilestonePlan(milestones=milestones, tasks=tasks)
         run.state.milestone_plan = plan
         run.save_json("planning/milestones.json", milestones)

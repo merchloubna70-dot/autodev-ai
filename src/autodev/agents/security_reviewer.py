@@ -33,6 +33,39 @@ _SEVERITY_PREFIX = {
     Severity.NITPICK: "[NITPICK]",
 }
 
+# Denylist patterns that can produce false positives in prose/doc files and
+# require a shell-context marker on the same line to be considered real.
+_DOC_CONTEXT_SENSITIVE_PATTERNS: frozenset[str] = frozenset({" env "})
+
+# Markers that indicate a line is shell context even inside a doc file.
+_SHELL_CONTEXT_MARKERS: tuple[str, ...] = (
+    "`",
+    "$ ",
+    "bash",
+    "sh ",
+    "#!",
+)
+
+
+def _is_doc_file(rel_path: str) -> bool:
+    """Return True for documentation/text files that may contain prose with shell keywords."""
+    parts = rel_path.replace("\\", "/").split("/")
+    # files inside docs/ or .dev-factory/ top-level dirs
+    if parts[0] in ("docs", ".dev-factory"):
+        return True
+    # common doc extensions
+    ext = Path(rel_path).suffix.lower()
+    return ext in (".md", ".rst", ".txt")
+
+
+def _line_has_shell_context(line: str) -> bool:
+    """Return True if a line contains a shell-context marker indicating code, not prose."""
+    lower = line.lower()
+    for marker in _SHELL_CONTEXT_MARKERS:
+        if marker in lower:
+            return True
+    return False
+
 
 class SecurityReviewerAgent:
     def __init__(self) -> None:
@@ -46,6 +79,7 @@ class SecurityReviewerAgent:
         findings: list[str] = []
         severity_findings: list[SeverityFinding] = []
         blocked: list[str] = []
+        false_positives_filtered: list[str] = []
         severity = RiskLevel.LOW
         root = Path(repo_path)
         for p in root.rglob("*"):
@@ -60,21 +94,44 @@ class SecurityReviewerAgent:
                 text = p.read_text(encoding="utf-8", errors="ignore")
             except Exception:
                 continue
+            is_doc = _is_doc_file(rel)
             for pat in DEFAULT_DENYLIST:
-                if pat in text:
-                    msg = f"{rel}: forbidden shell pattern {pat!r}"
-                    sev = Severity.BLOCKER
-                    findings.append(f"{_SEVERITY_PREFIX[sev]} {msg}")
-                    severity_findings.append(SeverityFinding(
-                        severity=sev,
-                        category="security",
-                        title=f"Forbidden shell pattern {pat!r}",
-                        detail=msg,
-                        file_path=rel,
-                        source_agent="SecurityReviewerAgent",
-                    ))
-                    blocked.append(pat)
-                    severity = max(severity, RiskLevel.HIGH, key=lambda r: ["low","medium","high","critical"].index(r.value))
+                if pat not in text:
+                    continue
+                # For doc-context-sensitive patterns in doc files, only flag if
+                # at least one matching line has a shell-context marker OR is inside
+                # a fenced code block (``` or ~~~).
+                if is_doc and pat in _DOC_CONTEXT_SENSITIVE_PATTERNS:
+                    lines = text.splitlines()
+                    in_fence = False
+                    any_shell_match = False
+                    for ln in lines:
+                        stripped = ln.strip()
+                        if stripped.startswith("```") or stripped.startswith("~~~"):
+                            in_fence = not in_fence
+                        if pat in ln:
+                            if in_fence or _line_has_shell_context(ln):
+                                any_shell_match = True
+                                break
+                    if not any_shell_match:
+                        # Pure prose mention — skip and record as filtered FP
+                        false_positives_filtered.append(
+                            f"{rel}: doc-context FP suppressed for pattern {pat!r}"
+                        )
+                        continue
+                msg = f"{rel}: forbidden shell pattern {pat!r}"
+                sev = Severity.BLOCKER
+                findings.append(f"{_SEVERITY_PREFIX[sev]} {msg}")
+                severity_findings.append(SeverityFinding(
+                    severity=sev,
+                    category="security",
+                    title=f"Forbidden shell pattern {pat!r}",
+                    detail=msg,
+                    file_path=rel,
+                    source_agent="SecurityReviewerAgent",
+                ))
+                blocked.append(pat)
+                severity = max(severity, RiskLevel.HIGH, key=lambda r: ["low","medium","high","critical"].index(r.value))
             for pat in SECRET_PATTERNS:
                 if pat in text:
                     msg = f"{rel}: possible secret pattern {pat!r}"
@@ -100,4 +157,5 @@ class SecurityReviewerAgent:
             severity=severity,
             status=status,
             severity_findings=severity_findings,
+            false_positives_filtered=false_positives_filtered,
         )

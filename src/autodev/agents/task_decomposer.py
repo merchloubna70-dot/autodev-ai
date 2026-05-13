@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from ..planners.task_planner import TaskPlanner
-from ..schemas import ArchitectureSpec, DeliveryTask, Language, Milestone
+from ..schemas import ArchitectureSpec, DeliveryTask, Language, Milestone, PRD, ProductBrief
 from ._crewai_bridge import make_agent
 
 
@@ -21,5 +21,17 @@ class TaskDecomposerAgent:
         milestones: list[Milestone],
         architecture: ArchitectureSpec,
         languages: list[Language],
+        prd: PRD | None = None,
+        product_brief: ProductBrief | None = None,
+        product_name: str | None = None,
+        skip_m0_redundant_arch: bool = True,
     ) -> list[DeliveryTask]:
-        return self.core.plan(milestones=milestones, architecture=architecture, languages=languages)
+        return self.core.plan(
+            milestones=milestones,
+            architecture=architecture,
+            languages=languages,
+            prd=prd,
+            product_brief=product_brief,
+            product_name=product_name,
+            skip_m0_redundant_arch=skip_m0_redundant_arch,
+        )

@@ -417,6 +417,7 @@ class SecurityReviewReport(BaseModel):
     severity: RiskLevel = RiskLevel.LOW
     status: GateStatus = GateStatus.PASSED
     severity_findings: list["SeverityFinding"] = Field(default_factory=list)
+    false_positives_filtered: list[str] = Field(default_factory=list)
 
 
 class CodeReviewReport(BaseModel):

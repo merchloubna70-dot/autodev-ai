@@ -111,7 +111,12 @@ class IssuePipelineFlow:
             quality_gates=["python_gate", "rust_gate", "typescript_gate"],
             allowed_languages=languages,
         )
-        tasks: list[DeliveryTask] = self.task_decomposer.decompose(milestones=[m], architecture=arch, languages=languages)
+        tasks: list[DeliveryTask] = self.task_decomposer.decompose(
+            milestones=[m],
+            architecture=arch,
+            languages=languages,
+            product_name=issue.title or "issue",
+        )
         # If empty (no language matched defaults), synthesize a feature task
         if not tasks:
             from ..planners.task_planner import TaskPlanner
