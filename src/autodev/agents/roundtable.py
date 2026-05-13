@@ -222,9 +222,11 @@ class RoundtableAgent:
         # All participants get the same base task (independent copies)
         base_task = _build_base_task(topic, context, conversation_id)
 
-        # Spawn in parallel via ThreadPoolExecutor (bounded at 4)
-        completed_tasks: list[A2ATask] = []
+        # Spawn in parallel via ThreadPoolExecutor (bounded at 4).
+        # KEY: keep card↔task association via a dict; do NOT rely on
+        # as_completed ordering or zip-truncation.
         workers = min(_MAX_WORKERS, len(cards))
+        results_by_card: dict[str, A2ATask] = {}
 
         with ThreadPoolExecutor(max_workers=workers) as executor:
             futures = {
@@ -232,12 +234,11 @@ class RoundtableAgent:
                 for card in cards
             }
             for future in as_completed(futures):
+                card = futures[future]
                 try:
                     result_task = future.result()
-                    completed_tasks.append(result_task)
+                    results_by_card[card.name] = result_task
                 except Exception as exc:
-                    card = futures[future]
-                    # Build a synthetic failed-task message rather than raising
                     err_task = base_task.model_copy(deep=True)
                     err_task.history.append(
                         _make_text_message(
@@ -247,17 +248,22 @@ class RoundtableAgent:
                         )
                     )
                     err_task.status = A2ATaskStatus.FAILED
-                    completed_tasks.append(err_task)
+                    results_by_card[card.name] = err_task
 
-        # Assemble conversation
+        # Assemble conversation in original card order so output is deterministic
+        # regardless of completion order.
         all_messages: list[A2AMessage] = []
         card_names: list[str] = []
 
         # Include the shared user prompt once
         all_messages.append(base_task.history[0])
 
-        for card, task in zip(cards, completed_tasks):
+        for card in cards:
             card_names.append(card.name)
+            task = results_by_card.get(card.name)
+            if task is None:
+                # Future was never scheduled / completed (defensive)
+                continue
             agent_msg = _last_agent_message(task)
             if agent_msg is not None:
                 # Tag the message with the card name in metadata-like prefix for traceability
