@@ -1,0 +1,37 @@
+{
+  "title": "Architecture: Add JSON output to the CLI",
+  "overview": "Architecture for Add JSON output to the CLI targeting languages: python.",
+  "modules": [
+    {
+      "name": "core_python",
+      "purpose": "Core domain for python",
+      "language": "python",
+      "paths": [],
+      "depends_on": [],
+      "public_interfaces": []
+    }
+  ],
+  "api_contract": {
+    "version": "0.1.0",
+    "endpoints": [],
+    "notes": [
+      "derived from PRD functional requirements"
+    ]
+  },
+  "data_model": {
+    "entities": [],
+    "notes": [
+      "Functional requirements: 0"
+    ]
+  },
+  "dependency_graph": {
+    "nodes": [
+      "core_python"
+    ],
+    "edges": []
+  },
+  "decisions": [
+    "Use multi-language layout per detected language; integration module bridges them.",
+    "All cross-language schema work routes to Claude Code; small patches to Codex."
+  ]
+}

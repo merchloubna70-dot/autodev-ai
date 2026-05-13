@@ -1,0 +1,7 @@
+Software factory run run_20260513T082121_0f6ec9d4
+
+flow=issue_pipeline_flow
+mode=dry-run
+backends=['mock_codex']
+MockExecutionUsed=True
+DryRun=True

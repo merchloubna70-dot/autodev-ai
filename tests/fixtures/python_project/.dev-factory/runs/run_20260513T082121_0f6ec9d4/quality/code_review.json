@@ -1,0 +1,7 @@
+{
+  "findings": [
+    "MI-1-T1: no acceptance criteria defined"
+  ],
+  "coverage_summary": "(no static coverage tool wired)",
+  "status": "passed"
+}

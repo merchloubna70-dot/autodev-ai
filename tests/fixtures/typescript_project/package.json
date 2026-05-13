@@ -1,0 +1,14 @@
+{
+  "name": "ts-fixture",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "lint": "echo lint",
+    "typecheck": "echo typecheck",
+    "test": "echo test",
+    "build": "echo build"
+  },
+  "devDependencies": {
+    "vitest": "^1.0.0"
+  }
+}

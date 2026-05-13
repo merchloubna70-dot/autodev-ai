@@ -1,0 +1,23 @@
+[
+  {
+    "task_id": "MI-1-T1",
+    "milestone_id": "MI-1",
+    "title": "Add JSON output to the CLI",
+    "description": "# Add JSON output to the CLI",
+    "target_files": [],
+    "allowed_files": [],
+    "forbidden_files": [],
+    "context_files": [],
+    "language": "unknown",
+    "task_type": "feature",
+    "dependencies": [],
+    "codex_prompt": "",
+    "claude_prompt": "",
+    "expected_outputs": [],
+    "acceptance_criteria": [],
+    "required_tests": [],
+    "risk_level": "low",
+    "rollback_strategy": "",
+    "preferred_executor": "auto"
+  }
+]

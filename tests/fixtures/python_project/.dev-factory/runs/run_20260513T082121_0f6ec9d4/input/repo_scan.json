@@ -1,0 +1,59 @@
+{
+  "repo_path": "/Users/macworkers/crewai-multicli-software-factory/tests/fixtures/python_project",
+  "is_empty": false,
+  "is_monorepo": false,
+  "detected_languages": [
+    "python"
+  ],
+  "language_results": {
+    "python": {
+      "language": "python",
+      "detected": true,
+      "package_files": [
+        "pyproject.toml"
+      ],
+      "source_dirs": [
+        "src"
+      ],
+      "test_dirs": [
+        "tests"
+      ],
+      "entrypoints": [],
+      "test_framework": "pytest",
+      "notes": []
+    },
+    "rust": {
+      "language": "rust",
+      "detected": false,
+      "package_files": [],
+      "source_dirs": [
+        "src"
+      ],
+      "test_dirs": [
+        "tests"
+      ],
+      "entrypoints": [],
+      "test_framework": null,
+      "notes": []
+    },
+    "typescript": {
+      "language": "typescript",
+      "detected": false,
+      "package_files": [],
+      "source_dirs": [
+        "src"
+      ],
+      "test_dirs": [
+        "tests"
+      ],
+      "entrypoints": [],
+      "test_framework": null,
+      "notes": []
+    }
+  },
+  "top_level_dirs": [
+    "tests",
+    "src"
+  ],
+  "has_git": false
+}

@@ -1,0 +1,26 @@
+[
+  {
+    "milestone_id": "MI-1",
+    "title": "Resolve ISSUE-0",
+    "objective": "Add JSON output to the CLI",
+    "deliverables": [
+      "Code change addressing ISSUE-0"
+    ],
+    "task_ids": [],
+    "dependencies": [],
+    "acceptance_criteria": [
+      "`crewai-factory scan --json` emits valid JSON.",
+      "Unit tests cover both text and JSON modes."
+    ],
+    "quality_gates": [
+      "python_gate",
+      "rust_gate",
+      "typescript_gate"
+    ],
+    "estimated_risk": "low",
+    "allowed_languages": [
+      "python"
+    ],
+    "out_of_scope": []
+  }
+]

@@ -1,0 +1,9 @@
+{
+  "input_type": "prd",
+  "confidence": 0.85,
+  "rationale": "Contains PRD-style sections.",
+  "detected_languages": [],
+  "suggested_flow": "project_delivery_flow",
+  "source_path": null,
+  "source_url": null
+}

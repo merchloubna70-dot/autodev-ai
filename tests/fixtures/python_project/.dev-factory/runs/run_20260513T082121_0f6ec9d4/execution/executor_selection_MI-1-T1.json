@@ -1,0 +1,10 @@
+{
+  "selected_backend": "mock_codex",
+  "candidate_backends": [
+    "codex",
+    "mock_codex"
+  ],
+  "reason": "auto: task_type=feature; risk=low; language=unknown; files=0; codex CLI missing -> fallback to MOCK_CODEX",
+  "fallback_used": true,
+  "mock_used": true
+}
