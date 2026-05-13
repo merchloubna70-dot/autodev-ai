@@ -2,8 +2,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 
 from ..adapters.git_adapter import GitAdapter
+from ..adapters.github_adapter import GitHubAdapter
 from ..schemas import PipelineRunState
 from ..utils.slug import slugify
 from ._crewai_bridge import make_agent
@@ -51,6 +53,47 @@ class CommitAgent:
             return 0
         # Stage everything under .dev-factory + project files; caller may pre-stage
         return git.commit(artifacts.commit_message, enabled=enabled)
+
+    def maybe_push(self, repo_path: str, branch: str | None, enabled: bool) -> int:
+        """Push to origin if enabled=True; no-op otherwise. Never force-pushes."""
+        git = GitAdapter(repo_path)
+        if not enabled or not git.has_git():
+            return 0
+        return git.push(remote="origin", branch=branch, enabled=enabled)
+
+    def maybe_create_pr(
+        self,
+        repo_path: str,
+        artifacts: CommitArtifacts,
+        *,
+        base: str = "main",
+        draft: bool = True,
+        enabled: bool,
+    ) -> dict:
+        """Create a GitHub PR if enabled=True and gh is available.
+
+        Always returns a dict — never raises.
+        """
+        if not enabled:
+            return {"success": False, "reason": "disabled"}
+        gh = GitHubAdapter()
+        if not gh.gh_available():
+            return {"success": False, "reason": "gh-not-installed", "error": "gh-missing"}
+        # Write PR body to .dev-factory/PR_BODY.md
+        body_path = Path(repo_path) / ".dev-factory" / "PR_BODY.md"
+        body_path.parent.mkdir(parents=True, exist_ok=True)
+        body_path.write_text(artifacts.pr_body, encoding="utf-8")
+        result = gh.create_pr(
+            repo_path=repo_path,
+            title=f"[factory] {artifacts.branch_name}",
+            body_path=str(body_path),
+            base=base,
+            head=artifacts.branch_name,
+            draft=draft,
+        )
+        if not result.get("success") and "error" not in result:
+            result["error"] = result.get("stderr") or "gh-pr-create-failed"
+        return result
 
     def maybe_tag(self, *, repo_path: str, name: str, enabled: bool) -> int:
         git = GitAdapter(repo_path)

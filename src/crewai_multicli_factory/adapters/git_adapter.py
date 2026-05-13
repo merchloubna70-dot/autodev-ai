@@ -43,3 +43,16 @@ class GitAdapter:
         if not enabled:
             return 0
         return self.sh.run(f"git tag {name}").exit_code
+
+    def push(self, remote: str = "origin", branch: str | None = None, dry_run: bool = False, enabled: bool = False) -> int:
+        """Push to remote.  Disabled by default; never accepts --force."""
+        assert remote != "--force" and (branch is None or branch != "--force"), "force-push is never allowed"
+        if not enabled:
+            return 0
+        parts = ["git push"]
+        if dry_run:
+            parts.append("--dry-run")
+        parts.append(remote)
+        if branch:
+            parts.append(branch)
+        return self.sh.run(" ".join(parts)).exit_code

@@ -35,6 +35,11 @@ DEFAULT_ALLOWLIST: tuple[str, ...] = (
     "git add",
     "git commit",
     "git tag",
+    "git push",
+    "git push origin",
+    "gh pr create",
+    "gh pr view",
+    "gh auth status",
 )
 
 DEFAULT_DENYLIST: tuple[str, ...] = (
@@ -54,6 +59,10 @@ DEFAULT_DENYLIST: tuple[str, ...] = (
     "&& rm ",
     "| rm ",
     "mkfs",
+    # Force-push / force flags are always denied
+    "--force",
+    "git push --force",
+    "gh --force",
 )
 
 

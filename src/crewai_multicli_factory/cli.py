@@ -312,8 +312,9 @@ def replay(
     repo_path: str = typer.Option(".", "--repo-path"),
     from_stage: str = typer.Option("planning", "--from-stage"),
 ) -> None:
-    run = RunState.load(repo_path, run_id)
-    typer.echo(f"replay run={run.run_id} from_stage={from_stage} flow={run.state.flow}")
+    from .flows.replay_flow import ReplayFlow
+    run = ReplayFlow().replay(run_id=run_id, repo_path=repo_path, from_stage=from_stage)
+    typer.echo(f"run_id={run.run_id} stage={from_stage}")
 
 
 # ---------------------------------------------------------------------------
@@ -368,6 +369,72 @@ def export_delivery(
         if src.exists():
             shutil.copytree(src, out / sub, dirs_exist_ok=True)
     typer.echo(str(out))
+
+
+# ---------------------------------------------------------------------------
+# push
+# ---------------------------------------------------------------------------
+
+
+@app.command("push")
+def push_cmd(
+    run_id: str = typer.Option(..., "--run-id"),
+    repo_path: str = typer.Option(".", "--repo-path"),
+    branch: Optional[str] = typer.Option(None, "--branch"),
+    enable: Optional[str] = typer.Option("false", "--enable"),
+) -> None:
+    """Push the current branch to origin.  Off by default; pass --enable true to activate."""
+    from .agents.commit_agent import CommitAgent
+
+    enabled = _parse_tri_bool(enable) is True
+    if not enabled:
+        typer.echo('{"success": false, "reason": "disabled (pass --enable true to push)"}')
+        return
+    rc = CommitAgent().maybe_push(repo_path, branch, enabled=True)
+    typer.echo(f'{{"success": {str(rc == 0).lower()}, "exit_code": {rc}}}')
+
+
+# ---------------------------------------------------------------------------
+# create-pr
+# ---------------------------------------------------------------------------
+
+
+@app.command("create-pr")
+def create_pr_cmd(
+    run_id: str = typer.Option(..., "--run-id"),
+    repo_path: str = typer.Option(".", "--repo-path"),
+    base: str = typer.Option("main", "--base"),
+    enable: Optional[str] = typer.Option("false", "--enable"),
+    draft: Optional[str] = typer.Option("true", "--draft"),
+) -> None:
+    """Create a GitHub PR via gh CLI.  Off by default; pass --enable true to activate."""
+    import json as _json
+
+    from .agents.commit_agent import CommitAgent, CommitArtifacts
+    from .adapters.github_adapter import GitHubAdapter
+    from .state import RunState
+
+    enabled = _parse_tri_bool(enable) is True
+    draft_flag = _parse_tri_bool(draft) is not False  # default True
+
+    if not enabled:
+        typer.echo('{"success": false, "reason": "disabled (pass --enable true to create PR)"}')
+        return
+
+    if not GitHubAdapter().gh_available():
+        typer.echo('{"success": false, "reason": "gh-not-installed"}')
+        return
+
+    try:
+        run = RunState.load(repo_path, run_id)
+    except Exception as exc:
+        typer.echo(_json.dumps({"success": False, "reason": f"run-not-found: {exc}"}))
+        raise typer.Exit(code=2)
+
+    agent = CommitAgent()
+    artifacts = agent.build_artifacts(state=run.state, project_name=run_id)
+    result = agent.maybe_create_pr(repo_path, artifacts, base=base, draft=draft_flag, enabled=True)
+    typer.echo(_json.dumps(result))
 
 
 if __name__ == "__main__":  # pragma: no cover
