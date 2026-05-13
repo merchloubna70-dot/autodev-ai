@@ -33,3 +33,4 @@ from .parallel_section_reviewer import ParallelSectionReviewer  # noqa: F401
 from .human_review_gate import HumanReviewGate  # noqa: F401
 from .clarification_gate import ClarificationGate  # noqa: F401
 from .property_test_designer import PropertyTestDesigner  # noqa: F401
+from .roundtable import RoundtableAgent  # noqa: F401
