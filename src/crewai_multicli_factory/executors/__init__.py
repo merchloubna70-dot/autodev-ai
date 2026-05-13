@@ -9,3 +9,4 @@ from .patch_executor import PatchExecutor  # noqa: F401
 from .shell_executor import ShellExecutor, ShellResult  # noqa: F401
 from .sr_edit_parser import SearchReplaceParser  # noqa: F401
 from .network_allowlist import NetworkAllowlist  # noqa: F401
+from .sandboxed_executor import SandboxedExecutor  # noqa: F401
