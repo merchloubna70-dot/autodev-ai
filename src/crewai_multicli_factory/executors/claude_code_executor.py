@@ -22,6 +22,9 @@ SAFETY BOUNDARY (mandatory):
 - Do not run destructive shell (rm -rf, sudo, chmod 777, curl|bash, etc).
 - Do not bypass tests or fabricate "passed" / "release-ready" without evidence.
 
+CONVENTIONS:
+If repo contains AGENTS.md / CLAUDE.md / .cursor/rules — those are authoritative; do not contradict them.
+
 ESCALATION_HINT — 4 categories MUST call ask_opus before implementing:
   1. architecture / cross-module redesign / cross-subsystem design
   2. race condition / data race / concurrency / lifetime

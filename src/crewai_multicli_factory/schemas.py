@@ -644,3 +644,222 @@ class WorkerIsolationManifest(BaseModel):
     symlinks_created: list[str] = Field(default_factory=list)
     private_dirs_created: list[str] = Field(default_factory=list)
 
+
+# === MARKER W1 REPO-INTEL === (Wave 1 — RepoMap + Navigator + ContextProvider models below)
+
+
+class RepoMapEntry(BaseModel):
+    file_path: str
+    signature_summary: str = ""
+    score: float = 0.0
+    symbol_count: int = 0
+
+
+class RepoMap(BaseModel):
+    repo_path: str
+    entries: list[RepoMapEntry] = Field(default_factory=list)
+    token_budget: int = 1024
+    seeds: list[str] = Field(default_factory=list)
+
+
+class NavigatorResult(BaseModel):
+    task_id: str
+    files: list[str] = Field(default_factory=list)
+    symbols: list[str] = Field(default_factory=list)
+    call_chains: list[str] = Field(default_factory=list)
+    repo_map_excerpt: list[RepoMapEntry] = Field(default_factory=list)
+
+
+# === MARKER W2 IMPLEMENTER-LOOP === (Wave 2 — architect/editor split + critic + SR-edit models below)
+
+
+class CriticVerdict(BaseModel):
+    score: float = 0.0
+    done: bool = False
+    notes: list[str] = Field(default_factory=list)
+    iteration: int = 0
+
+
+class ArchitectPlan(BaseModel):
+    task_id: str
+    plan_steps: list[str] = Field(default_factory=list)
+    risk_notes: list[str] = Field(default_factory=list)
+    target_files: list[str] = Field(default_factory=list)
+
+
+class SearchReplaceBlock(BaseModel):
+    file_path: str
+    search_text: str
+    replace_text: str
+
+
+class LintGateResult(BaseModel):
+    language: str
+    ok: bool = True
+    errors: list[str] = Field(default_factory=list)
+    changed_files: list[str] = Field(default_factory=list)
+
+
+# === MARKER W3 PROMPT-SANDBOX === (Wave 3 — convention-load + network allowlist models below)
+
+
+class RepoConventions(BaseModel):
+    sources: list[str] = Field(default_factory=list)  # file paths consulted
+    body: str = ""
+    char_count: int = 0
+    truncated: bool = False
+
+
+class AllowVerdict(BaseModel):
+    target: str
+    allowed: bool
+    matched_rule: str | None = None
+    reason: str = ""
+
+
+class NetworkAllowlistPolicy(BaseModel):
+    default_deny: bool = True
+    allow_domains: list[str] = Field(default_factory=list)
+    allow_cidrs: list[str] = Field(default_factory=list)
+    audit_only: bool = True
+
+
+# === MARKER W4 REVIEW-QUALITY === (Wave 4 — severity + parallel-section review models below)
+
+
+class Severity(str, Enum):
+    BLOCKER = "blocker"
+    MAJOR = "major"
+    MINOR = "minor"
+    NITPICK = "nitpick"
+
+
+class SeverityFinding(BaseModel):
+    severity: Severity
+    category: str  # "security" / "perf" / "style" / "correctness" / ...
+    title: str
+    detail: str = ""
+    file_path: str | None = None
+    line: int | None = None
+    suggested_fix: str | None = None
+    source_agent: str = ""
+
+
+class ParallelSectionReviewReport(BaseModel):
+    sections: list[str] = Field(default_factory=list)  # which sub-reviewers ran
+    findings: list[SeverityFinding] = Field(default_factory=list)
+    blocker_count: int = 0
+    major_count: int = 0
+    minor_count: int = 0
+    nitpick_count: int = 0
+    synthesis_summary: str = ""
+
+    @model_validator(mode="after")
+    def _count(self) -> "ParallelSectionReviewReport":
+        for f in self.findings:
+            if f.severity == Severity.BLOCKER:
+                self.blocker_count += 1
+            elif f.severity == Severity.MAJOR:
+                self.major_count += 1
+            elif f.severity == Severity.MINOR:
+                self.minor_count += 1
+            else:
+                self.nitpick_count += 1
+        return self
+
+
+# === MARKER W5 PRECHECK === (Wave 5 — clarification + property-test + 3-pass locate models below)
+
+
+class ClarificationDecision(BaseModel):
+    needs_clarification: bool = False
+    question: str | None = None
+    rationale: str = ""
+
+
+class PropertyTestSuggestion(BaseModel):
+    target_file: str
+    function_name: str
+    given_strategies: list[str] = Field(default_factory=list)  # e.g. ["integers()", "text(min_size=1)"]
+    invariants: list[str] = Field(default_factory=list)  # human-readable invariant
+    risk_notes: list[str] = Field(default_factory=list)
+
+
+class LocatePassResult(BaseModel):
+    pass_kind: str  # "repo-tree" / "skeleton" / "line-range"
+    candidates: list[str] = Field(default_factory=list)
+    notes: list[str] = Field(default_factory=list)
+
+
+class ThreePassLocateReport(BaseModel):
+    task_id: str
+    repo_tree_pass: LocatePassResult | None = None
+    skeleton_pass: LocatePassResult | None = None
+    line_range_pass: LocatePassResult | None = None
+    final_target: str | None = None
+
+
+# === MARKER W6 MCP-UI-EMBED === (Wave 6 — MCP client + replay UI + embeddings models below)
+
+
+class MCPToolDescriptor(BaseModel):
+    name: str
+    description: str = ""
+    input_schema: dict = Field(default_factory=dict)
+
+
+class MCPCallResult(BaseModel):
+    tool_name: str
+    success: bool
+    response_text: str = ""
+    error: str | None = None
+    duration_ms: int = 0
+    mock_used: bool = False
+
+
+class ReplayStep(BaseModel):
+    step_index: int
+    timestamp: str
+    backend: str
+    task_id: str
+    success: bool
+    duration_ms: int = 0
+    summary: str = ""
+
+
+class EmbeddingHit(BaseModel):
+    run_id: str
+    text_id: str
+    score: float
+    snippet: str = ""
+
+
+# === MARKER W7 BUGFIX-PLUS === (Wave 7 — multi-patch self-consistency + HumanReviewGate models below)
+
+
+class PatchCandidate(BaseModel):
+    candidate_id: str
+    seed: str
+    patch_text: str = ""
+    changed_files: list[str] = Field(default_factory=list)
+    test_pass_count: int = 0
+    test_fail_count: int = 0
+    score: float = 0.0
+
+
+class MultiPatchVote(BaseModel):
+    candidates: list[PatchCandidate] = Field(default_factory=list)
+    winner_candidate_id: str | None = None
+    rationale: str = ""
+    mock_used: bool = False
+
+
+class HumanReviewDecision(BaseModel):
+    decision: str = "pending"  # pending / approved / rejected
+    timestamp: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    notes: str = ""
+    pending_review_file: str | None = None
+
+
+# === MARKER W8 FRAMEWORK-MOD === (Wave 8 — CrewAI Flow rewrite + SandboxedExecutor + Pydantic-AI models below)
+

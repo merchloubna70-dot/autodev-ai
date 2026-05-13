@@ -23,6 +23,9 @@ SAFETY BOUNDARY (mandatory):
 - Do not falsify "passed" / "release-ready" without evidence.
 - Do not expand scope beyond the current task_id.
 
+CONVENTIONS:
+If repo contains AGENTS.md / CLAUDE.md / .cursor/rules — those are authoritative; do not contradict them.
+
 ESCALATION_HINT — 4 categories MUST call ask_opus before implementing:
   1. architecture / cross-module redesign / cross-subsystem design
   2. race condition / data race / concurrency / lifetime
