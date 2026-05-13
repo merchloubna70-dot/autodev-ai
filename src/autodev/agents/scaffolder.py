@@ -6,6 +6,7 @@ from pathlib import Path
 from ..executors.patch_executor import FilePatch, PatchExecutor
 from ..schemas import Language, PipelineMode, ScaffoldPlan
 from ._crewai_bridge import make_agent
+from ._scaffold_verification import ScaffoldVerification
 
 
 PY_PYPROJECT_TEMPLATE = """[build-system]
@@ -102,3 +103,27 @@ class ScaffolderAgent:
             for d in plan.directories_to_create:
                 Path(repo_path, d).mkdir(parents=True, exist_ok=True)
         return applier.apply(patches)
+
+    def verify(self, repo_path: str, plan: ScaffoldPlan) -> ScaffoldVerification:
+        """Check which files from the scaffold plan are already present in *repo_path*.
+
+        Returns a :class:`ScaffoldVerification` with present/missing breakdowns.
+        The ``dropped_task_ids`` / ``survived_task_ids`` lists are intentionally
+        left empty here — they are filled in by
+        :meth:`~autodev.flows.project_delivery_flow.ProjectDeliveryFlow.run`
+        after correlating scaffold files with actual M1 tasks.
+        """
+        root = Path(repo_path)
+        present: list[str] = []
+        missing: list[str] = []
+        for f in plan.files_to_create:
+            if (root / f).exists():
+                present.append(f)
+            else:
+                missing.append(f)
+        return ScaffoldVerification(
+            present_files=present,
+            missing_files=missing,
+            dropped_task_ids=[],
+            survived_task_ids=[],
+        )

@@ -35,11 +35,13 @@ from ..agents._crewai_bridge import make_crew
 from ..config import FactoryConfig
 from ..executors.executor_router import ExecutorRouter
 from ..reports.reporter import Reporter
+from ..agents._scaffold_verification import ScaffoldVerification
 from ..schemas import (
     ExecutionBackend,
     Language,
     MilestonePlan,
     PipelineMode,
+    TaskType,
 )
 from ..state import RunState, init_run
 
@@ -141,12 +143,47 @@ class ProjectDeliveryFlow:
         run.save_json("planning/tasks.json", tasks)
         run.save_text("planning/delivery_plan.md", _render_delivery_plan(milestones, tasks))
 
-        # 9) scaffold (from-scratch / empty repos)
-        if inp.from_scratch or scan_first.is_empty:
-            sc_plan = self.scaffolder.plan(project_name=brief.product_name, languages=languages)
-            run.state.scaffold_plan = sc_plan
-            run.save_json("planning/scaffold_plan.json", sc_plan)
-            self.scaffolder.apply(plan=sc_plan, repo_path=inp.repo_path, mode=inp.mode)
+        # 9) scaffold — always run (idempotent with create_only); authoritative skeleton owner.
+        # Runs BEFORE the implementation loop so M1 SCAFFOLD tasks can be filtered out when
+        # the files are already present.
+        sc_plan = self.scaffolder.plan(project_name=brief.product_name, languages=languages)
+        run.state.scaffold_plan = sc_plan
+        run.save_json("planning/scaffold_plan.json", sc_plan)
+        self.scaffolder.apply(plan=sc_plan, repo_path=inp.repo_path, mode=inp.mode)
+
+        # 9b) verify scaffold and filter redundant M1 SCAFFOLD tasks
+        sc_verify = self.scaffolder.verify(repo_path=inp.repo_path, plan=sc_plan)
+        present_set = set(sc_verify.present_files)
+
+        def _task_files_all_present(task) -> bool:
+            """Return True if every target_file for this task already exists on disk."""
+            if not task.target_files:
+                return False
+            return all(f in present_set for f in task.target_files)
+
+        dropped_ids: list[str] = []
+        survived_ids: list[str] = []
+        filtered_tasks = []
+        for t in tasks:
+            if t.task_type == TaskType.SCAFFOLD and _task_files_all_present(t):
+                dropped_ids.append(t.task_id)
+            else:
+                if t.task_type == TaskType.SCAFFOLD:
+                    # Some files genuinely missing — retitle the surviving task
+                    t = t.model_copy(update={"title": "Add language-idiomatic stubs (skeleton already present)"})
+                    survived_ids.append(t.task_id)
+                filtered_tasks.append(t)
+
+        sc_verify = ScaffoldVerification(
+            present_files=sc_verify.present_files,
+            missing_files=sc_verify.missing_files,
+            dropped_task_ids=dropped_ids,
+            survived_task_ids=survived_ids,
+        )
+        run.save_json("quality/scaffold_verification.json", sc_verify.model_dump(mode="json"))
+
+        # Replace task list with filtered version (M1 scaffold tasks already present are dropped)
+        tasks = filtered_tasks
 
         # 10) test plan
         tp = self.test_designer.design(milestones=milestones, tasks=tasks, languages=languages)
