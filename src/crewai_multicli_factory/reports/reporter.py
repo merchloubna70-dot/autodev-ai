@@ -9,6 +9,21 @@ class Reporter:
     def render_final_report(self, run: RunState) -> str:
         s = run.state
         lines: list[str] = []
+
+        # Banner: prepend warning when run is not a clean production delivery
+        dry_run = s.mode.value == "dry-run"
+        mock_used = s.mock_execution_used
+        release_decision = s.release_check.decision if s.release_check else None
+        not_release_ready = release_decision != ReleaseDecision.RELEASE_READY
+        if dry_run or mock_used or not_release_ready:
+            decision_str = release_decision.value if release_decision is not None else "N/A"
+            lines.append("> [!WARNING]")
+            lines.append("> **NOT a production delivery.**")
+            lines.append(f"> - DryRun: `{dry_run}`")
+            lines.append(f"> - MockExecutionUsed: `{mock_used}`")
+            lines.append(f"> - ReleaseDecision: `{decision_str}`")
+            lines.append("")
+
         lines.append(f"# Final Report — run {s.run_id}")
         lines.append("")
         lines.append(f"- flow: `{s.flow}`")

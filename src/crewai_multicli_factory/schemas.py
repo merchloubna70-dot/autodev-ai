@@ -522,3 +522,80 @@ class PipelineRunState(BaseModel):
 
 def dump_model(model: BaseModel) -> dict[str, Any]:
     return model.model_dump(mode="json")
+
+
+# === MARKER OPENAPI === (Agent C appends OpenAPI / JSON-Schema diff models below this line)
+
+
+class ContractDiffReport(BaseModel):
+    """Result of an OpenAPI / JSON-Schema diff between two API versions."""
+
+    added_endpoints: list[str] = Field(default_factory=list)
+    removed_endpoints: list[str] = Field(default_factory=list)
+    changed_endpoints: list[dict] = Field(default_factory=list)
+    breaking_change: bool = False
+    summary: str = ""
+
+    @model_validator(mode="after")
+    def _compute_breaking(self) -> "ContractDiffReport":
+        has_changed_types = any(
+            entry.get("changed_types") for entry in self.changed_endpoints
+        )
+        self.breaking_change = bool(self.removed_endpoints or has_changed_types)
+        return self
+
+
+# === MARKER TELEMETRY === (Agent D appends router cost/latency telemetry models below this line)
+
+
+_BACKEND_COST_PER_KTOKEN_CENTS: dict[ExecutionBackend, float] = {
+    ExecutionBackend.CODEX: 0.5,
+    ExecutionBackend.CLAUDE_CODE: 2.5,
+    ExecutionBackend.MOCK_CODEX: 0.0,
+    ExecutionBackend.MOCK_CLAUDE: 0.0,
+}
+
+
+class ExecutorMetricSample(BaseModel):
+    task_id: str
+    milestone_id: str = ""
+    backend: ExecutionBackend
+    mock_used: bool = False
+    fallback_used: bool = False
+    duration_ms: int = 0
+    estimated_tokens: int = 0          # heuristic: len(prompt) // 4 plus len(stdout) // 4
+    estimated_cost_cents: float = 0.0  # backend-specific rate (rough; see policy)
+    success: bool = True
+    timestamp: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
+class RouterMetricsSummary(BaseModel):
+    total_calls: int = 0
+    total_duration_ms: int = 0
+    total_estimated_tokens: int = 0
+    total_estimated_cost_cents: float = 0.0
+    by_backend: dict[str, int] = Field(default_factory=dict)
+    mock_call_count: int = 0
+    success_count: int = 0
+    failure_count: int = 0
+    samples: list[ExecutorMetricSample] = Field(default_factory=list)
+
+    def add(self, sample: ExecutorMetricSample) -> None:
+        self.total_calls += 1
+        self.total_duration_ms += sample.duration_ms
+        self.total_estimated_tokens += sample.estimated_tokens
+        self.total_estimated_cost_cents += sample.estimated_cost_cents
+        self.by_backend[sample.backend.value] = self.by_backend.get(sample.backend.value, 0) + 1
+        if sample.mock_used:
+            self.mock_call_count += 1
+        if sample.success:
+            self.success_count += 1
+        else:
+            self.failure_count += 1
+        self.samples.append(sample)
+
+
+class BudgetHint(BaseModel):
+    max_cost_cents: float | None = None
+    prefer_cheaper_backend: bool = False
+

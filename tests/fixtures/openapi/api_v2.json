@@ -1,0 +1,27 @@
+{
+  "openapi": "3.0.0",
+  "info": {"title": "Test API", "version": "2.0.0"},
+  "paths": {
+    "/users": {
+      "get": {
+        "properties": {
+          "id": {"type": "integer"},
+          "name": {"type": "string"}
+        }
+      },
+      "post": {
+        "properties": {
+          "name": {"type": "string"},
+          "email": {"type": "string"}
+        }
+      }
+    },
+    "/admin": {
+      "get": {
+        "properties": {
+          "role": {"type": "string"}
+        }
+      }
+    }
+  }
+}
