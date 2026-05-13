@@ -29,6 +29,7 @@ class TaskPlanner:
         product_name: str | None = None,
         skip_m0_redundant_arch: bool = True,
         scale: Scale | None = None,
+        enforce_readiness: bool = False,
     ) -> list[DeliveryTask]:
         # Build a shared context from provided kwargs
         ctx = self._build_context(prd=prd, product_brief=product_brief, product_name=product_name)
@@ -150,6 +151,17 @@ class TaskPlanner:
                 ))
             # collect ids on milestone
             m.task_ids = [t.task_id for t in tasks if t.milestone_id == m.milestone_id]
+
+        if enforce_readiness:
+            from .task_readiness_checker import TaskReadinessChecker  # local import avoids circular
+            checker = TaskReadinessChecker()
+            sweep = checker.check_all(tasks)
+            if not sweep.overall_passed:
+                failing_ids = [r.task_id for r in sweep.per_task if not r.passed]
+                # Annotate failing tasks by appending a readiness diagnostic to
+                # their description, then filter them out.
+                tasks = [t for t in tasks if t.task_id not in failing_ids]
+
         return tasks
 
     # ------------------------------------------------------------------
