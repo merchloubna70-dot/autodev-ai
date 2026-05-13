@@ -1019,3 +1019,59 @@ class A2AConversation(BaseModel):
     task_id: str
     participating_cards: list[str] = Field(default_factory=list)  # AgentCard.name list
     messages: list[A2AMessage] = Field(default_factory=list)
+
+
+# === MARKER SRV1 MCP-SERVER ===
+
+
+class MCPToolHandlerResult(BaseModel):
+    tool_name: str
+    success: bool
+    content_text: str = ""
+    content_json: dict | None = None
+    error: str | None = None
+    duration_ms: int = 0
+
+
+class MCPServerStatus(BaseModel):
+    protocol_version: str = "2024-11-05"
+    tools_count: int = 0
+    uptime_seconds: float = 0.0
+
+
+# === MARKER SRV2 A2A-SERVER ===
+
+
+class A2AHttpServerConfig(BaseModel):
+    bind: str = "127.0.0.1"
+    port: int = 8421
+    auth_token_env: str = "AUTODEV_A2A_TOKEN"
+    max_concurrent_tasks: int = 4
+    enable_sse: bool = True
+
+
+class A2AServerTaskRecord(BaseModel):
+    task: "A2ATask"
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    updated_at: str | None = None
+    handler_name: str = ""
+    error: str | None = None
+
+
+# === MARKER SRV3 A2A-HTTP-CLIENT ===
+
+
+class A2AHttpTransportConfig(BaseModel):
+    endpoint: str
+    auth_token: str | None = None
+    timeout_sec: int = 120
+    poll_interval: float = 1.0
+    max_poll_attempts: int = 60
+    verify_tls: bool = True
+
+
+class A2ARemoteAgentRegistration(BaseModel):
+    card: AgentCard
+    registered_via: str = "manual"  # "manual" / "discovered" / "config"
+    last_reachability_check_at: str | None = None
+    reachable: bool | None = None

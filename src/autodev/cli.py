@@ -20,7 +20,7 @@ from .flows.milestone_flow import MilestoneFlow, MilestoneFlowInput
 from .flows.project_delivery_flow import ProjectDeliveryFlow, ProjectDeliveryInput
 from .flows.release_flow import ReleaseFlow
 from .reports.reporter import Reporter
-from .schemas import ExecutionBackend, Language, PipelineMode
+from .schemas import AgentCard, ExecutionBackend, Language, PipelineMode
 from .state import RunState
 from .utils.json_io import write_json
 from .utils.fs import write_text
@@ -601,6 +601,154 @@ def roundtable_cmd(
     }
     out_file.write_text(_json.dumps(payload, indent=2), encoding="utf-8")
     typer.echo(f"wrote {out_file}")
+
+
+# ---------------------------------------------------------------------------
+# mcp-serve
+# ---------------------------------------------------------------------------
+
+
+@app.command("mcp-serve")
+def mcp_serve() -> None:
+    """Start autodev as an MCP server on stdio (JSON-RPC 2.0).
+
+    Reads JSON-RPC requests line-by-line from stdin and writes responses to
+    stdout.  All logging goes to stderr.  Example registration in
+    claude_desktop_config.json:
+
+        "autodev": {"command": "autodev", "args": ["mcp-serve"]}
+    """
+    from .mcp_server.server import MCPServer
+
+    MCPServer().run()
+
+
+# ---------------------------------------------------------------------------
+# a2a-serve
+# ---------------------------------------------------------------------------
+
+
+@app.command("a2a-serve")
+def a2a_serve(
+    port: int = typer.Option(8421, "--port", help="TCP port to listen on"),
+    bind: str = typer.Option("127.0.0.1", "--bind", help="IP address to bind (default: 127.0.0.1)"),
+) -> None:
+    """Start the A2A HTTP server so external agents can send tasks to autodev."""
+    from .adapters.a2a.server import A2AHttpServer
+
+    server = A2AHttpServer(port=port, bind=bind)
+    typer.echo(f"A2A server on http://{bind}:{port}")
+    server.serve_forever()
+
+
+# ---------------------------------------------------------------------------
+# a2a-register / a2a-call
+# ---------------------------------------------------------------------------
+
+
+@app.command("a2a-register")
+def a2a_register(
+    endpoint: str = typer.Option(..., "--endpoint", help="Base URL of the remote A2A agent"),
+    name: Optional[str] = typer.Option(None, "--name", help="Override agent name in roster"),
+    save_to: str = typer.Option("~/.autodev/a2a-roster.json", "--save-to", help="Roster file path"),
+) -> None:
+    """Discover an AgentCard from a remote A2A endpoint and append to the roster."""
+    import json as _json
+
+    from .adapters.a2a.transports.http import A2AHttpTransport
+
+    transport = A2AHttpTransport(
+        endpoint=endpoint,
+        auth_token=__import__("os").environ.get("AUTODEV_A2A_TOKEN"),
+    )
+    card = transport.discover_agent_card()
+    if card is None:
+        typer.echo(_json.dumps({"success": False, "reason": f"could not discover agent card from {endpoint}"}))
+        raise typer.Exit(code=2)
+
+    if name:
+        card = card.model_copy(update={"name": name})
+
+    typer.echo(card.model_dump_json(indent=2))
+
+    # Append / update roster file
+    roster_path = Path(save_to).expanduser()
+    roster_path.parent.mkdir(parents=True, exist_ok=True)
+    roster: list[dict] = []
+    if roster_path.exists():
+        try:
+            roster = _json.loads(roster_path.read_text(encoding="utf-8"))
+            if not isinstance(roster, list):
+                roster = []
+        except Exception:
+            roster = []
+
+    # Remove existing entry for same endpoint to avoid duplicates
+    roster = [e for e in roster if not (isinstance(e, dict) and e.get("card", {}).get("endpoint") == endpoint)]
+    roster.append({"card": card.model_dump(mode="json"), "registered_via": "discovered"})
+    roster_path.write_text(_json.dumps(roster, indent=2), encoding="utf-8")
+    typer.echo(f"registered to {roster_path}")
+
+
+@app.command("a2a-call")
+def a2a_call(
+    endpoint: str = typer.Option(..., "--endpoint", help="Base URL of the remote A2A agent"),
+    skill: str = typer.Option("default", "--skill", help="Skill/capability to call"),
+    task_json: str = typer.Option("{}", "--task-json", help="JSON dict for the task user message text"),
+) -> None:
+    """Build an A2ATask and send it to a remote A2A agent via HTTP transport.
+
+    ``--task-json`` may be a bare text string or a JSON object with a ``text`` key.
+    Prints the result message from the completed task.
+    """
+    import json as _json
+    import os as _os
+    import uuid
+
+    from .adapters.a2a.transports.http import A2AHttpTransport
+    from .schemas import A2AMessage, A2APart, A2ATask, A2ATaskStatus
+
+    # Parse task-json
+    try:
+        payload = _json.loads(task_json)
+        if isinstance(payload, str):
+            text_content = payload
+        else:
+            text_content = payload.get("text", task_json)
+    except Exception:
+        text_content = task_json
+
+    task_id = str(uuid.uuid4())
+    context_id = str(uuid.uuid4())
+    task = A2ATask(
+        id=task_id,
+        context_id=context_id,
+        status=A2ATaskStatus.SUBMITTED,
+        history=[
+            A2AMessage(
+                message_id=str(uuid.uuid4()),
+                role="user",
+                parts=[A2APart(kind="text", text=text_content)],
+                context_id=context_id,
+                task_id=task_id,
+            )
+        ],
+        metadata={"skill": skill},
+    )
+
+    card_obj = AgentCard(
+        name=f"remote@{endpoint}",
+        transport="a2a-http",
+        endpoint=endpoint,
+        skills=[skill],
+    )
+
+    transport = A2AHttpTransport(
+        endpoint=endpoint,
+        auth_token=_os.environ.get("AUTODEV_A2A_TOKEN"),
+    )
+    result = transport.send_task(card_obj, task)
+    typer.echo(_json.dumps(result.model_dump(mode="json"), indent=2))
 
 
 if __name__ == "__main__":  # pragma: no cover
