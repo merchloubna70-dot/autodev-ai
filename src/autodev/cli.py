@@ -20,7 +20,7 @@ from .flows.milestone_flow import MilestoneFlow, MilestoneFlowInput
 from .flows.project_delivery_flow import ProjectDeliveryFlow, ProjectDeliveryInput
 from .flows.release_flow import ReleaseFlow
 from .reports.reporter import Reporter
-from .schemas import AgentCard, ExecutionBackend, Language, PipelineMode
+from .schemas import AgentCard, ExecutionBackend, Language, PipelineMode, Scale
 from .state import RunState
 from .utils.json_io import write_json
 from .utils.fs import write_text
@@ -162,8 +162,10 @@ def deliver_project(
     commit: bool = typer.Option(False, "--commit"),
     push: bool = typer.Option(False, "--push"),
     tag: bool = typer.Option(False, "--tag"),
+    scale: Optional[str] = typer.Option(None, "--scale", help="Project scale: bug-fix|small|medium|enterprise (auto-inferred if not given)"),
 ) -> None:
     """Run the Project Delivery Mode flow (brief / PRD / empty repo)."""
+    import sys
     pmode = _parse_mode(mode)
     langs = _parse_languages(languages)
     backend = _parse_backend(executor)
@@ -174,12 +176,22 @@ def deliver_project(
     )
     brief_text = _read(project_brief) if project_brief else None
     prd_text = _read(prd) if prd else None
+    resolved_scale: Scale | None = None
+    if scale is not None:
+        try:
+            resolved_scale = Scale(scale)
+        except ValueError:
+            typer.echo(f"[autodev] unknown scale '{scale}'; valid: bug-fix|small|medium|enterprise", err=True)
+            raise typer.Exit(1)
+    else:
+        typer.echo("[autodev] --scale not given; will auto-infer from PRD/brief", err=True)
     flow = ProjectDeliveryFlow(cfg)
     run = flow.run(ProjectDeliveryInput(
         repo_path=repo_path, brief_text=brief_text, prd_text=prd_text, project_name=project_name,
         languages=langs, mode=pmode, backend=backend,
         allow_mock=cfg.allow_mock_executor, from_scratch=bool(_parse_tri_bool(from_scratch)),
         commit=commit, push=push, tag=tag,
+        scale=resolved_scale,
     ))
     typer.echo(
         f"run_id={run.run_id} mode={pmode.value} mock={run.state.mock_execution_used} "
@@ -750,6 +762,31 @@ def a2a_call(
     result = transport.send_task(card_obj, task)
     typer.echo(_json.dumps(result.model_dump(mode="json"), indent=2))
 
+
+# --- BMAD-3 NEXT-ADVISOR ---
+
+
+@app.command("next")
+def next_cmd(
+    run_id: str = typer.Option(..., "--run-id"),
+    repo_path: str = typer.Option(".", "--repo-path"),
+) -> None:
+    """Suggest the next concrete action based on current run state."""
+    from .agents.next_step_advisor import NextStepAdvisor
+    from .state import RunState
+
+    run = RunState.load(repo_path, run_id)
+    advice = NextStepAdvisor().advise(run.state)
+    typer.echo(f"NEXT: {advice.next_command}")
+    typer.echo(f"WHY:  {advice.rationale}")
+    typer.echo(f"CONFIDENCE: {advice.confidence:.2f}")
+    if advice.evidence_paths:
+        typer.echo("EVIDENCE:")
+        for p in advice.evidence_paths:
+            typer.echo(f"  {p}")
+
+
+# --- END BMAD-3 NEXT-ADVISOR ---
 
 if __name__ == "__main__":  # pragma: no cover
     app()

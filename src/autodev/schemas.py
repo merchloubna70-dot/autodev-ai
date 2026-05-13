@@ -1075,3 +1075,92 @@ class A2ARemoteAgentRegistration(BaseModel):
     registered_via: str = "manual"  # "manual" / "discovered" / "config"
     last_reachability_check_at: str | None = None
     reachable: bool | None = None
+
+
+# === MARKER BMAD1 SCALE ===
+
+
+class Scale(str, Enum):
+    BUG_FIX = "bug-fix"
+    SMALL = "small"
+    MEDIUM = "medium"
+    ENTERPRISE = "enterprise"
+
+
+class ScaleInferenceReport(BaseModel):
+    scale: Scale
+    reasoning: list[str] = Field(default_factory=list)
+    ac_count: int = 0
+    fr_count: int = 0
+    language_count: int = 0
+    risk_level: str = "low"
+
+
+# === MARKER BMAD2 ADV-EDGE ===
+
+
+class AdversarialFinding(BaseModel):
+    attack_vector: str  # "injection" / "auth-bypass" / "race" / "supply-chain" / ...
+    abuse_path: str
+    mitigation_hint: str = ""
+    severity_finding: SeverityFinding | None = None
+
+
+class EdgeCasePattern(BaseModel):
+    category: str  # "empty" / "huge" / "unicode" / "concurrent" / "resource" / "network" / "timezone" / "numeric"
+    file_path: str | None = None
+    line: int | None = None
+    hint: str = ""
+    severity_finding: SeverityFinding | None = None
+
+
+# === MARKER BMAD3 NEXT-ADVISOR ===
+
+
+class NextStepAdvice(BaseModel):
+    next_command: str
+    rationale: str = ""
+    confidence: float = Field(default=0.5, ge=0.0, le=1.0)
+    evidence_paths: list[str] = Field(default_factory=list)
+    stage_hint: str = ""  # "ship" / "fix-security" / "fix-quality" / "fix-impl" / "verify" / "apply"
+
+
+# === MARKER BMAD4 CLARIFY-EDITORIAL ===
+
+
+class ClarificationRound(BaseModel):
+    round_index: int  # 1, 2, or 3
+    questions: list[str] = Field(default_factory=list)
+    answers: dict[str, str] = Field(default_factory=dict)
+    decisions: dict[str, str] = Field(default_factory=dict)  # answer → "must"/"nice"/"deferred"
+
+
+class ClarificationTranscript(BaseModel):
+    rounds: list[ClarificationRound] = Field(default_factory=list)
+    final_changes: list[str] = Field(default_factory=list)  # human-readable PRD diff summary
+    truncated: bool = False
+
+
+class EditorialFinding(BaseModel):
+    layer: str  # "prose" / "structure"
+    check: str  # "typo" / "passive" / "long-sentence" / "missing-h1" / "broken-link" / ...
+    line: int | None = None
+    snippet: str = ""
+    severity_finding: SeverityFinding | None = None
+
+
+class EditorialReport(BaseModel):
+    file_path: str | None = None
+    prose_findings: list[EditorialFinding] = Field(default_factory=list)
+    structure_findings: list[EditorialFinding] = Field(default_factory=list)
+    blocker_count: int = 0
+    major_count: int = 0
+    minor_count: int = 0
+    passable: bool = True
+
+
+# === MARKER BMAD5 SHARD-DISTILL ===
+
+# === MARKER BMAD6 CONFIG-PRFAQ ===
+
+# === MARKER BMAD7 SPRINT ===
