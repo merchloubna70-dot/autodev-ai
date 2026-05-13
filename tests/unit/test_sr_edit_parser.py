@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import pytest
 
-from crewai_multicli_factory.executors.sr_edit_parser import SearchReplaceParser
+from autodev.executors.sr_edit_parser import SearchReplaceParser
 
 
 class TestSearchReplaceParser:

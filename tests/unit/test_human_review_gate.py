@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from crewai_multicli_factory.agents.human_review_gate import HumanReviewGate
-from crewai_multicli_factory.schemas import HumanReviewDecision
+from autodev.agents.human_review_gate import HumanReviewGate
+from autodev.schemas import HumanReviewDecision
 
 
 def test_non_blocking_returns_pending(tmp_path):

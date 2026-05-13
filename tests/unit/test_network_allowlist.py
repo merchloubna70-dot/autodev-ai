@@ -3,8 +3,8 @@ from __future__ import annotations
 
 import pytest
 
-from crewai_multicli_factory.executors.network_allowlist import NetworkAllowlist
-from crewai_multicli_factory.schemas import NetworkAllowlistPolicy
+from autodev.executors.network_allowlist import NetworkAllowlist
+from autodev.schemas import NetworkAllowlistPolicy
 
 
 def test_default_deny():

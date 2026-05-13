@@ -5,8 +5,8 @@ from pathlib import Path
 
 import pytest
 
-from crewai_multicli_factory.agents.navigator import NavigatorAgent
-from crewai_multicli_factory.schemas import NavigatorResult
+from autodev.agents.navigator import NavigatorAgent
+from autodev.schemas import NavigatorResult
 
 
 @pytest.fixture()

@@ -1,8 +1,8 @@
 """Tests for ExecutorRouter routing decisions and fail-closed behavior."""
-from crewai_multicli_factory.config import FactoryConfig
-from crewai_multicli_factory.executors.base_executor import BaseExecutor
-from crewai_multicli_factory.executors.executor_router import ExecutorRouter
-from crewai_multicli_factory.schemas import (
+from autodev.config import FactoryConfig
+from autodev.executors.base_executor import BaseExecutor
+from autodev.executors.executor_router import ExecutorRouter
+from autodev.schemas import (
     ExecutionBackend,
     ExecutionRequest,
     Language,

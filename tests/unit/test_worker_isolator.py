@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from crewai_multicli_factory.executors.worker_isolator import (
+from autodev.executors.worker_isolator import (
     CODEX_HOME_PRIVATE_DIRS,
     CODEX_HOME_PRIVATE_FILES,
     CODEX_HOME_SHARED,

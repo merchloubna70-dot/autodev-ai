@@ -1,5 +1,5 @@
-from crewai_multicli_factory.agents.input_classifier import InputClassifierAgent
-from crewai_multicli_factory.schemas import InputType
+from autodev.agents.input_classifier import InputClassifierAgent
+from autodev.schemas import InputType
 
 
 def test_classifies_github_issue_url():

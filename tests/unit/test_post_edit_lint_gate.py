@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from crewai_multicli_factory.gates.post_edit_lint_gate import PostEditLintGate
-from crewai_multicli_factory.schemas import LintGateResult
+from autodev.gates.post_edit_lint_gate import PostEditLintGate
+from autodev.schemas import LintGateResult
 
 
 @pytest.fixture()

@@ -15,7 +15,7 @@ build-backend = "hatchling.build"
 [project]
 name = "{name}"
 version = "0.1.0"
-description = "{name} scaffolded by crewai-multicli-software-factory"
+description = "{name} scaffolded by autodev"
 requires-python = ">=3.10"
 dependencies = []
 
@@ -64,7 +64,7 @@ class ScaffolderAgent:
             if f == "pyproject.toml":
                 patches.append(FilePatch(path=f, new_content=PY_PYPROJECT_TEMPLATE.format(name=name, pkg=pkg), create_only=True))
             elif f == "README.md":
-                patches.append(FilePatch(path=f, new_content=f"# {name}\n\nScaffolded by crewai-multicli-software-factory.\n", create_only=True))
+                patches.append(FilePatch(path=f, new_content=f"# {name}\n\nScaffolded by autodev.\n", create_only=True))
             elif f.endswith("__init__.py"):
                 patches.append(FilePatch(path=f, new_content="", create_only=True))
             elif f == "Cargo.toml":

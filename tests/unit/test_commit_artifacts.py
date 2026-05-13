@@ -1,8 +1,8 @@
 """Unit tests for CommitAgent.build_artifacts."""
 from __future__ import annotations
 
-from crewai_multicli_factory.agents.commit_agent import CommitAgent
-from crewai_multicli_factory.schemas import (
+from autodev.agents.commit_agent import CommitAgent
+from autodev.schemas import (
     ExecutionBackend,
     Language,
     PipelineMode,

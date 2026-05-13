@@ -1,6 +1,6 @@
-from crewai_multicli_factory.agents.prd_writer import PRDWriterAgent
-from crewai_multicli_factory.agents.product_manager import ProductManagerAgent
-from crewai_multicli_factory.agents.requirement_analyst import RequirementAnalystAgent
+from autodev.agents.prd_writer import PRDWriterAgent
+from autodev.agents.product_manager import ProductManagerAgent
+from autodev.agents.requirement_analyst import RequirementAnalystAgent
 
 
 def test_brief_to_prd():

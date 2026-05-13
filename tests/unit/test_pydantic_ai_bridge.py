@@ -9,8 +9,8 @@ from __future__ import annotations
 
 import pytest
 
-from crewai_multicli_factory.adapters.pydantic_ai_bridge import PydanticAIAgentFactory
-from crewai_multicli_factory.schemas import InputClassification, PydanticAIBridgeStatus
+from autodev.adapters.pydantic_ai_bridge import PydanticAIAgentFactory
+from autodev.schemas import InputClassification, PydanticAIBridgeStatus
 
 
 # ---------------------------------------------------------------------------
@@ -20,7 +20,7 @@ from crewai_multicli_factory.schemas import InputClassification, PydanticAIBridg
 
 def test_build_typed_classifier_returns_stub_when_pydantic_ai_missing(monkeypatch):
     """When pydantic_ai is unavailable, factory returns a stub, not None."""
-    import crewai_multicli_factory.adapters.pydantic_ai_bridge as mod
+    import autodev.adapters.pydantic_ai_bridge as mod
 
     monkeypatch.setattr(mod, "_PYDANTIC_AI_AVAILABLE", False)
     monkeypatch.setattr(mod, "pydantic_ai", None)
@@ -41,7 +41,7 @@ def test_build_typed_classifier_returns_stub_when_pydantic_ai_missing(monkeypatc
 
 def test_stub_forwards_to_input_classifier_agent(monkeypatch):
     """Stub.run_sync() delegates to InputClassifierAgent and returns InputClassification."""
-    import crewai_multicli_factory.adapters.pydantic_ai_bridge as mod
+    import autodev.adapters.pydantic_ai_bridge as mod
 
     monkeypatch.setattr(mod, "_PYDANTIC_AI_AVAILABLE", False)
     monkeypatch.setattr(mod, "pydantic_ai", None)
@@ -63,7 +63,7 @@ def test_stub_forwards_to_input_classifier_agent(monkeypatch):
 
 def test_bridge_status_reports_stub_when_unavailable(monkeypatch):
     """bridge_status() returns stub=True when pydantic_ai is not installed."""
-    import crewai_multicli_factory.adapters.pydantic_ai_bridge as mod
+    import autodev.adapters.pydantic_ai_bridge as mod
 
     monkeypatch.setattr(mod, "_PYDANTIC_AI_AVAILABLE", False)
 
@@ -88,7 +88,7 @@ def test_bridge_status_schema_fields():
 
 def test_build_typed_classifier_consistent_with_bridge_status(monkeypatch):
     """build_typed_classifier stub state is consistent with bridge_status."""
-    import crewai_multicli_factory.adapters.pydantic_ai_bridge as mod
+    import autodev.adapters.pydantic_ai_bridge as mod
 
     monkeypatch.setattr(mod, "_PYDANTIC_AI_AVAILABLE", False)
     monkeypatch.setattr(mod, "pydantic_ai", None)

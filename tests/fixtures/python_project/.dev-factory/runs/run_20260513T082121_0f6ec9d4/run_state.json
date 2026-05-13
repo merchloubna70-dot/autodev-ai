@@ -4,7 +4,7 @@
   "finished_at": "2026-05-13T08:21:21.456913+00:00",
   "mode": "dry-run",
   "flow": "issue_pipeline_flow",
-  "repo_path": "/Users/macworkers/crewai-multicli-software-factory/tests/fixtures/python_project",
+  "repo_path": "/Users/macworkers/autodev/tests/fixtures/python_project",
   "languages": [
     "python"
   ],
@@ -21,9 +21,9 @@
     "issue_id": "ISSUE-0",
     "title": "Add JSON output to the CLI",
     "summary": "# Add JSON output to the CLI",
-    "raw_text": "# Add JSON output to the CLI\n\nThe CLI currently prints human-readable text. Add an optional `--json`\nflag that emits results as JSON for downstream tooling.\n\n## Acceptance Criteria\n\n- `crewai-factory scan --json` emits valid JSON.\n- Unit tests cover both text and JSON modes.\n\nImpacted areas: cli, scan command, tests\n\nLabels: enhancement, cli\n",
+    "raw_text": "# Add JSON output to the CLI\n\nThe CLI currently prints human-readable text. Add an optional `--json`\nflag that emits results as JSON for downstream tooling.\n\n## Acceptance Criteria\n\n- `autodev scan --json` emits valid JSON.\n- Unit tests cover both text and JSON modes.\n\nImpacted areas: cli, scan command, tests\n\nLabels: enhancement, cli\n",
     "acceptance_criteria": [
-      "`crewai-factory scan --json` emits valid JSON.",
+      "`autodev scan --json` emits valid JSON.",
       "Unit tests cover both text and JSON modes."
     ],
     "impacted_areas": [
@@ -77,7 +77,7 @@
     ]
   },
   "repo_scan": {
-    "repo_path": "/Users/macworkers/crewai-multicli-software-factory/tests/fixtures/python_project",
+    "repo_path": "/Users/macworkers/autodev/tests/fixtures/python_project",
     "is_empty": false,
     "is_monorepo": false,
     "detected_languages": [
@@ -147,7 +147,7 @@
         "task_ids": [],
         "dependencies": [],
         "acceptance_criteria": [
-          "`crewai-factory scan --json` emits valid JSON.",
+          "`autodev scan --json` emits valid JSON.",
           "Unit tests cover both text and JSON modes."
         ],
         "quality_gates": [

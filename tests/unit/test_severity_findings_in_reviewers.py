@@ -4,10 +4,10 @@ import tempfile
 
 import pytest
 
-from crewai_multicli_factory.agents.code_reviewer import CodeReviewerAgent
-from crewai_multicli_factory.agents.integration_reviewer import IntegrationReviewerAgent
-from crewai_multicli_factory.agents.security_reviewer import SecurityReviewerAgent
-from crewai_multicli_factory.schemas import (
+from autodev.agents.code_reviewer import CodeReviewerAgent
+from autodev.agents.integration_reviewer import IntegrationReviewerAgent
+from autodev.agents.security_reviewer import SecurityReviewerAgent
+from autodev.schemas import (
     ApiContract,
     ApiEndpoint,
     DependencyGraph,
@@ -57,10 +57,10 @@ def test_integration_reviewer_contract_diff_finding_is_major():
 
 def test_code_reviewer_no_execution_result_is_major():
     """CodeReviewerAgent 'no execution result' finding maps to MAJOR severity."""
-    from crewai_multicli_factory.agents.system_architect import SystemArchitectAgent
-    from crewai_multicli_factory.agents.milestone_planner import MilestonePlannerAgent
-    from crewai_multicli_factory.agents.task_decomposer import TaskDecomposerAgent
-    from crewai_multicli_factory.schemas import PRD, RepoScanResult
+    from autodev.agents.system_architect import SystemArchitectAgent
+    from autodev.agents.milestone_planner import MilestonePlannerAgent
+    from autodev.agents.task_decomposer import TaskDecomposerAgent
+    from autodev.schemas import PRD, RepoScanResult
 
     prd = PRD(product_name="X", overview="o", functional_requirements=[],
               non_functional_requirements=[], acceptance_criteria=[])

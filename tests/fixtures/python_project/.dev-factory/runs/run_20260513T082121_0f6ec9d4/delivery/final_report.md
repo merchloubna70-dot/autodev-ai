@@ -2,7 +2,7 @@
 
 - flow: `issue_pipeline_flow`
 - mode: `dry-run`
-- repo: `/Users/macworkers/crewai-multicli-software-factory/tests/fixtures/python_project`
+- repo: `/Users/macworkers/autodev/tests/fixtures/python_project`
 - languages: python
 - backends_used: mock_codex
 - MockExecutionUsed: `True`

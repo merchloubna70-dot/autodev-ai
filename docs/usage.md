@@ -10,7 +10,7 @@ pip install -e ".[crewai]"   # optional: real CrewAI runtime
 ## Issue mode
 
 ```bash
-crewai-factory run-issue \
+autodev run-issue \
   --repo-path . \
   --issue-file ./issue.md \
   --languages python,rust,typescript \
@@ -22,7 +22,7 @@ crewai-factory run-issue \
 To apply changes:
 
 ```bash
-crewai-factory run-issue \
+autodev run-issue \
   --repo-path . \
   --issue-url https://github.com/org/repo/issues/123 \
   --languages python,rust,typescript \
@@ -34,14 +34,14 @@ crewai-factory run-issue \
 ## Project Delivery mode
 
 ```bash
-crewai-factory deliver-project \
+autodev deliver-project \
   --repo-path . \
   --project-brief ./project_brief.md \
   --languages python,rust,typescript \
   --mode dry-run \
   --executor auto
 
-crewai-factory deliver-project \
+autodev deliver-project \
   --repo-path ./new-project \
   --project-name "legal-agent-platform" \
   --project-brief ./brief.md \
@@ -54,35 +54,35 @@ crewai-factory deliver-project \
 ## Planning
 
 ```
-crewai-factory classify-input --input ./brief.md
-crewai-factory create-prd --project-brief ./brief.md --output .dev-factory/prd.md
-crewai-factory plan-project --repo-path . --prd ./prd.md --languages python,rust
-crewai-factory plan-milestones --repo-path . --prd ./prd.md --max-milestones 6
-crewai-factory plan-tasks --repo-path . --milestone-id M1
+autodev classify-input --input ./brief.md
+autodev create-prd --project-brief ./brief.md --output .dev-factory/prd.md
+autodev plan-project --repo-path . --prd ./prd.md --languages python,rust
+autodev plan-milestones --repo-path . --prd ./prd.md --max-milestones 6
+autodev plan-tasks --repo-path . --milestone-id M1
 ```
 
 ## Per-milestone execution
 
 ```
-crewai-factory execute-milestone \
+autodev execute-milestone \
   --run-id <run_id> \
   --milestone-id M2 \
   --mode apply \
   --executor auto \
   --concurrency 3
 
-crewai-factory continue-run --run-id <run_id>
-crewai-factory replay --run-id <run_id> --from-stage architecture
+autodev continue-run --run-id <run_id>
+autodev replay --run-id <run_id> --from-stage architecture
 ```
 
 ## Verification & delivery
 
 ```
-crewai-factory scan --repo-path .
-crewai-factory verify --run-id <run_id>
-crewai-factory release-check --run-id <run_id>
-crewai-factory report --run-id <run_id>
-crewai-factory export-delivery --run-id <run_id> --output ./delivery_package
+autodev scan --repo-path .
+autodev verify --run-id <run_id>
+autodev release-check --run-id <run_id>
+autodev report --run-id <run_id>
+autodev export-delivery --run-id <run_id> --output ./delivery_package
 ```
 
 ## Global flags

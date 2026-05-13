@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from crewai_multicli_factory.scanners.repo_map import RepoMap
+from autodev.scanners.repo_map import RepoMap
 
 
 # ---------------------------------------------------------------------------

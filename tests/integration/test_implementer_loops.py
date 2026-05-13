@@ -10,8 +10,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from crewai_multicli_factory.agents.implementer import ImplementerAgent
-from crewai_multicli_factory.schemas import (
+from autodev.agents.implementer import ImplementerAgent
+from autodev.schemas import (
     DeliveryTask,
     ExecutionBackend,
     Language,
@@ -19,7 +19,7 @@ from crewai_multicli_factory.schemas import (
     RiskLevel,
     TaskType,
 )
-from crewai_multicli_factory.state import RunState
+from autodev.state import RunState
 
 
 @pytest.fixture(autouse=True)
@@ -44,8 +44,8 @@ def _make_task(task_id: str = "T1", milestone_id: str = "M1") -> DeliveryTask:
 @pytest.fixture()
 def router():
     """Return a mock ExecutorRouter whose execute() returns a successful real result."""
-    from crewai_multicli_factory.executors.executor_router import RouterDecision
-    from crewai_multicli_factory.schemas import ExecutionResult, PipelineMode
+    from autodev.executors.executor_router import RouterDecision
+    from autodev.schemas import ExecutionResult, PipelineMode
 
     real_result = ExecutionResult(
         task_id="T1",
@@ -108,7 +108,7 @@ class TestArchitectEditorSplit:
         agent = ImplementerAgent(router=router, architect_editor_split=True)
         task = _make_task()
 
-        with patch("crewai_multicli_factory.agents.implementer.ImplementerAgent._architect_plan",
+        with patch("autodev.agents.implementer.ImplementerAgent._architect_plan",
                    wraps=agent._architect_plan) as mock_plan:
             result = agent.run_milestone(
                 milestone_id="M1",
@@ -229,7 +229,7 @@ class TestEvaluatorOptimizer:
         with patch.object(agent, "_architect_plan", return_value="plan"), \
              patch.object(agent, "_run_lint") as mock_lint, \
              patch.object(agent, "_critic_loop", side_effect=lambda r, **kw: r):
-            from crewai_multicli_factory.schemas import LintGateResult
+            from autodev.schemas import LintGateResult
             mock_lint.return_value = LintGateResult(language="python", ok=True)
             result = agent.run_milestone(
                 milestone_id="M1",

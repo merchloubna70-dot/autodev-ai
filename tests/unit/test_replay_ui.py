@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from crewai_multicli_factory.reports.replay_ui import ReplayTimelineRenderer
+from autodev.reports.replay_ui import ReplayTimelineRenderer
 
 
 def _make_run(tmp_path: Path, run_id: str, steps: list[dict]) -> Path:

@@ -9,7 +9,7 @@ Produces exactly 4 ``DeliveryTask`` objects with IDs::
 
 Each stage depends on the prior one via ``TaskDependency``.  The prompts
 reference the four Markdown templates shipped in
-``crewai_multicli_factory/templates/four_stage/``.
+``autodev/templates/four_stage/``.
 
 When ``three_pass_locate=True`` the LOCATE stage (BUG-T2-LOCATE) is expanded
 into 3 sub-tasks chained via TaskDependency:

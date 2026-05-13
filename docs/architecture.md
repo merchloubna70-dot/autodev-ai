@@ -1,6 +1,6 @@
 # Architecture
 
-`crewai-multicli-software-factory` orchestrates CrewAI agents over a
+`autodev` orchestrates CrewAI agents over a
 multi-CLI executor router (Codex CLI + Claude Code CLI + mocks) to deliver
 either a single-issue change or a full project from brief/PRD.
 

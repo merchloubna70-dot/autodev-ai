@@ -1,13 +1,13 @@
 from pathlib import Path
 
-from crewai_multicli_factory.scanners import (
+from autodev.scanners import (
     MonorepoScanner,
     PythonScanner,
     RepoScanner,
     RustScanner,
     TypeScriptScanner,
 )
-from crewai_multicli_factory.schemas import Language
+from autodev.schemas import Language
 
 FIX = Path(__file__).resolve().parents[1] / "fixtures"
 

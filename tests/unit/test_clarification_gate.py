@@ -5,8 +5,8 @@ import os
 
 import pytest
 
-from crewai_multicli_factory.agents.clarification_gate import ClarificationGate
-from crewai_multicli_factory.schemas import (
+from autodev.agents.clarification_gate import ClarificationGate
+from autodev.schemas import (
     AcceptanceCriterion,
     ClarificationDecision,
     FunctionalRequirement,

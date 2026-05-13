@@ -7,7 +7,7 @@ import pytest
 os.environ.setdefault("FACTORY_FORCE_MOCK", "1")
 
 # Import directly from submodule to avoid __init__ chain side-effects
-from crewai_multicli_factory.adapters.mcp_client import MCPToolClient, DEFAULT_ALLOWED_BINS
+from autodev.adapters.mcp_client import MCPToolClient, DEFAULT_ALLOWED_BINS
 
 
 class TestMCPClientMock:

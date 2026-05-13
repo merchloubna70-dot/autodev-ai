@@ -1,5 +1,5 @@
 {
-  "repo_path": "/Users/macworkers/crewai-multicli-software-factory/tests/fixtures/python_project",
+  "repo_path": "/Users/macworkers/autodev/tests/fixtures/python_project",
   "is_empty": false,
   "is_monorepo": false,
   "detected_languages": [

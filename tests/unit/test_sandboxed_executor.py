@@ -10,9 +10,9 @@ from __future__ import annotations
 
 import pytest
 
-from crewai_multicli_factory.executors.mock_codex_executor import MockCodexExecutor
-from crewai_multicli_factory.executors.sandboxed_executor import SandboxedExecutor
-from crewai_multicli_factory.schemas import (
+from autodev.executors.mock_codex_executor import MockCodexExecutor
+from autodev.executors.sandboxed_executor import SandboxedExecutor
+from autodev.schemas import (
     ExecutionBackend,
     ExecutionRequest,
     Language,

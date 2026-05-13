@@ -1,11 +1,11 @@
-from crewai_multicli_factory.agents.code_reviewer import CodeReviewerAgent
-from crewai_multicli_factory.agents.integration_reviewer import IntegrationReviewerAgent
-from crewai_multicli_factory.agents.milestone_planner import MilestonePlannerAgent
-from crewai_multicli_factory.agents.system_architect import SystemArchitectAgent
-from crewai_multicli_factory.agents.task_decomposer import TaskDecomposerAgent
-from crewai_multicli_factory.agents.verifier import VerifierAgent
-from crewai_multicli_factory.gates.release_gate import ReleaseGate
-from crewai_multicli_factory.schemas import (
+from autodev.agents.code_reviewer import CodeReviewerAgent
+from autodev.agents.integration_reviewer import IntegrationReviewerAgent
+from autodev.agents.milestone_planner import MilestonePlannerAgent
+from autodev.agents.system_architect import SystemArchitectAgent
+from autodev.agents.task_decomposer import TaskDecomposerAgent
+from autodev.agents.verifier import VerifierAgent
+from autodev.gates.release_gate import ReleaseGate
+from autodev.schemas import (
     ApiContract,
     ApiEndpoint,
     DependencyGraph,

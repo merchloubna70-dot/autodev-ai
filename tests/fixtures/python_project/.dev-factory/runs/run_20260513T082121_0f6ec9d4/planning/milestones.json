@@ -9,7 +9,7 @@
     "task_ids": [],
     "dependencies": [],
     "acceptance_criteria": [
-      "`crewai-factory scan --json` emits valid JSON.",
+      "`autodev scan --json` emits valid JSON.",
       "Unit tests cover both text and JSON modes."
     ],
     "quality_gates": [

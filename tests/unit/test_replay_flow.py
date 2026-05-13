@@ -3,12 +3,12 @@ from __future__ import annotations
 
 import pytest
 
-from crewai_multicli_factory.flows.project_delivery_flow import (
+from autodev.flows.project_delivery_flow import (
     ProjectDeliveryFlow,
     ProjectDeliveryInput,
 )
-from crewai_multicli_factory.flows.replay_flow import ReplayFlow
-from crewai_multicli_factory.schemas import Language, PipelineMode
+from autodev.flows.replay_flow import ReplayFlow
+from autodev.schemas import Language, PipelineMode
 
 
 def _seed_run(tmp_path):

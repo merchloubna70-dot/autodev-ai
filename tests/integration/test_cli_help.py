@@ -1,6 +1,6 @@
 from typer.testing import CliRunner
 
-from crewai_multicli_factory.cli import app
+from autodev.cli import app
 
 
 def test_cli_help_lists_all_subcommands():

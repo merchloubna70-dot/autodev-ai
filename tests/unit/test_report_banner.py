@@ -5,13 +5,13 @@ import tempfile
 
 import pytest
 
-from crewai_multicli_factory.reports.reporter import Reporter
-from crewai_multicli_factory.schemas import (
+from autodev.reports.reporter import Reporter
+from autodev.schemas import (
     PipelineMode,
     ReleaseCheckReport,
     ReleaseDecision,
 )
-from crewai_multicli_factory.state import RunState
+from autodev.state import RunState
 
 
 def _make_run(

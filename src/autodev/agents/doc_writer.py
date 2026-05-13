@@ -24,7 +24,7 @@ class DocWriterAgent:
             for m in architecture.modules:
                 lines.append(f"- `{m.name}` ({m.language.value}): {m.purpose}")
         lines.append("\n## Status")
-        lines.append("Scaffolded and delivered by `crewai-multicli-software-factory`.")
+        lines.append("Scaffolded and delivered by `autodev`.")
         return "\n".join(lines) + "\n"
 
     def usage(self, *, prd: PRD) -> str:

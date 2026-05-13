@@ -1,4 +1,4 @@
-from crewai_multicli_factory.agents.issue_analyst import IssueAnalystAgent
+from autodev.agents.issue_analyst import IssueAnalystAgent
 
 
 def test_parse_md_issue():

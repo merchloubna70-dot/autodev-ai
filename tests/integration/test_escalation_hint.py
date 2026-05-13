@@ -2,8 +2,8 @@
 from __future__ import annotations
 
 
-from crewai_multicli_factory.executors.claude_code_executor import CLAUDE_PROMPT_BOUNDARY
-from crewai_multicli_factory.executors.codex_cli_executor import CODEX_PROMPT_BOUNDARY
+from autodev.executors.claude_code_executor import CLAUDE_PROMPT_BOUNDARY
+from autodev.executors.codex_cli_executor import CODEX_PROMPT_BOUNDARY
 
 
 class TestEscalationHintPresent:

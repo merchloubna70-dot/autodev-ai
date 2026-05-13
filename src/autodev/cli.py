@@ -1,4 +1,4 @@
-"""`crewai-factory` Typer CLI entrypoint."""
+"""`autodev` Typer CLI entrypoint."""
 from __future__ import annotations
 
 from pathlib import Path

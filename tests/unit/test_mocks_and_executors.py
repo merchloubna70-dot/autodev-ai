@@ -1,9 +1,9 @@
-from crewai_multicli_factory.config import ClaudeCodeExecutorConfig, CodexCliExecutorConfig
-from crewai_multicli_factory.executors.claude_code_executor import ClaudeCodeExecutor
-from crewai_multicli_factory.executors.codex_cli_executor import CodexCliExecutor
-from crewai_multicli_factory.executors.mock_claude_executor import MockClaudeExecutor
-from crewai_multicli_factory.executors.mock_codex_executor import MockCodexExecutor
-from crewai_multicli_factory.schemas import (
+from autodev.config import ClaudeCodeExecutorConfig, CodexCliExecutorConfig
+from autodev.executors.claude_code_executor import ClaudeCodeExecutor
+from autodev.executors.codex_cli_executor import CodexCliExecutor
+from autodev.executors.mock_claude_executor import MockClaudeExecutor
+from autodev.executors.mock_codex_executor import MockCodexExecutor
+from autodev.schemas import (
     ExecutionRequest,
     Language,
     PipelineMode,

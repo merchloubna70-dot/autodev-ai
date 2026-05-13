@@ -1,10 +1,10 @@
 """Tests for budget-aware routing in ExecutorRouter (Agent D)."""
-from crewai_multicli_factory.config import FactoryConfig
-from crewai_multicli_factory.executors.base_executor import BaseExecutor
-from crewai_multicli_factory.executors.executor_router import ExecutorRouter
-from crewai_multicli_factory.executors.mock_codex_executor import MockCodexExecutor
-from crewai_multicli_factory.executors.mock_claude_executor import MockClaudeExecutor
-from crewai_multicli_factory.schemas import (
+from autodev.config import FactoryConfig
+from autodev.executors.base_executor import BaseExecutor
+from autodev.executors.executor_router import ExecutorRouter
+from autodev.executors.mock_codex_executor import MockCodexExecutor
+from autodev.executors.mock_claude_executor import MockClaudeExecutor
+from autodev.schemas import (
     BudgetHint,
     ExecutionBackend,
     ExecutionRequest,

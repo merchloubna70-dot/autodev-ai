@@ -7,9 +7,9 @@ from pathlib import Path
 
 import pytest
 
-from crewai_multicli_factory.config import FactoryConfig
-from crewai_multicli_factory.flows.multi_patch_flow import MultiPatchFlow, MultiPatchInput
-from crewai_multicli_factory.schemas import Language, PipelineMode
+from autodev.config import FactoryConfig
+from autodev.flows.multi_patch_flow import MultiPatchFlow, MultiPatchInput
+from autodev.schemas import Language, PipelineMode
 
 FIX = Path(__file__).resolve().parents[1] / "fixtures"
 

@@ -3,8 +3,8 @@ from __future__ import annotations
 
 import pytest
 
-from crewai_multicli_factory.agents.critic import CriticAgent
-from crewai_multicli_factory.schemas import CriticVerdict
+from autodev.agents.critic import CriticAgent
+from autodev.schemas import CriticVerdict
 
 
 @pytest.fixture(autouse=True)

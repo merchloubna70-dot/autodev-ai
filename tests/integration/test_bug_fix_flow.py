@@ -4,9 +4,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from crewai_multicli_factory.config import FactoryConfig
-from crewai_multicli_factory.flows.bug_fix_flow import BugFixFlow, BugFixInput
-from crewai_multicli_factory.schemas import ExecutionBackend, Language, PipelineMode
+from autodev.config import FactoryConfig
+from autodev.flows.bug_fix_flow import BugFixFlow, BugFixInput
+from autodev.schemas import ExecutionBackend, Language, PipelineMode
 
 FIX = Path(__file__).resolve().parents[1] / "fixtures"
 

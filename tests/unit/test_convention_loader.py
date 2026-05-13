@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import pytest
 
-from crewai_multicli_factory.adapters.convention_loader import ConventionLoader
+from autodev.adapters.convention_loader import ConventionLoader
 
 
 def test_no_convention_files(tmp_path):

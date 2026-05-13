@@ -5,7 +5,7 @@ flag that emits results as JSON for downstream tooling.
 
 ## Acceptance Criteria
 
-- `crewai-factory scan --json` emits valid JSON.
+- `autodev scan --json` emits valid JSON.
 - Unit tests cover both text and JSON modes.
 
 Impacted areas: cli, scan command, tests

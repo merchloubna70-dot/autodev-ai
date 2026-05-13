@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 from typer.testing import CliRunner
 
-from crewai_multicli_factory.cli import app
+from autodev.cli import app
 
 runner = CliRunner()
 

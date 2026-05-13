@@ -3,8 +3,8 @@ from __future__ import annotations
 
 import pytest
 
-from crewai_multicli_factory.planners.four_stage_planner import FourStagePlanner, _MILESTONE_ID
-from crewai_multicli_factory.schemas import Language, TaskType
+from autodev.planners.four_stage_planner import FourStagePlanner, _MILESTONE_ID
+from autodev.schemas import Language, TaskType
 
 
 @pytest.fixture()

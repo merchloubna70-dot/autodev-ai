@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from crewai_multicli_factory.gates.contract_diff import diff_openapi_specs, diff_json_schemas
-from crewai_multicli_factory.schemas import ContractDiffReport
+from autodev.gates.contract_diff import diff_openapi_specs, diff_json_schemas
+from autodev.schemas import ContractDiffReport
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "openapi"
 

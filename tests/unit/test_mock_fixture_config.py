@@ -3,9 +3,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from crewai_multicli_factory.config import MockFixtureConfig
-from crewai_multicli_factory.executors.mock_codex_executor import MockCodexExecutor
-from crewai_multicli_factory.schemas import (
+from autodev.config import MockFixtureConfig
+from autodev.executors.mock_codex_executor import MockCodexExecutor
+from autodev.schemas import (
     ExecutionRequest,
     Language,
     PipelineMode,

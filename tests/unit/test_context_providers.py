@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 import pytest
 
-from crewai_multicli_factory.context_providers import (
+from autodev.context_providers import (
     BaseContextProvider,
     FileTreeContextProvider,
     GitDiffContextProvider,

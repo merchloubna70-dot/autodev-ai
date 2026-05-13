@@ -1,7 +1,7 @@
 """Unit tests for Severity enum and SeverityFinding / ParallelSectionReviewReport schemas."""
 import pytest
 
-from crewai_multicli_factory.schemas import (
+from autodev.schemas import (
     ParallelSectionReviewReport,
     Severity,
     SeverityFinding,

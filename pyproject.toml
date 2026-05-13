@@ -3,7 +3,7 @@ requires = ["hatchling>=1.21"]
 build-backend = "hatchling.build"
 
 [project]
-name = "crewai-multicli-software-factory"
+name = "autodev"
 version = "0.1.0"
 description = "CrewAI + Codex CLI + Claude Code CLI multi-CLI software factory for issue-to-delivery and project-from-scratch delivery."
 readme = "README.md"
@@ -28,10 +28,10 @@ dev = [
 ]
 
 [project.scripts]
-crewai-factory = "crewai_multicli_factory.cli:app"
+autodev = "autodev.cli:app"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/crewai_multicli_factory"]
+packages = ["src/autodev"]
 
 [tool.pytest.ini_options]
 addopts = "-q"

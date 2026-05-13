@@ -3,8 +3,8 @@ from __future__ import annotations
 
 import pytest
 
-from crewai_multicli_factory.agents.failure_cluster_reviewer import FailureClusterReviewer
-from crewai_multicli_factory.schemas import (
+from autodev.agents.failure_cluster_reviewer import FailureClusterReviewer
+from autodev.schemas import (
     ExecutionBackend,
     ExecutionResult,
     Language,

@@ -4,8 +4,8 @@ import tempfile
 
 import pytest
 
-from crewai_multicli_factory.agents.parallel_section_reviewer import ParallelSectionReviewer
-from crewai_multicli_factory.schemas import ParallelSectionReviewReport, Severity
+from autodev.agents.parallel_section_reviewer import ParallelSectionReviewer
+from autodev.schemas import ParallelSectionReviewReport, Severity
 
 
 def test_parallel_section_reviewer_runs_three_sections(tmp_path):

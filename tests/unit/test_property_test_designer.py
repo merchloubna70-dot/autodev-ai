@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from crewai_multicli_factory.agents.property_test_designer import PropertyTestDesigner
-from crewai_multicli_factory.schemas import PropertyTestSuggestion
+from autodev.agents.property_test_designer import PropertyTestDesigner
+from autodev.schemas import PropertyTestSuggestion
 
 
 def _write_py(tmp_path: Path, name: str, source: str) -> str:

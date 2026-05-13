@@ -1,5 +1,5 @@
-from crewai_multicli_factory.executors.shell_executor import ShellExecutor
-from crewai_multicli_factory.utils.command_safety import is_command_allowed
+from autodev.executors.shell_executor import ShellExecutor
+from autodev.utils.command_safety import is_command_allowed
 
 
 def test_pytest_allowed():

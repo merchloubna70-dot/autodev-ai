@@ -5,8 +5,8 @@ import os
 
 import pytest
 
-from crewai_multicli_factory.agents.opus_consult import OpusConsultAgent
-from crewai_multicli_factory.schemas import OpusConsultMode, OpusConsultResult
+from autodev.agents.opus_consult import OpusConsultAgent
+from autodev.schemas import OpusConsultMode, OpusConsultResult
 
 
 @pytest.fixture(autouse=True)
@@ -82,7 +82,7 @@ class TestOpusConsultReviewer:
 
     def test_verdict_request_changes_extracted(self, monkeypatch):
         """Inject a custom mock that returns REQUEST_CHANGES."""
-        from crewai_multicli_factory.adapters import opus_adapter as _mod
+        from autodev.adapters import opus_adapter as _mod
 
         original = _mod._mock_response
 
@@ -98,7 +98,7 @@ class TestOpusConsultReviewer:
 
     def test_verdict_reject_extracted(self, monkeypatch):
         """Inject a custom mock that returns REJECT."""
-        from crewai_multicli_factory.adapters import opus_adapter as _mod
+        from autodev.adapters import opus_adapter as _mod
 
         original = _mod._mock_response
 

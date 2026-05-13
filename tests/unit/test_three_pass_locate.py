@@ -3,11 +3,11 @@ from __future__ import annotations
 
 import pytest
 
-from crewai_multicli_factory.planners.four_stage_planner import (
+from autodev.planners.four_stage_planner import (
     FourStagePlanner,
     _THREE_PASS_STAGES,
 )
-from crewai_multicli_factory.schemas import TaskType
+from autodev.schemas import TaskType
 
 
 _BUG = "NullPointerException in auth module"
@@ -99,7 +99,7 @@ class TestThreePassLocateEnabled:
         planner = FourStagePlanner(three_pass_locate=True)
         tasks = planner.plan(_BUG, _REPO, language="python")
         sub_ids = {"BUG-T2A-REPO-TREE", "BUG-T2B-SKELETON", "BUG-T2C-LINE-RANGE"}
-        from crewai_multicli_factory.schemas import Language
+        from autodev.schemas import Language
         for t in tasks:
             if t.task_id in sub_ids:
                 assert t.language == Language.PYTHON

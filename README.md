@@ -1,4 +1,4 @@
-# crewai-multicli-software-factory
+# autodev
 
 A CrewAI + **Codex CLI** + **Claude Code CLI** software factory that supports
 two delivery modes against any Python / Rust / TypeScript repository:
@@ -24,9 +24,9 @@ pip install -e ".[crewai]"
 ## Quick examples
 
 ```bash
-crewai-factory scan --repo-path .
+autodev scan --repo-path .
 
-crewai-factory run-issue \
+autodev run-issue \
   --repo-path . \
   --issue-file tests/fixtures/issue_project/issue.md \
   --languages python \
@@ -34,20 +34,20 @@ crewai-factory run-issue \
   --executor auto \
   --allow-mock-executor true
 
-crewai-factory deliver-project \
+autodev deliver-project \
   --repo-path tests/fixtures/empty_project \
   --project-brief tests/fixtures/prd_project/project_brief.md \
   --from-scratch true \
   --languages python,typescript \
   --mode dry-run
 
-crewai-factory execute-milestone \
+autodev execute-milestone \
   --run-id <latest_run_id> \
   --milestone-id M2 \
   --executor claude-code \
   --allow-mock-executor true
 
-crewai-factory report --run-id <latest_run_id>
+autodev report --run-id <latest_run_id>
 ```
 
 ## Multi-CLI executor routing

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import pytest
 
-from crewai_multicli_factory.adapters.embeddings_index import EmbeddingsIndex
+from autodev.adapters.embeddings_index import EmbeddingsIndex
 
 
 class TestEmbeddingsIndex:

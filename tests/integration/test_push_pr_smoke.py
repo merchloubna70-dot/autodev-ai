@@ -1,14 +1,14 @@
 """Integration smoke tests for push / PR commands — all off by default."""
 from __future__ import annotations
 
-from crewai_multicli_factory.agents.commit_agent import CommitAgent, CommitArtifacts
-from crewai_multicli_factory.schemas import (
+from autodev.agents.commit_agent import CommitAgent, CommitArtifacts
+from autodev.schemas import (
     ExecutionBackend,
     Language,
     PipelineMode,
     PipelineRunState,
 )
-from crewai_multicli_factory.utils.command_safety import is_command_allowed
+from autodev.utils.command_safety import is_command_allowed
 
 
 # ---------------------------------------------------------------------------

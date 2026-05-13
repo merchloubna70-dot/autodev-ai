@@ -4,12 +4,12 @@ from __future__ import annotations
 import shutil
 from pathlib import Path
 
-from crewai_multicli_factory.config import FactoryConfig
-from crewai_multicli_factory.flows.project_delivery_flow import (
+from autodev.config import FactoryConfig
+from autodev.flows.project_delivery_flow import (
     ProjectDeliveryFlow,
     ProjectDeliveryInput,
 )
-from crewai_multicli_factory.schemas import ExecutionBackend, Language, PipelineMode, ReleaseDecision
+from autodev.schemas import ExecutionBackend, Language, PipelineMode, ReleaseDecision
 
 FIX = Path(__file__).resolve().parents[1] / "fixtures"
 
