@@ -167,27 +167,26 @@ def test_no_context_yields_legacy_prompt_shape():
 # (d) skip_m0_redundant_arch=True collapses M0 to 1 verify task with type=TEST
 # ---------------------------------------------------------------------------
 
-def test_m0_collapsed_to_single_verify_task():
+def test_m0_collapsed_emits_zero_tasks():
+    """With skip_m0_redundant_arch=True (default), M0 emits ZERO tasks: the
+    architecture artifacts are already constructed in-flow by
+    SystemArchitectAgent.design() and written before tasks run, so there is
+    nothing useful for an LLM-driven task to do here. The milestone is then
+    trivially complete (ImplementationResult.success=True for empty task list)."""
     planner = TaskPlanner()
     milestones = [_m0()]
     tasks = planner.plan(
         milestones=milestones,
         architecture=_basic_arch(),
         languages=[Language.PYTHON],
-        skip_m0_redundant_arch=True,  # default, explicit here
+        skip_m0_redundant_arch=True,
     )
     m0_tasks = [t for t in tasks if t.milestone_id == "M0"]
-    assert len(m0_tasks) == 1
-    t = m0_tasks[0]
-    assert t.task_id == "M0-T1"
-    assert t.task_type == TaskType.TEST
-    assert t.title == "Verify architecture artifacts present"
-    assert t.preferred_executor == ExecutionBackend.CODEX
-    assert t.risk_level.value == "low"
+    assert m0_tasks == []
 
 
 def test_m0_collapsed_default_behavior():
-    """Default (no skip_m0_redundant_arch kwarg) should also collapse M0."""
+    """Default (no skip_m0_redundant_arch kwarg) should also collapse M0 to zero tasks."""
     planner = TaskPlanner()
     milestones = [_m0()]
     tasks = planner.plan(
@@ -196,8 +195,7 @@ def test_m0_collapsed_default_behavior():
         languages=[Language.PYTHON],
     )
     m0_tasks = [t for t in tasks if t.milestone_id == "M0"]
-    assert len(m0_tasks) == 1
-    assert m0_tasks[0].task_type == TaskType.TEST
+    assert m0_tasks == []
 
 
 # ---------------------------------------------------------------------------

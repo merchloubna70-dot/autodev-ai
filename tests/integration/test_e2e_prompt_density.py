@@ -122,7 +122,9 @@ def test_all_task_prompts_have_structured_sections():
 
 
 def test_m0_collapsed_with_prd():
-    """M0 collapses even when PRD is provided (default skip_m0_redundant_arch=True)."""
+    """M0 emits ZERO tasks even when PRD is provided (default skip_m0_redundant_arch=True).
+    The architecture artifacts have already been constructed in-flow by
+    SystemArchitectAgent.design() before the implementation phase runs."""
     planner = TaskPlanner()
     tasks = planner.plan(
         milestones=[Milestone(milestone_id="M0", title="Architecture", objective="arch")],
@@ -132,10 +134,7 @@ def test_m0_collapsed_with_prd():
         product_name=PRODUCT_NAME,
     )
     m0_tasks = [t for t in tasks if t.milestone_id == "M0"]
-    assert len(m0_tasks) == 1
-    assert "Verify" in m0_tasks[0].title
-    # Product name should still be injected into collapsed M0 task
-    assert PRODUCT_NAME in m0_tasks[0].codex_prompt
+    assert m0_tasks == []
 
 
 def test_backward_compat_no_kwargs():

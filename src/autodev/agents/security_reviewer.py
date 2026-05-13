@@ -15,6 +15,21 @@ from ..utils.command_safety import DEFAULT_DENYLIST
 from ._crewai_bridge import make_agent
 
 
+# File-scanning denylist: full DEFAULT_DENYLIST minus patterns that legitimately
+# appear in source code as variable names (`exec `, `eval`).
+# `" env "` is kept here but is doc/code-context-sensitive (see _DOC_CONTEXT_SENSITIVE_PATTERNS).
+FILE_SCAN_DENYLIST: tuple[str, ...] = tuple(
+    p for p in DEFAULT_DENYLIST if p not in ("eval", "exec ")
+)
+
+
+# Treat every file as potentially containing prose: apply line-level
+# shell-context filtering for these patterns regardless of extension.
+# This catches `env = os.environ.copy()` (Python prose) as a false positive,
+# while still flagging `env LANG=zh subprocess.run(...)` (true shell call).
+_CODE_AND_DOC_CONTEXT_PATTERNS: frozenset[str] = frozenset({" env ", "printenv"})
+
+
 SECRET_PATTERNS = (
     "AKIA",            # AWS keys
     "-----BEGIN RSA",
@@ -58,6 +73,14 @@ def _is_doc_file(rel_path: str) -> bool:
     return ext in (".md", ".rst", ".txt")
 
 
+def _is_pure_shell_file(rel_path: str) -> bool:
+    """Return True for files whose content is, by extension, pure shell code.
+    Pattern matches in these files always indicate a real shell command,
+    so we never apply line-level prose filtering to them."""
+    ext = Path(rel_path).suffix.lower()
+    return ext in (".sh", ".bash", ".zsh", ".fish", ".ksh")
+
+
 def _line_has_shell_context(line: str) -> bool:
     """Return True if a line contains a shell-context marker indicating code, not prose."""
     lower = line.lower()
@@ -95,13 +118,21 @@ class SecurityReviewerAgent:
             except Exception:
                 continue
             is_doc = _is_doc_file(rel)
-            for pat in DEFAULT_DENYLIST:
+            for pat in FILE_SCAN_DENYLIST:
                 if pat not in text:
                     continue
-                # For doc-context-sensitive patterns in doc files, only flag if
-                # at least one matching line has a shell-context marker OR is inside
-                # a fenced code block (``` or ~~~).
-                if is_doc and pat in _DOC_CONTEXT_SENSITIVE_PATTERNS:
+                # Pure-shell files (.sh / .bash / .zsh / …) always flag — never
+                # filter as "could be prose". Otherwise:
+                # - patterns that frequently appear in both prose AND legitimate code
+                #   (` env ` matches Python `env = os.environ`) go through line-level
+                #   shell-context filtering regardless of file extension.
+                # - patterns that are only doc-sensitive go through filtering only in docs.
+                is_pure_shell = _is_pure_shell_file(rel)
+                apply_line_filter = (not is_pure_shell) and (
+                    pat in _CODE_AND_DOC_CONTEXT_PATTERNS
+                    or (is_doc and pat in _DOC_CONTEXT_SENSITIVE_PATTERNS)
+                )
+                if apply_line_filter:
                     lines = text.splitlines()
                     in_fence = False
                     any_shell_match = False

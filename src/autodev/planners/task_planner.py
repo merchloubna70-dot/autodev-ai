@@ -35,25 +35,13 @@ class TaskPlanner:
         for m in milestones:
             if m.milestone_id == "M0":
                 if skip_m0_redundant_arch:
-                    # Collapsed M0: single cheap verify task
-                    tasks.append(self._mk(
-                        m, 1,
-                        "Verify architecture artifacts present",
-                        (
-                            "Verify .dev-factory/runs/<run>/architecture/"
-                            "{architecture.md,architecture.json,module_map.json,"
-                            "api_contract.json,dependency_graph.json} exist and validate as JSON"
-                        ),
-                        TaskType.TEST, RiskLevel.LOW, ExecutionBackend.CODEX,
-                        target=[
-                            ".dev-factory/runs/<run>/architecture/architecture.md",
-                            ".dev-factory/runs/<run>/architecture/architecture.json",
-                            ".dev-factory/runs/<run>/architecture/module_map.json",
-                            ".dev-factory/runs/<run>/architecture/api_contract.json",
-                            ".dev-factory/runs/<run>/architecture/dependency_graph.json",
-                        ],
-                        context=ctx,
-                    ))
+                    # Collapsed M0: architecture is already constructed in-flow by
+                    # SystemArchitectAgent.design() and written to disk before tasks
+                    # run. There is nothing left for an LLM-driven task to do here,
+                    # so we emit ZERO tasks for M0. The flow's verifier still
+                    # validates milestone_acceptance based on implementation_results,
+                    # and a milestone with no tasks is trivially "complete".
+                    pass
                 else:
                     # Legacy M0 behavior
                     tasks.append(self._mk(
