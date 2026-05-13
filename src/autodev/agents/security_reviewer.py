@@ -53,12 +53,20 @@ _SEVERITY_PREFIX = {
 _DOC_CONTEXT_SENSITIVE_PATTERNS: frozenset[str] = frozenset({" env "})
 
 # Markers that indicate a line is shell context even inside a doc file.
+# NOTE: a single backtick is NOT enough — markdown inline backticks frequently
+# wrap filenames or variable names (e.g. `.env` referring to a file) which is
+# not shell context. Real shell context requires explicit hints: `$ cmd` prompts,
+# `bash`/`sh`/`zsh` words, `#!` shebangs, or actual fenced code blocks
+# (handled separately via `in_fence`).
 _SHELL_CONTEXT_MARKERS: tuple[str, ...] = (
-    "`",
     "$ ",
     "bash",
+    "zsh",
     "sh ",
     "#!",
+    "```bash",
+    "```sh",
+    "```zsh",
 )
 
 
