@@ -10,6 +10,7 @@ from ..schemas import (
     PRD,
     ProductBrief,
     RiskLevel,
+    Scale,
     TaskPromptContext,
     TaskType,
     render_task_prompt,
@@ -27,12 +28,44 @@ class TaskPlanner:
         product_brief: ProductBrief | None = None,
         product_name: str | None = None,
         skip_m0_redundant_arch: bool = True,
+        scale: Scale | None = None,
     ) -> list[DeliveryTask]:
         # Build a shared context from provided kwargs
         ctx = self._build_context(prd=prd, product_brief=product_brief, product_name=product_name)
 
         tasks: list[DeliveryTask] = []
         for m in milestones:
+            # Enterprise extra milestones: M3.5 Performance, M3.6 Compliance
+            if m.milestone_id == "M3.5":
+                tasks.append(self._mk(
+                    m, len(tasks) + 1, "Performance profiling and benchmarks",
+                    "Profile hot paths, establish benchmarks, apply targeted optimizations.",
+                    TaskType.FEATURE, RiskLevel.MEDIUM, ExecutionBackend.CLAUDE_CODE,
+                    context=ctx,
+                ))
+                m.task_ids = [t.task_id for t in tasks if t.milestone_id == m.milestone_id]
+                continue
+            if m.milestone_id == "M3.6":
+                tasks.append(self._mk(
+                    m, len(tasks) + 1, "Compliance audit",
+                    "Review audit trail, verify regulatory requirements, produce compliance checklist.",
+                    TaskType.FEATURE, RiskLevel.HIGH, ExecutionBackend.CLAUDE_CODE,
+                    context=ctx,
+                ))
+                m.task_ids = [t.task_id for t in tasks if t.milestone_id == m.milestone_id]
+                continue
+            # bug-fix scale: M2 only — emit a single FEATURE task targeting cli.py
+            if scale == Scale.BUG_FIX and m.milestone_id == "M2":
+                slug = (product_name or "app").replace("-", "_").replace(".", "_")
+                tasks.append(self._mk(
+                    m, len(tasks) + 1, "Fix: implement targeted change",
+                    f"Apply the targeted bug-fix or minimal feature change to src/{slug}/cli.py.",
+                    TaskType.FEATURE, RiskLevel.LOW, ExecutionBackend.AUTO,
+                    target=[f"src/{slug}/cli.py"],
+                    context=ctx,
+                ))
+                m.task_ids = [t.task_id for t in tasks if t.milestone_id == m.milestone_id]
+                continue
             if m.milestone_id == "M0":
                 if skip_m0_redundant_arch:
                     # Collapsed M0: architecture is already constructed in-flow by

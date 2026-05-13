@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from ..planners.milestone_planner import MilestonePlanner as _CorePlanner
-from ..schemas import ArchitectureSpec, Language, Milestone
+from ..schemas import ArchitectureSpec, Language, Milestone, Scale
 from ._crewai_bridge import make_agent
 
 
@@ -15,5 +15,12 @@ class MilestonePlannerAgent:
             backstory="A delivery lead who turns architecture into checkpoints.",
         )
 
-    def plan(self, *, architecture: ArchitectureSpec, languages: list[Language], max_milestones: int = 6) -> list[Milestone]:
-        return self.core.plan(architecture=architecture, languages=languages, max_milestones=max_milestones)
+    def plan(
+        self,
+        *,
+        architecture: ArchitectureSpec,
+        languages: list[Language],
+        max_milestones: int = 6,
+        scale: Scale | None = None,
+    ) -> list[Milestone]:
+        return self.core.plan(architecture=architecture, languages=languages, max_milestones=max_milestones, scale=scale)

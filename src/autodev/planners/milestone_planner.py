@@ -1,7 +1,7 @@
 """Default milestone planner — produces the M0..M5 template, scaled by scope."""
 from __future__ import annotations
 
-from ..schemas import ArchitectureSpec, Language, Milestone, RiskLevel
+from ..schemas import ArchitectureSpec, Language, Milestone, RiskLevel, Scale
 
 
 class MilestonePlanner:
@@ -20,17 +20,50 @@ class MilestonePlanner:
          ["README.md", "usage.md", "architecture.md", "release_notes.md", "delivery_report.md"]),
     ]
 
+    ENTERPRISE_EXTRA_TEMPLATE = [
+        ("M3.5", "Performance", "Performance profiling and optimization",
+         ["profiling report", "benchmarks", "optimizations applied"]),
+        ("M3.6", "Compliance", "Regulatory compliance and audit trail review",
+         ["compliance checklist", "audit log review", "regulatory sign-off"]),
+    ]
+
     def plan(
         self,
         *,
         architecture: ArchitectureSpec,
         languages: list[Language],
         max_milestones: int = 6,
+        scale: "Scale | None" = None,
     ) -> list[Milestone]:
+        # Determine which template rows to use based on scale
+        if scale is None:
+            # backward-compat: use max_milestones cap on default template
+            template = self.DEFAULT_TEMPLATE[:max_milestones]
+        elif scale == Scale.BUG_FIX:
+            # Minimal: M2 only (no M0/M1 scaffolding overhead)
+            template = [t for t in self.DEFAULT_TEMPLATE if t[0] == "M2"]
+        elif scale == Scale.SMALL:
+            # Skip M3 integration
+            template = [t for t in self.DEFAULT_TEMPLATE if t[0] != "M3"]
+        elif scale == Scale.MEDIUM:
+            # Keep current 6-milestone default
+            template = list(self.DEFAULT_TEMPLATE)
+        elif scale == Scale.ENTERPRISE:
+            # Add M3.5 Performance + M3.6 Compliance after M3, before M4
+            base = list(self.DEFAULT_TEMPLATE)
+            m3_idx = next((i for i, t in enumerate(base) if t[0] == "M3"), None)
+            if m3_idx is not None:
+                insert_at = m3_idx + 1
+                template = base[:insert_at] + list(self.ENTERPRISE_EXTRA_TEMPLATE) + base[insert_at:]
+            else:
+                template = base + list(self.ENTERPRISE_EXTRA_TEMPLATE)
+        else:
+            template = self.DEFAULT_TEMPLATE[:max_milestones]
+
         out: list[Milestone] = []
-        for mid, title, objective, deliverables in self.DEFAULT_TEMPLATE[:max_milestones]:
+        for mid, title, objective, deliverables in template:
             risk = RiskLevel.LOW
-            if mid in ("M3", "M4"):
+            if mid in ("M3", "M3.5", "M3.6", "M4"):
                 risk = RiskLevel.MEDIUM
             if mid == "M0":
                 acceptance = ["PRD locked", "Architecture diagram present", "Module map JSON valid"]
@@ -40,6 +73,10 @@ class MilestonePlanner:
                 acceptance = ["Unit tests cover core happy paths", "Type checks pass for typed languages"]
             elif mid == "M3":
                 acceptance = ["Integration tests cover cross-module flows", "API contract consistent"]
+            elif mid == "M3.5":
+                acceptance = ["Benchmarks established", "No regressions vs baseline"]
+            elif mid == "M3.6":
+                acceptance = ["Compliance checklist complete", "Audit trail reviewed and signed off"]
             elif mid == "M4":
                 acceptance = ["Lint passes or has waivers", "Security review has no critical findings"]
             else:
@@ -51,7 +88,7 @@ class MilestonePlanner:
                 objective=objective,
                 deliverables=list(deliverables),
                 task_ids=[],  # filled by TaskPlanner
-                dependencies=[] if mid == "M0" else [out[-1].milestone_id],
+                dependencies=[] if not out else [out[-1].milestone_id],
                 acceptance_criteria=acceptance,
                 quality_gates=quality_gates,
                 estimated_risk=risk,

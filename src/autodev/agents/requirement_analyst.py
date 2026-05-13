@@ -3,7 +3,16 @@ from __future__ import annotations
 
 import re
 
-from ..schemas import AcceptanceCriterion, FunctionalRequirement, NonFunctionalRequirement, ProductBrief
+from ..schemas import (
+    AcceptanceCriterion,
+    FunctionalRequirement,
+    Language,
+    NonFunctionalRequirement,
+    PRD,
+    ProductBrief,
+    Scale,
+    ScaleInferenceReport,
+)
 from ._crewai_bridge import make_agent
 
 
@@ -47,3 +56,80 @@ class RequirementAnalystAgent:
             for fr in functional for ac_line in fr.acceptance_criteria
         ]
         return functional, nf, ac
+
+    # ------------------------------------------------------------------
+    # Scale inference
+    # ------------------------------------------------------------------
+
+    def infer_scale(
+        self,
+        prd: "PRD | None" = None,
+        brief: "ProductBrief | None" = None,
+        languages: "list[Language] | None" = None,
+        repo_scan=None,
+        from_scratch: bool = False,
+    ) -> "ScaleInferenceReport":
+        """Heuristically infer the project scale from available context.
+
+        Rules (evaluated in priority order):
+        - ``enterprise``: >50 AC  OR  ≥3 languages  OR  risk_level HIGH/CRITICAL
+        - ``medium``:     15-50 AC  OR  2 languages
+        - ``small``:      5-15 AC  AND  1 language
+        - ``bug-fix``:    <5 AC  AND  not from_scratch
+        """
+        reasoning: list[str] = []
+
+        # Count acceptance criteria
+        ac_count = 0
+        if prd and prd.acceptance_criteria:
+            ac_count = len(prd.acceptance_criteria)
+            reasoning.append(f"prd.acceptance_criteria count={ac_count}")
+
+        # Count functional requirements from brief
+        fr_count = 0
+        if brief:
+            fr_count = len(brief.use_cases or brief.goals or [])
+            reasoning.append(f"brief fr_count={fr_count}")
+
+        # Language count
+        lang_list = languages or []
+        language_count = len(lang_list)
+        reasoning.append(f"language_count={language_count}")
+
+        # Risk level
+        risk_level = "low"
+        if prd:
+            high_risk_criteria = [
+                ac for ac in (prd.acceptance_criteria or [])
+                if re.search(r"HIGH|CRITICAL|security|compliance|regulatory", ac.description, re.IGNORECASE)
+            ]
+            if high_risk_criteria:
+                risk_level = "high"
+                reasoning.append(f"high-risk AC found: {len(high_risk_criteria)} criteria")
+
+        # from_scratch flag
+        if from_scratch:
+            reasoning.append("from_scratch=True")
+
+        # Determine scale
+        if ac_count > 50 or language_count >= 3 or risk_level in ("high", "critical"):
+            scale = Scale.ENTERPRISE
+            reasoning.append("=> enterprise: >50 AC or ≥3 languages or high risk")
+        elif ac_count >= 15 or language_count >= 2:
+            scale = Scale.MEDIUM
+            reasoning.append("=> medium: 15-50 AC or 2 languages")
+        elif ac_count >= 5 or from_scratch:
+            scale = Scale.SMALL
+            reasoning.append("=> small: 5-15 AC or from_scratch")
+        else:
+            scale = Scale.BUG_FIX
+            reasoning.append("=> bug-fix: <5 AC and not from_scratch")
+
+        return ScaleInferenceReport(
+            scale=scale,
+            reasoning=reasoning,
+            ac_count=ac_count,
+            fr_count=fr_count,
+            language_count=language_count,
+            risk_level=risk_level,
+        )

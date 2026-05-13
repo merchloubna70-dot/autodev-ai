@@ -41,6 +41,7 @@ from ..schemas import (
     Language,
     MilestonePlan,
     PipelineMode,
+    Scale,
     TaskType,
 )
 from ..state import RunState, init_run
@@ -60,6 +61,7 @@ class ProjectDeliveryInput:
     commit: bool = False
     push: bool = False
     tag: bool = False
+    scale: Scale | None = None
 
 
 class ProjectDeliveryFlow:
@@ -134,7 +136,19 @@ class ProjectDeliveryFlow:
         run.save_json("architecture/dependency_graph.json", arch.dependency_graph)
 
         # 7) milestones
-        milestones = self.mplanner.plan(architecture=arch, languages=languages, max_milestones=6)
+        # Resolve scale: use explicit input or auto-infer
+        resolved_scale = inp.scale
+        if resolved_scale is None:
+            scale_report = self.req.infer_scale(
+                prd=prd,
+                brief=brief,
+                languages=languages,
+                from_scratch=inp.from_scratch,
+            )
+            resolved_scale = scale_report.scale
+            import sys
+            print(f"[autodev] inferred scale={resolved_scale.value} ({'; '.join(scale_report.reasoning)})", file=sys.stderr)
+        milestones = self.mplanner.plan(architecture=arch, languages=languages, max_milestones=6, scale=resolved_scale)
         # 8) tasks
         tasks = self.decomposer.decompose(
             milestones=milestones,
@@ -143,6 +157,7 @@ class ProjectDeliveryFlow:
             prd=prd,
             product_brief=brief,
             product_name=brief.product_name,
+            scale=resolved_scale,
         )
         plan = MilestonePlan(milestones=milestones, tasks=tasks)
         run.state.milestone_plan = plan
