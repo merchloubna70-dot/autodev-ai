@@ -952,3 +952,70 @@ class FilesystemObservation(BaseModel):
     modified: list[str] = Field(default_factory=list)
     deleted: list[str] = Field(default_factory=list)
 
+
+
+# === MARKER A2A === (A2A-compatible Task / Message / Part / AgentCard models below)
+
+
+class A2APart(BaseModel):
+    kind: str  # "text" / "data" / "file"
+    text: str | None = None
+    data: dict | None = None
+    mime_type: str | None = None
+    filename: str | None = None
+
+
+class A2AMessage(BaseModel):
+    message_id: str
+    role: str  # "user" / "agent" / "system"
+    parts: list[A2APart] = Field(default_factory=list)
+    context_id: str | None = None
+    task_id: str | None = None
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
+class A2ATaskStatus(str, Enum):
+    SUBMITTED = "submitted"
+    WORKING = "working"
+    INPUT_REQUIRED = "input-required"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    CANCELED = "canceled"
+
+
+class A2ATask(BaseModel):
+    id: str
+    context_id: str
+    status: A2ATaskStatus = A2ATaskStatus.SUBMITTED
+    history: list[A2AMessage] = Field(default_factory=list)
+    artifacts: list[A2APart] = Field(default_factory=list)
+    metadata: dict = Field(default_factory=dict)
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    updated_at: str | None = None
+
+
+class AgentCard(BaseModel):
+    name: str
+    description: str = ""
+    version: str = "0.1.0"
+    capabilities: list[str] = Field(default_factory=list)
+    skills: list[str] = Field(default_factory=list)
+    transport: str = "local-shell"  # "local-shell" / "mock" / "a2a-http"
+    endpoint: str | None = None     # http URL when transport == "a2a-http"
+    auth_scheme: str | None = None  # "none" / "bearer" / "oauth2"
+    model_hint: str | None = None   # "opus" / "sonnet" / "haiku"
+    system_prompt: str | None = None
+    tags: list[str] = Field(default_factory=list)
+
+
+class A2ARosterEntry(BaseModel):
+    card: AgentCard
+    registered_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    active: bool = True
+
+
+class A2AConversation(BaseModel):
+    conversation_id: str
+    task_id: str
+    participating_cards: list[str] = Field(default_factory=list)  # AgentCard.name list
+    messages: list[A2AMessage] = Field(default_factory=list)
