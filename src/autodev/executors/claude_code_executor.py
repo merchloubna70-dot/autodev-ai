@@ -1,15 +1,17 @@
 """Claude Code CLI adapter — only place where `claude` binary is invoked."""
 from __future__ import annotations
 
+import json
 import os
 import shutil
 import subprocess
 
 from ..config import ClaudeCodeExecutorConfig
-from ..schemas import ExecutionBackend, ExecutionRequest, ExecutionResult
+from ..schemas import CodexInnerStep, ExecutionBackend, ExecutionRequest, ExecutionResult
 from ..utils.command_safety import scan_prompt_for_unsafe
 from ..utils.hashing import short_hash
 from .base_executor import BaseExecutor
+from ._fs_observer import diff_repo, snapshot_repo
 
 
 CLAUDE_PROMPT_BOUNDARY = """
@@ -33,6 +35,59 @@ ESCALATION_HINT — 4 categories MUST call ask_opus before implementing:
 Call: ask_opus architect "<question>"  (planning, read-only plan)
 Call: ask_opus reviewer  "<diff+scope>" (verdict: APPROVE/REQUEST_CHANGES/REJECT)
 """
+
+
+def _parse_claude_inner_steps(stdout: str) -> list[CodexInnerStep]:
+    """Parse ``claude --output-format stream-json`` JSONL into inner step records.
+
+    If the output is not valid JSONL (older claude without stream-json support),
+    return an empty list gracefully.
+    """
+    steps: list[CodexInnerStep] = []
+    for i, line in enumerate(stdout.splitlines()):
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            obj = json.loads(line)
+        except json.JSONDecodeError:
+            return []
+        kind = obj.get("type", obj.get("kind", ""))
+        content_summary = ""
+        command_val = None
+        exit_code_val = None
+        duration_val = 0
+
+        if "summary" in obj:
+            content_summary = str(obj["summary"])
+        elif "content" in obj:
+            c = obj["content"]
+            content_summary = str(c)[:200] if c else ""
+        elif "message" in obj:
+            content_summary = str(obj["message"])[:200]
+
+        if "command" in obj:
+            command_val = obj["command"]
+        if "exit_code" in obj:
+            try:
+                exit_code_val = int(obj["exit_code"])
+            except (TypeError, ValueError):
+                pass
+        if "duration_ms" in obj:
+            try:
+                duration_val = int(obj["duration_ms"])
+            except (TypeError, ValueError):
+                pass
+
+        steps.append(CodexInnerStep(
+            step_index=i,
+            kind=str(kind),
+            content_summary=content_summary,
+            command=command_val,
+            exit_code=exit_code_val,
+            duration_ms=duration_val,
+        ))
+    return steps
 
 
 class ClaudeCodeExecutor(BaseExecutor):
@@ -91,6 +146,14 @@ class ClaudeCodeExecutor(BaseExecutor):
         cmd_str = self.config.command_template.replace("{prompt}", _shell_quote(prompt))
         cmd_str = cmd_str.replace("{repo_path}", _shell_quote(request.repo_path))
         timeout = request.timeout or self.config.timeout_seconds
+
+        # Pre-execution filesystem snapshot.
+        fs_before: set[str] = set()
+        try:
+            fs_before = snapshot_repo(request.repo_path)
+        except Exception:
+            pass
+
         try:
             import shlex
 
@@ -148,6 +211,17 @@ class ClaudeCodeExecutor(BaseExecutor):
                 mode=request.mode,
             )
 
+        # Post-execution filesystem snapshot → changed_files.
+        changed_files: list[str] = []
+        try:
+            fs_after = snapshot_repo(request.repo_path)
+            changed_files = diff_repo(fs_before, fs_after)
+        except Exception:
+            pass
+
+        # Parse inner steps from stream-json output if available.
+        inner_steps = _parse_claude_inner_steps(stdout)
+
         duration = self._elapsed_ms(start)
         success = code == 0
         # Some Claude CLI versions don't support certain args — surface that
@@ -165,13 +239,14 @@ class ClaudeCodeExecutor(BaseExecutor):
             stdout=stdout,
             stderr=stderr,
             patch="",
-            changed_files=[],
+            changed_files=changed_files,
             duration_ms=duration,
             success=success,
             error_type=error_type,
             safety_flags=[],
             mode=request.mode,
             selected_backend_reason=f"claude CLI invoked (prompt_sha={short_hash(prompt, 16)})",
+            inner_steps=[s.model_dump() for s in inner_steps],
         )
 
 
