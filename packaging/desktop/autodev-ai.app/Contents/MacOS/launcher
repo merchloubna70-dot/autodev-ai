@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# autodev-ai macOS .app launcher stub
+# Double-click .app → this script → exec user-editable open.sh
+# The open.sh lives at ~/bin/autodev-ai-open.sh so users can edit it
+# without re-codesigning the .app bundle.
+
+OPEN_SH="$HOME/bin/autodev-ai-open.sh"
+
+if [ ! -f "$OPEN_SH" ]; then
+    osascript -e "display alert \"autodev-ai 启动失败\" message \"找不到 $OPEN_SH，请先运行 install.sh。\" as critical" 2>/dev/null
+    exit 1
+fi
+
+if [ ! -x "$OPEN_SH" ]; then
+    chmod +x "$OPEN_SH"
+fi
+
+exec "$OPEN_SH" "$@"
