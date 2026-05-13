@@ -1,0 +1,16 @@
+category,method_name,description
+core,5-whys,Repeatedly ask why to drill down to root causes — simple but powerful for understanding failures and finding root cause solutions
+core,critical-question,Use targeted Socratic questions to reveal hidden assumptions and guide discovery — excellent for teaching and self-discovery
+core,must-might-may,Categorise requirements or answers as must/might/may to converge on committed scope and defer nice-to-haves
+structural,ai-tree,Explore multiple reasoning paths simultaneously using a tree-of-thoughts structure then evaluate and select the best path
+structural,role-play,Assign specific roles (mentor/apprentice, customer/support) to surface hidden assumptions through perspective-taking
+structural,what-if,Explore alternative realities and scenarios to understand possibilities and implications — valuable for contingency planning
+risk,pre-mortem,Imagine future failure then work backwards to prevent it — powerful technique for risk mitigation before major launches
+risk,red-team,Adversarial attack-defend analysis to find vulnerabilities — critical for security testing and building robust solutions
+risk,devil-advocate,Play devil's advocate to stress-test ideas and find weaknesses — essential for overcoming groupthink and blind spots
+creative,SCAMPER,Apply seven creativity lenses (Substitute/Combine/Adapt/Modify/Put/Eliminate/Reverse) — systematic ideation for product innovation
+creative,reverse-brainstorm,Work backwards from desired outcome or deliberately brainstorm ways to cause failure to find prevention paths
+creative,analogous-reasoning,Combine two unrelated domains or use cross-domain analogies to find fresh approaches through unexpected cross-pollination
+epistemic,assumption-mapping,Identify and surface hidden assumptions underpinning a design or decision then classify by certainty and risk
+epistemic,knowledge-gap,Systematically identify what is unknown or uncertain before proceeding — essential for research planning
+epistemic,evidence-check,Validate claims by tracing back to primary sources and assessing evidence quality — crucial for high-stakes decisions
