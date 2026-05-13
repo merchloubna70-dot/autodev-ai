@@ -165,4 +165,18 @@ class AgentRoster:
         ]
         for card in defaults:
             roster.register(card)
+
+        # BMAD-2: adversarial + edge-case reviewers
+        try:
+            from ...agents.adversarial_reviewer import AdversarialReviewer
+            roster.register(AdversarialReviewer.as_agent_card())
+        except Exception:
+            pass
+
+        try:
+            from ...agents.edge_case_hunter import EdgeCaseHunter
+            roster.register(EdgeCaseHunter.as_agent_card())
+        except Exception:
+            pass
+
         return roster

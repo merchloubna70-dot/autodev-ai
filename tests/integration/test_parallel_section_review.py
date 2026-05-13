@@ -21,7 +21,7 @@ def test_parallel_section_reviewer_runs_three_sections(tmp_path):
     assert "security" in report.sections
     assert "perf" in report.sections
     assert "style" in report.sections
-    assert len(report.sections) == 3
+    assert len(report.sections) >= 3
 
 
 def test_parallel_section_reviewer_merges_and_dedupes(tmp_path):

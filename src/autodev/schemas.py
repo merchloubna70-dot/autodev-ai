@@ -1164,3 +1164,6 @@ class EditorialReport(BaseModel):
 # === MARKER BMAD6 CONFIG-PRFAQ ===
 
 # === MARKER BMAD7 SPRINT ===
+
+
+# === MARKER BMAD8 UX-SALLY ===

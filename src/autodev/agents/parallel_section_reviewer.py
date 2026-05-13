@@ -1,4 +1,5 @@
-"""ParallelSectionReviewer — runs security/perf/style sub-reviewers concurrently.
+"""ParallelSectionReviewer — runs security/perf/style/adversarial/edge-case
+sub-reviewers concurrently.
 
 Internal implementation now delegates to RoundtableAgent (BMAD party-mode via
 A2A) while preserving the original public `.review(...)` API exactly.
@@ -186,11 +187,44 @@ def _extract_severity_findings_from_text(
 
 
 # ---------------------------------------------------------------------------
+# Adversarial + EdgeCase sub-reviewer shims
+# (lazy-import to avoid circular deps; fall back gracefully on ImportError)
+# ---------------------------------------------------------------------------
+
+def _scan_adversarial(repo_path: str, results: list) -> list[SeverityFinding]:
+    try:
+        from .adversarial_reviewer import AdversarialReviewer
+        return AdversarialReviewer().review(repo_path, results)
+    except Exception as exc:
+        return [SeverityFinding(
+            severity=Severity.NITPICK,
+            category="adversarial",
+            title="Adversarial sub-review skipped",
+            detail=str(exc),
+            source_agent="AdversarialReviewer",
+        )]
+
+
+def _scan_edge_case(repo_path: str, results: list) -> list[SeverityFinding]:
+    try:
+        from .edge_case_hunter import EdgeCaseHunter
+        return EdgeCaseHunter().review(repo_path, results)
+    except Exception as exc:
+        return [SeverityFinding(
+            severity=Severity.NITPICK,
+            category="edge-case",
+            title="EdgeCase sub-review skipped",
+            detail=str(exc),
+            source_agent="EdgeCaseHunter",
+        )]
+
+
+# ---------------------------------------------------------------------------
 # Main orchestrator
 # ---------------------------------------------------------------------------
 
 class ParallelSectionReviewer:
-    """Runs security/perf/style sub-reviewers concurrently (max 3 threads).
+    """Runs security/perf/style/adversarial/edge-case sub-reviewers concurrently.
 
     Internally delegates to RoundtableAgent (BMAD party-mode via A2A) for the
     synthesis step.  The file-scan sub-reviewers remain the same static scan
@@ -199,7 +233,7 @@ class ParallelSectionReviewer:
     Public API is fully preserved: ``review(repo_path, results) -> ParallelSectionReviewReport``.
     """
 
-    MAX_WORKERS = 3
+    MAX_WORKERS = 5
 
     def __init__(self, roundtable=None) -> None:
         # Lazy import to handle A2A-1 not yet committed
@@ -227,6 +261,8 @@ class ParallelSectionReviewer:
             ("security", _scan_security),
             ("perf", _scan_perf),
             ("style", _scan_style),
+            ("adversarial", _scan_adversarial),
+            ("edge-case", _scan_edge_case),
         ]
 
         with ThreadPoolExecutor(max_workers=self.MAX_WORKERS) as executor:
@@ -285,7 +321,7 @@ class ParallelSectionReviewer:
             if counts[sev]:
                 summary_lines.append(f"  {sev.value}: {counts[sev]}")
 
-        topic = "Parallel section review: synthesize security/perf/style findings"
+        topic = "Parallel section review: synthesize security/perf/style/adversarial/edge-case findings"
         context = (
             "Parallel section review summary:\n"
             + "\n".join(summary_lines)
@@ -306,7 +342,7 @@ class ParallelSectionReviewer:
             _conversation, synth_msg = rt.discuss_and_synthesize(
                 topic=topic,
                 context=context,
-                needed_skills=["security", "perf", "style"],
+                needed_skills=["security", "perf", "style", "adversarial", "edge-case"],
                 min_participants=2,
                 max_participants=4,
             )

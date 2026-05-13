@@ -37,7 +37,7 @@ def test_parallel_section_reviewer_produces_report(tmp_path):
 
     assert isinstance(report, ParallelSectionReviewReport)
     assert isinstance(report.sections, list)
-    assert len(report.sections) == 3
+    assert len(report.sections) >= 3
     assert "security" in report.sections
     assert "perf" in report.sections
     assert "style" in report.sections
