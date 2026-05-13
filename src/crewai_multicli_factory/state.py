@@ -75,6 +75,9 @@ class RunState:
     def save_json(self, rel: str, obj: Any) -> Path:
         return write_json(self.root / rel, obj)
 
+    def save_router_metrics(self, summary) -> Path:
+        return self.save_json("execution/router_metrics.json", summary)
+
     def append_execution_call(self, result: ExecutionResult) -> None:
         append_jsonl(self.execution_calls_log, result)
         if result.backend == ExecutionBackend.CODEX or result.backend == ExecutionBackend.MOCK_CODEX:

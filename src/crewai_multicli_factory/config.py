@@ -36,6 +36,14 @@ class ClaudeCodeExecutorConfig:
 
 
 @dataclass
+class MockFixtureConfig:
+    """Configuration for fixture-based mock executor patches."""
+    enabled: bool = False
+    patches_dir: str | None = None
+    default_template: str = ""
+
+
+@dataclass
 class FactoryConfig:
     """Top-level factory configuration."""
 
@@ -53,6 +61,9 @@ class FactoryConfig:
     codex: CodexCliExecutorConfig = field(default_factory=CodexCliExecutorConfig)
     claude_code: ClaudeCodeExecutorConfig = field(default_factory=ClaudeCodeExecutorConfig)
     executor_policy: ExecutorSelectionPolicy = field(default_factory=ExecutorSelectionPolicy)
+
+    mock_codex_fixture: "MockFixtureConfig" = field(default_factory=lambda: MockFixtureConfig())
+    mock_claude_fixture: "MockFixtureConfig" = field(default_factory=lambda: MockFixtureConfig())
 
     @classmethod
     def from_env(cls) -> "FactoryConfig":

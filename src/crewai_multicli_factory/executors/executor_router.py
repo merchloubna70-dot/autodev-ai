@@ -14,13 +14,17 @@ from dataclasses import dataclass
 
 from ..config import FactoryConfig
 from ..schemas import (
+    BudgetHint,
     ExecutionBackend,
     ExecutionRequest,
     ExecutionResult,
+    ExecutorMetricSample,
     ExecutorSelectionPolicy,
     Language,
     RiskLevel,
+    RouterMetricsSummary,
     TaskType,
+    _BACKEND_COST_PER_KTOKEN_CENTS,
 )
 from .base_executor import BaseExecutor
 from .claude_code_executor import ClaudeCodeExecutor
@@ -70,6 +74,18 @@ class ExecutorRouter:
         self.mock_codex = mock_codex or MockCodexExecutor()
         self.mock_claude = mock_claude or MockClaudeExecutor()
         self.allow_mock = self.config.allow_mock_executor if allow_mock is None else allow_mock
+        self.metrics: RouterMetricsSummary = RouterMetricsSummary()
+        self.budget: BudgetHint = BudgetHint()
+
+    # ------------------------------------------------------------------
+    # Budget / Metrics API
+    # ------------------------------------------------------------------
+
+    def set_budget(self, hint: BudgetHint) -> None:
+        self.budget = hint
+
+    def export_metrics(self) -> dict:
+        return self.metrics.model_dump(mode="json")
 
     # ------------------------------------------------------------------
     # Decision
@@ -124,16 +140,27 @@ class ExecutorRouter:
             if backend in (ExecutionBackend.CODEX, ExecutionBackend.CLAUDE_CODE):
                 return backend
 
-        # Fixed mappings per spec
-        if ttype in (TaskType.ARCHITECTURE, TaskType.REFACTOR, TaskType.SECURITY,
-                     TaskType.RELEASE, TaskType.DOCS):
+        # Fixed mappings per spec — these are NOT subject to budget bias
+        _claude_locked = {TaskType.ARCHITECTURE, TaskType.SECURITY, TaskType.RELEASE, TaskType.DOCS}
+        if ttype in _claude_locked:
             return ExecutionBackend.CLAUDE_CODE
 
+        # REFACTOR normally goes to Claude but may be budget-biased below
         if ttype == TaskType.SCAFFOLD:
             return ExecutionBackend.CODEX
 
         if ttype == TaskType.TEST:
             return ExecutionBackend.CODEX
+
+        # Budget bias check: applies to FEATURE, INTEGRATION, REFACTOR, BUGFIX
+        _budget_biasable = {TaskType.FEATURE, TaskType.INTEGRATION, TaskType.REFACTOR, TaskType.BUGFIX}
+        if ttype in _budget_biasable:
+            if self._budget_prefers_codex():
+                return ExecutionBackend.CODEX
+
+        # Original REFACTOR rule (post-bias — only reached when budget not biasing)
+        if ttype == TaskType.REFACTOR:
+            return ExecutionBackend.CLAUDE_CODE
 
         if ttype == TaskType.INTEGRATION:
             return ExecutionBackend.CLAUDE_CODE if cross_language else ExecutionBackend.CODEX
@@ -148,6 +175,17 @@ class ExecutorRouter:
 
         # Default: codex for small/cheap, claude for everything else
         return ExecutionBackend.CODEX
+
+    def _budget_prefers_codex(self) -> bool:
+        """Return True if budget hint says to prefer cheaper (Codex) backend."""
+        if self.budget.prefer_cheaper_backend:
+            return True
+        if self.budget.max_cost_cents is not None:
+            remaining = self.budget.max_cost_cents - self.metrics.total_estimated_cost_cents
+            _avg_call_cost_cents = 1.0
+            if remaining < _avg_call_cost_cents:
+                return True
+        return False
 
     def _maybe_mock(self, *, preferred: ExecutionBackend, reason: str) -> RouterDecision:
         """Substitute a mock executor if the preferred CLI is unavailable."""
@@ -227,6 +265,24 @@ class ExecutorRouter:
         result.selected_backend_reason = decision.reason
         result.fallback_used = decision.fallback_used
         result.mock_used = decision.mock_used or result.mock_used
+
+        # Record telemetry
+        estimated_tokens = (len(request.prompt) // 4) + (len(result.stdout or "") // 4)
+        rate = _BACKEND_COST_PER_KTOKEN_CENTS.get(result.backend, 0.0)
+        estimated_cost_cents = (estimated_tokens / 1000) * rate
+        sample = ExecutorMetricSample(
+            task_id=request.task_id,
+            milestone_id=request.milestone_id,
+            backend=result.backend,
+            mock_used=result.mock_used,
+            fallback_used=result.fallback_used,
+            duration_ms=result.duration_ms,
+            estimated_tokens=estimated_tokens,
+            estimated_cost_cents=estimated_cost_cents,
+            success=result.success,
+        )
+        self.metrics.add(sample)
+
         return result, decision
 
     def _executor_for(self, backend: ExecutionBackend) -> BaseExecutor:
