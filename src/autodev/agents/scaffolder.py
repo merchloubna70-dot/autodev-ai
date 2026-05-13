@@ -20,6 +20,9 @@ description = "{name} scaffolded by autodev"
 requires-python = ">=3.10"
 dependencies = []
 
+[project.scripts]
+{pkg} = "{pkg}.cli:main"
+
 [project.optional-dependencies]
 dev = ["pytest>=8.0"]
 
@@ -31,6 +34,43 @@ addopts = "-q"
 testpaths = ["tests"]
 pythonpath = ["src"]
 """
+
+PY_INIT_TEMPLATE = '''\
+"""{pkg} package."""
+from .cli import main
+
+__all__ = ["main"]
+'''
+
+PY_CLI_TEMPLATE = '''\
+"""{pkg} CLI entrypoint."""
+from __future__ import annotations
+import sys
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Entry point. Implement me."""
+    raise NotImplementedError("{pkg} CLI is not yet implemented")
+
+
+if __name__ == "__main__":
+    raise SystemExit(main(sys.argv[1:]))
+'''
+
+PY_CORE_TEMPLATE = '''\
+"""{pkg} core logic — implement here, not in __init__.py."""
+from __future__ import annotations
+'''
+
+PY_SMOKE_TEST_TEMPLATE = '''\
+"""Smoke import test for {pkg}."""
+from __future__ import annotations
+
+
+def test_cli_importable() -> None:
+    from {pkg}.cli import main  # noqa: F401
+    assert callable(main)
+'''
 
 
 class ScaffolderAgent:
@@ -46,8 +86,16 @@ class ScaffolderAgent:
         dirs: list[str] = []
         for lang in languages:
             if lang == Language.PYTHON:
-                pkg = project_name.replace("-", "_")
-                files += ["pyproject.toml", "README.md", f"src/{pkg}/__init__.py", "tests/__init__.py"]
+                pkg = project_name.replace("-", "_").replace(".", "_")
+                files += [
+                    "pyproject.toml",
+                    "README.md",
+                    f"src/{pkg}/__init__.py",
+                    f"src/{pkg}/cli.py",
+                    f"src/{pkg}/core.py",
+                    "tests/__init__.py",
+                    "tests/test_smoke.py",
+                ]
                 dirs += [f"src/{pkg}", "tests"]
             elif lang == Language.RUST:
                 files += ["Cargo.toml", "src/lib.rs"]
@@ -60,14 +108,22 @@ class ScaffolderAgent:
     def apply(self, *, plan: ScaffoldPlan, repo_path: str, mode: PipelineMode) -> list[str]:
         patches: list[FilePatch] = []
         name = plan.project_name
-        pkg = name.replace("-", "_")
+        pkg = name.replace("-", "_").replace(".", "_")
         for f in plan.files_to_create:
             if f == "pyproject.toml":
                 patches.append(FilePatch(path=f, new_content=PY_PYPROJECT_TEMPLATE.format(name=name, pkg=pkg), create_only=True))
             elif f == "README.md":
                 patches.append(FilePatch(path=f, new_content=f"# {name}\n\nScaffolded by autodev.\n", create_only=True))
+            elif f == f"src/{pkg}/__init__.py":
+                patches.append(FilePatch(path=f, new_content=PY_INIT_TEMPLATE.format(pkg=pkg), create_only=True))
             elif f.endswith("__init__.py"):
                 patches.append(FilePatch(path=f, new_content="", create_only=True))
+            elif f == f"src/{pkg}/cli.py":
+                patches.append(FilePatch(path=f, new_content=PY_CLI_TEMPLATE.format(pkg=pkg), create_only=True))
+            elif f == f"src/{pkg}/core.py":
+                patches.append(FilePatch(path=f, new_content=PY_CORE_TEMPLATE.format(pkg=pkg), create_only=True))
+            elif f == "tests/test_smoke.py":
+                patches.append(FilePatch(path=f, new_content=PY_SMOKE_TEST_TEMPLATE.format(pkg=pkg), create_only=True))
             elif f == "Cargo.toml":
                 content = (
                     f'[package]\nname = "{name}"\nversion = "0.1.0"\nedition = "2021"\n'

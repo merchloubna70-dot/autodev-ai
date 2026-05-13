@@ -63,12 +63,26 @@ class TaskPlanner:
                     ))
             elif m.milestone_id == "M2":
                 for lang in languages:
+                    m2_description = (
+                        f"Implement core domain entities and business logic with unit tests in {lang.value}."
+                    )
+                    m2_target: list[str] | None = None
+                    if lang == Language.PYTHON and ctx and ctx.product_name:
+                        slug = ctx.product_name.replace("-", "_").replace(".", "_")
+                        m2_target = [f"src/{slug}/core.py", f"src/{slug}/cli.py"]
+                        m2_description += (
+                            f" Implement the {ctx.product_name} package by filling"
+                            f" {slug}/core.py and {slug}/cli.py under src/."
+                            f" Do NOT modify pyproject.toml;"
+                            f" do NOT write code into src/__init__.py."
+                        )
                     tasks.append(self._mk(
                         m, len(tasks) + 1,
                         f"Implement core domain in {lang.value}",
-                        f"Implement core domain entities and business logic with unit tests in {lang.value}.",
+                        m2_description,
                         TaskType.FEATURE, RiskLevel.MEDIUM, ExecutionBackend.AUTO,
                         language=lang,
+                        target=m2_target,
                         context=ctx,
                     ))
             elif m.milestone_id == "M3":
