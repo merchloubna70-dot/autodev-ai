@@ -66,3 +66,30 @@ JSON or JSONL record; `RunState.load(...)` rehydrates the run from disk so
 - missing CLI when `allow_mock_executor=false` ⇒ executor returns
   `error_type=cli_missing_fail_closed`, run continues but the failure is
   recorded.
+
+## A2A integration
+
+`RoundtableAgent` implements the BMAD party-mode invariant: multiple independent
+agent voices are dispatched in parallel over A2A, each receiving the same task
+but running with its own `system_prompt` in an isolated subprocess.
+
+```mermaid
+flowchart LR
+  RT[RoundtableAgent]
+  RT --> AR[AgentRoster]
+  AR --> C1[AgentCard: architect]
+  AR --> C2[AgentCard: security]
+  AR --> C3[AgentCard: performance]
+  AR --> C4[AgentCard: ux / style]
+  RT --> AC[A2AClient]
+  AC -->|card.transport == local-shell| LS[LocalShellTransport\nclaude CLI subprocess]
+  AC -->|card.transport == mock| MT[MockTransport\nsha256 keyed on card.name]
+  AC -->|card.transport == a2a-http\n⚠ future Step 4| HT[A2AHttpTransport\nHTTP POST to card.endpoint]
+  LS --> SUB[claude CLI subprocesses\neach with own system_prompt]
+```
+
+Key properties:
+- `AgentRoster.default()` seeds five specialist cards (architect/opus, security/sonnet, performance/sonnet, ux/sonnet, style/haiku).
+- `A2AClient` caches transport instances and falls back to `MockTransport` for unknown transport names.
+- `MockTransport` keys its deterministic response on `sha256(prompt + card_name)` — different cards give different mock answers on the same prompt, proving no roleplay convergence.
+- `ParallelSectionReviewer` delegates its synthesis step to `RoundtableAgent` while keeping its file-scan sub-reviewers unchanged.

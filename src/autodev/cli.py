@@ -553,5 +553,53 @@ def review_cmd(
     typer.echo(_json.dumps({"success": True, "run_id": run_id, "decision": sentinel_name, "sentinel": str(sentinel)}))
 
 
+# ---------------------------------------------------------------------------
+# roundtable
+# ---------------------------------------------------------------------------
+
+
+@app.command("roundtable")
+def roundtable_cmd(
+    topic: str = typer.Option(..., "--topic", help="Discussion topic for the roundtable"),
+    skills: str = typer.Option("architecture,security,perf", "--skills", help="Comma-separated skill names to recruit"),
+    max_participants: int = typer.Option(4, "--max-participants", help="Maximum number of agent participants"),
+    repo_path: str = typer.Option(".", "--repo-path", help="Repo path (used for output directory)"),
+) -> None:
+    """Run a BMAD party-mode roundtable: N independent agents discuss a topic and synthesize."""
+    import json as _json
+    import os
+
+    from .agents.roundtable import RoundtableAgent
+
+    os.environ.setdefault("FACTORY_FORCE_MOCK", "1")
+
+    skill_list = [s.strip() for s in skills.split(",") if s.strip()]
+
+    rt = RoundtableAgent()
+    conversation, synth_msg = rt.discuss_and_synthesize(
+        topic=topic,
+        needed_skills=skill_list,
+        max_participants=max_participants,
+    )
+
+    # Collect synthesized text
+    synth_text = "\n".join(
+        part.text for part in synth_msg.parts if part.kind == "text" and part.text
+    ).strip()
+
+    typer.echo(synth_text or "(no synthesis text)")
+
+    # Write full conversation JSON to .dev-factory/roundtables/<conversation_id>.json
+    out_dir = Path(repo_path) / ".dev-factory" / "roundtables"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out_file = out_dir / f"{conversation.conversation_id}.json"
+    payload = {
+        "conversation": conversation.model_dump(mode="json"),
+        "synthesis": synth_msg.model_dump(mode="json"),
+    }
+    out_file.write_text(_json.dumps(payload, indent=2), encoding="utf-8")
+    typer.echo(f"wrote {out_file}")
+
+
 if __name__ == "__main__":  # pragma: no cover
     app()
