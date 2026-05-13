@@ -565,13 +565,15 @@ def roundtable_cmd(
     max_participants: int = typer.Option(4, "--max-participants", help="Maximum number of agent participants"),
     repo_path: str = typer.Option(".", "--repo-path", help="Repo path (used for output directory)"),
 ) -> None:
-    """Run a BMAD party-mode roundtable: N independent agents discuss a topic and synthesize."""
+    """Run a BMAD party-mode roundtable: N independent agents discuss a topic and synthesize.
+
+    By default invokes REAL `claude` CLI subprocesses per AgentCard. Export
+    FACTORY_FORCE_MOCK=1 in the environment to force deterministic mock
+    output (CI / testing without spending tokens).
+    """
     import json as _json
-    import os
 
     from .agents.roundtable import RoundtableAgent
-
-    os.environ.setdefault("FACTORY_FORCE_MOCK", "1")
 
     skill_list = [s.strip() for s in skills.split(",") if s.strip()]
 
