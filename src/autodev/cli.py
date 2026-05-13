@@ -834,5 +834,78 @@ def design_ux_cmd(
 
 # --- END BMAD-8 UX-DESIGN ---
 
+# --- BMAD-10 INVESTIGATE ---
+
+
+@app.command("investigate")
+def investigate_cmd(
+    input_token: str = typer.Option(..., "--input", help="ticket-id / log path / error msg / code area / problem description"),
+    repo_path: str = typer.Option(".", "--repo-path"),
+) -> None:
+    """Open a structured case file for an investigation."""
+    from .flows.investigation_flow import InvestigationFlow, InvestigationInput
+
+    flow = InvestigationFlow()
+    case = flow.run(InvestigationInput(input_token=input_token, repo_path=repo_path))
+    typer.echo(f"case_id={case.case_id} slug={case.slug} mode={case.mode}")
+    if case.file_path:
+        typer.echo(f"file={case.file_path}")
+    typer.echo(f"evidence_count={len(case.evidence)}")
+
+
+# --- END BMAD-10 INVESTIGATE ---
+
+# --- BMAD-11 PROJECT-CONTEXT ---
+
+
+@app.command("generate-context")
+def generate_context_cmd(
+    repo_path: str = typer.Option(".", "--repo-path"),
+    project_brief: Optional[str] = typer.Option(None, "--project-brief"),
+    product_name: Optional[str] = typer.Option(None, "--product-name"),
+) -> None:
+    """Generate _autodev/project-context.md from repo + optional brief."""
+    from .flows.project_context_flow import ProjectContextFlow, ProjectContextInput
+
+    inp = ProjectContextInput(
+        repo_path=repo_path,
+        product_name=product_name or "",
+        brief_path=project_brief,
+    )
+    flow = ProjectContextFlow()
+    ctx = flow.run(inp)
+    typer.echo(f"[generate-context] product={ctx.product_name} rules={len(ctx.rules)}")
+    typer.echo(f"  md  : {ctx.file_path}")
+    if ctx.file_path:
+        import pathlib
+        json_path = pathlib.Path(ctx.file_path).with_suffix(".json")
+        typer.echo(f"  json: {json_path}")
+
+
+# --- END BMAD-11 PROJECT-CONTEXT ---
+
+# --- BMAD-13 DOCUMENT-PROJECT ---
+
+
+@app.command("document-project")
+def document_project_cmd(
+    repo_path: str = typer.Option(".", "--repo-path"),
+    languages: str = typer.Option("python", "--languages"),
+) -> None:
+    """Generate brownfield AI-onboarding docs from existing repo."""
+    from .flows.brownfield_doc_flow import BrownfieldDocFlow, BrownfieldDocInput
+
+    langs = _parse_languages(languages)
+    inp = BrownfieldDocInput(repo_path=repo_path, languages=langs)
+    flow = BrownfieldDocFlow()
+    doc = flow.run(inp)
+    typer.echo(f"[document-project] repo={doc.repo_path} sections={len(doc.sections)}")
+    typer.echo(f"  output_dir: {doc.output_dir}")
+    for section in doc.sections:
+        typer.echo(f"  - {section.name}: {section.file_path}")
+
+
+# --- END BMAD-13 DOCUMENT-PROJECT ---
+
 if __name__ == "__main__":  # pragma: no cover
     app()

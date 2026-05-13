@@ -39,3 +39,7 @@ from .adversarial_reviewer import AdversarialReviewer  # noqa: F401
 from .edge_case_hunter import EdgeCaseHunter  # noqa: F401
 from .editorial_reviewer import EditorialReviewer  # noqa: F401
 from .ux_designer import UXDesignerAgent  # noqa: F401
+from .investigator import InvestigatorAgent  # noqa: F401
+from .context_generator import ContextGeneratorAgent  # noqa: F401  # BMAD-11
+from .elicitation_methods import ElicitationMethodsAgent  # noqa: F401  # BMAD-14
+from .document_project import DocumentProjectAgent  # noqa: F401  # BMAD-13

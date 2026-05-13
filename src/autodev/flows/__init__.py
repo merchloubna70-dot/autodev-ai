@@ -17,3 +17,6 @@ except Exception:  # pragma: no cover — crewai may not be installed
     pass
 
 from .ux_design_flow import UXDesignFlow  # noqa: F401
+from .investigation_flow import InvestigationFlow  # noqa: F401
+from .project_context_flow import ProjectContextFlow  # noqa: F401  # BMAD-11
+from .brownfield_doc_flow import BrownfieldDocFlow  # noqa: F401  # BMAD-13
