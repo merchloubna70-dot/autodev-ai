@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "autodev-ai"
-version = "0.1.0a3"
+version = "0.1.0a4"
 description = "AI-driven software factory: CrewAI + Codex CLI + Claude Code CLI with multi-CLI router, A2A roundtable, MCP server, scale-adaptive delivery from brief to release-ready project."
 keywords = ["ai", "agent", "codex", "claude", "crewai", "a2a", "mcp", "software-factory"]
 readme = "README.md"

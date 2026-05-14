@@ -1,17 +1,17 @@
 {
   "gate": "coverage_threshold",
-  "ran_at": "2026-05-14T10:41:37Z",
+  "ran_at": "2026-05-14T12:32:51Z",
   "thresholds": {
     "overall": 80.0,
     "release": 85.0,
     "security": 90.0
   },
-  "overall_pct": 86.1,
+  "overall_pct": 91.8,
   "checks": [
     {
       "name": "overall",
       "status": "pass",
-      "actual": 86.1,
+      "actual": 91.8,
       "threshold": 80.0,
       "detail": "line+branch combined coverage from coverage.json totals"
     },
@@ -24,15 +24,15 @@
     },
     {
       "name": "release::src/autodev/release_readiness_gate.py",
-      "status": "exempt",
-      "actual": null,
+      "status": "pass",
+      "actual": 96.7,
       "threshold": 85.0,
-      "detail": "thin shim \u2014 script-form gate has its own 37 tests"
+      "detail": ""
     },
     {
       "name": "release::src/autodev/mcp_server/server.py",
       "status": "pass",
-      "actual": 99.1,
+      "actual": 98.7,
       "threshold": 85.0,
       "detail": ""
     },
@@ -46,7 +46,7 @@
     {
       "name": "release::src/autodev/adapters/a2a/server.py",
       "status": "pass",
-      "actual": 87.1,
+      "actual": 98.2,
       "threshold": 85.0,
       "detail": ""
     },
@@ -115,9 +115,9 @@
     }
   ],
   "summary": {
-    "pass": 14,
+    "pass": 15,
     "fail": 0,
-    "exempt": 1,
+    "exempt": 0,
     "missing": 0
   },
   "strict_pass": true

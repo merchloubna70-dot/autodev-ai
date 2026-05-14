@@ -5,6 +5,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.1.0a4] — 2026-05-14 (Pre-Release)
+
 ### Added
 
 - SBOM workflow (CycloneDX + SPDX on tag push) — `.github/workflows/sbom.yml`
@@ -15,6 +17,21 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - cosign keyless image signing (Sigstore) on every tag push — `ghcr.io/merchloubna70-dot/autodev-ai` images now carry detached Fulcio OIDC signatures recorded in the Rekor transparency log; see `docs/release/cosign_verification.md`.
 - SLSA L3 provenance attestation (slsa-framework generator) on tag push — `.github/workflows/slsa.yml` produces an in-toto attestation backed by GitHub Actions OIDC for every wheel/sdist; see `docs/release/slsa_verification.md`.
 - **MCP per-caller authentication with scope-based authorization + per-caller audit logs (backward compatible with legacy shared-token mode)** — new `src/autodev/mcp_server/identity.py` introduces `CallerIdentity`, `IdentityRegistry`, and `requires_scope`. Set `AUTODEV_MCP_IDENTITIES` to a JSON registry file to activate per-caller mode; each caller gets its own hashed token and scopes (`mcp:read` / `mcp:write` / `mcp:apply`). Apply mode is now a **triple gate**: mcp:apply scope + `AUTODEV_MCP_ALLOW_APPLY=1` env + `allow_apply=true` request flag. Audit log entries now include a `caller_id` field (legacy mode records `"legacy_shared_token"`). Fully backward compatible: unset `AUTODEV_MCP_IDENTITIES` keeps existing single-token or open-stdio behavior.
+- r10 coverage backfills: 9 modules ranging from `tui/dashboard.py` (0%→99%) and `tui/widgets.py` (0%→100%) through `executors/{claude_code,codex_cli,_fs_observer}.py` (all to 100%) to `release_readiness_gate.py` (78%→97%), `adapters/a2a/{handlers,server}.py`, `mcp_client.py`, and `flows/sprint_flow.py`. Test count 1597 → 2026 (+429 tests). Overall coverage 80.5% → 91.8%.
+- CI composite action `.github/actions/setup-autodev/action.yml` — single source of truth for the Python env across `test.yml` and `lint.yml`; prevents extras drift.
+
+### Fixed
+
+- `tui/dashboard.py`: `action_quit` is now `async` to match `textual.App` override semantics. Caught by R11's strict mypy (no `--ignore-missing-imports`) inside `release_readiness_gate`.
+
+### Removed
+
+- `coverage_gate.py` stale exemptions (3): `release_readiness_gate.py` (no longer a thin shim; covered to 97% by r10(a)), `tui/dashboard.py` and `tui/widgets.py` (`[tui]` extra now installed in CI; both covered ≥99% by r10(c)).
+
+### Internal
+
+- CI action bumps via Dependabot: `actions/setup-python` v5 → v6 (Node.js 24 ready), `docker/login-action` v3 → v4, `docker/build-push-action` v5 → v7, `docker/setup-qemu-action` v3 → v4, `softprops/action-gh-release` v2 → v3.
+- 9 commits recovered from dead `worktree-agent-*` worktrees (3 r6 supply-chain + 6 r10 coverage tracks) using fresh-base cherry-pick instead of rebase.
 ---
 
 ## [0.1.0a3] — 2026-05-14 (Pre-Release)

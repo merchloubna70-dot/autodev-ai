@@ -1,48 +1,48 @@
 {
   "gate": "release_readiness",
-  "ran_at": "2026-05-14T06:35:34+00:00",
+  "ran_at": "2026-05-14T12:35:54+00:00",
   "overall": "pass",
   "checks": [
     {
       "name": "package_metadata_valid",
       "status": "pass",
-      "detail": "name=autodev-ai version=0.1.0a1 ep=autodev.cli:app",
-      "duration_ms": 1.8,
+      "detail": "name=autodev-ai version=0.1.0a4 ep=autodev.cli:app",
+      "duration_ms": 1.2,
       "evidence": "/Users/macworkers/autodev/pyproject.toml"
     },
     {
       "name": "cli_help_works",
       "status": "pass",
-      "detail": "autodev CLI --help via python -m: exit 0",
-      "duration_ms": 229.1,
-      "evidence": ""
+      "detail": "autodev --help exit 0",
+      "duration_ms": 455.3,
+      "evidence": "autodev --help"
     },
     {
       "name": "pytest_evidence",
       "status": "pass",
       "detail": "Smoke pytest passed:\n........                                                                 [100%]\n",
-      "duration_ms": 331.5,
+      "duration_ms": 295.6,
       "evidence": "/Users/macworkers/autodev/tests/unit/test_prfaq_style.py"
     },
     {
       "name": "ruff_passes",
       "status": "pass",
       "detail": "ruff check . exit 0",
-      "duration_ms": 66.5,
+      "duration_ms": 25.9,
       "evidence": ""
     },
     {
       "name": "mypy_passes",
       "status": "pass",
       "detail": "mypy src/autodev exit 0",
-      "duration_ms": 221.4,
+      "duration_ms": 142.6,
       "evidence": ""
     },
     {
       "name": "docs_exist",
       "status": "pass",
       "detail": "README + 5/5 doc paths present",
-      "duration_ms": 0.2,
+      "duration_ms": 0.1,
       "evidence": "/Users/macworkers/autodev/docs/quickstart.md, /Users/macworkers/autodev/docs/architecture.md, /Users/macworkers/autodev/docs/faq.md, /Users/macworkers/autodev/docs/tutorials, /Users/macworkers/autodev/examples/README.md"
     },
     {
@@ -55,15 +55,15 @@
     {
       "name": "a2a_smoke_path_exists",
       "status": "pass",
-      "detail": "14 a2a/roundtable test files found",
-      "duration_ms": 2.4,
+      "detail": "16 a2a/roundtable test files found",
+      "duration_ms": 2.7,
       "evidence": "tests/integration/test_a2a_http_roundtrip.py, tests/integration/test_a2a_roundtable_e2e.py, tests/integration/test_a2a_server_cli.py, tests/integration/test_cli_roundtable.py, tests/integration/test_parallel_review_via_roundtable.py"
     },
     {
       "name": "mock_executor_works",
       "status": "pass",
-      "detail": "FACTORY_FORCE_MOCK=1 /Users/macworkers/autodev/.venv/bin/python -m autodev.cli exit 0",
-      "duration_ms": 186.2,
+      "detail": "FACTORY_FORCE_MOCK=1 autodev classify-input --input exit 0",
+      "duration_ms": 390.9,
       "evidence": ""
     },
     {
@@ -84,21 +84,21 @@
       "name": "release_blockers_recorded",
       "status": "pass",
       "detail": "Release evidence files found: ['autodev_release_hardening_round.md', 'autodev_release_hardening_round.json', 'autodev_release_readiness_gate.json', 'autodev_release_readiness_gate.md']",
-      "duration_ms": 0.6,
+      "duration_ms": 0.8,
       "evidence": "/Users/macworkers/autodev/docs/validation/autodev_release_hardening_round.md"
     },
     {
       "name": "r2_version_consistency",
       "status": "pass",
-      "detail": "version consistent: 0.1.0a1",
-      "duration_ms": 49.0,
+      "detail": "version consistent: 0.1.0a4",
+      "duration_ms": 33.8,
       "evidence": "/Users/macworkers/autodev/pyproject.toml"
     },
     {
       "name": "r2_license_file_present",
       "status": "pass",
       "detail": "LICENSE present with expected MIT content",
-      "duration_ms": 0.1,
+      "duration_ms": 0.2,
       "evidence": "/Users/macworkers/autodev/LICENSE"
     },
     {
@@ -111,9 +111,9 @@
     {
       "name": "r2_wheel_version_works",
       "status": "pass",
-      "detail": "wheel version '0.1.0a1' matches pyproject '0.1.0a1'",
-      "duration_ms": 0.4,
-      "evidence": "/Users/macworkers/autodev/dist/autodev_ai-0.1.0a1-py3-none-any.whl"
+      "detail": "wheel version '0.1.0a4' matches pyproject '0.1.0a4'",
+      "duration_ms": 0.5,
+      "evidence": "/Users/macworkers/autodev/dist/autodev_ai-0.1.0a4-py3-none-any.whl"
     },
     {
       "name": "r2_a2a_http_ssrf_hardened",
@@ -160,8 +160,8 @@
     {
       "name": "r2_macos_info_plist_version_match",
       "status": "pass",
-      "detail": "Info.plist CFBundleShortVersionString='0.1.0a1' contains '0.1.0'",
-      "duration_ms": 2.9,
+      "detail": "Info.plist CFBundleShortVersionString='0.1.0a3' contains '0.1.0'",
+      "duration_ms": 1.0,
       "evidence": "/Users/macworkers/autodev/packaging/desktop/autodev-ai.app/Contents/Info.plist"
     },
     {
@@ -175,14 +175,14 @@
       "name": "r3_mypy_clean",
       "status": "pass",
       "detail": "mypy src/autodev: 0 errors",
-      "duration_ms": 111.7,
-      "evidence": "Success: no issues found in 174 source files"
+      "duration_ms": 102.8,
+      "evidence": "Success: no issues found in 176 source files"
     },
     {
       "name": "r3_ruff_clean",
       "status": "pass",
       "detail": "ruff check .: 0 errors",
-      "duration_ms": 29.1,
+      "duration_ms": 24.2,
       "evidence": "All checks passed!"
     },
     {
@@ -216,21 +216,21 @@
     {
       "name": "r3_changelog_present",
       "status": "pass",
-      "detail": "CHANGELOG.md exists (4871 chars), mentions 0.1.0a1",
+      "detail": "CHANGELOG.md exists (11912 chars), mentions 0.1.0a1",
       "duration_ms": 0.0,
       "evidence": ""
     },
     {
       "name": "r3_configuration_doc_present",
       "status": "pass",
-      "detail": "configuration.md exists (9098 chars)",
+      "detail": "configuration.md exists (9575 chars)",
       "duration_ms": 0.0,
       "evidence": ""
     },
     {
       "name": "r3_troubleshooting_doc_present",
       "status": "pass",
-      "detail": "troubleshooting.md exists (8722 chars)",
+      "detail": "troubleshooting.md exists (8626 chars)",
       "duration_ms": 0.0,
       "evidence": ""
     },
@@ -244,7 +244,7 @@
     {
       "name": "r3_homebrew_publish_time_blocker_clean",
       "status": "pass",
-      "detail": "Homebrew formula is honestly BLOCKED with placeholder + checklist",
+      "detail": "Homebrew formula state B: post-publish backfilled (real sha256 a137ba2c7f94... + canonical PyPI url + checklist)",
       "duration_ms": 0.0,
       "evidence": ""
     },

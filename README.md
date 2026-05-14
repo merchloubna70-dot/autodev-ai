@@ -18,28 +18,28 @@ audit trail, A2A agent networking, MCP server support, and sprint-mode planning.
 
 ## Install
 
-> **Status**: alpha — [`v0.1.0a3`](https://github.com/merchloubna70-dot/autodev-ai/releases/tag/v0.1.0a3) on GitHub Releases.
+> **Status**: alpha — [`v0.1.0a4`](https://github.com/merchloubna70-dot/autodev-ai/releases/tag/v0.1.0a4) on GitHub Releases.
 
 From PyPI (recommended):
 
 ```bash
-pip install --pre autodev-ai==0.1.0a3
+pip install --pre autodev-ai==0.1.0a4
 # or latest pre-release:
 pip install --pre autodev-ai
 ```
 
-### Limitations (Alpha)
+### Status (Alpha)
 
-This is a public alpha. The following are **not yet available**:
+This is a public alpha. v0.1.0a4 closed most of the supply-chain and coverage gaps that were open at a1:
 
-| Limitation | Detail |
-|------------|--------|
-| **SLSA L3 absent** | Build provenance attestations are not generated; supply-chain hardening is post-alpha. |
-| **SBOM absent** | No Software Bill of Materials is produced for releases. |
-| **cosign not signed** | Docker images are not signed; `cosign verify` will fail. |
-| **MCP per-caller auth absent** | The MCP server has no per-caller authentication tokens; any process that can reach the stdio server has full tool access. |
-| **Coverage 80.5%** | Line + branch coverage is 80.5%, below the 90% production target. |
-| **Enterprise use blocked** | Production or enterprise deployments are not supported. See [`docs/release_notes/v0.1.0a1.md`](docs/release_notes/v0.1.0a1.md) for the full scope statement. |
+| Area | Status |
+|---|---|
+| **SLSA L3 provenance** | Live — `slsa-framework/slsa-github-generator` attests every wheel/sdist on tag push (see `docs/release/slsa_verification.md`). |
+| **SBOM** | Live — CycloneDX 1.5 + SPDX 2.3 attached to every Release (see `docs/release/sbom_consumption.md`). |
+| **cosign image signing** | Live — keyless Fulcio OIDC + Rekor for `ghcr.io/merchloubna70-dot/autodev-ai` (see `docs/release/cosign_verification.md`). |
+| **MCP per-caller auth** | Live — `IdentityRegistry` with scope-based RBAC and triple-gate apply mode (see `docs/mcp_server_per_caller_auth.md`). |
+| **Coverage** | 91.8% line+branch; all 11 release-critical modules ≥85%, all 3 security-critical modules ≥90%. |
+| **Enterprise use** | Still alpha — production deployments are not yet supported. See [`docs/release_notes/v0.1.0a1.md`](docs/release_notes/v0.1.0a1.md) for the full scope statement. |
 
 From source:
 
@@ -52,8 +52,8 @@ pip install -e ".[dev]"
 Docker (codex + claude pre-installed, ~2 GB):
 
 ```bash
-docker pull ghcr.io/merchloubna70-dot/autodev-ai:0.1.0a3
-docker run --rm ghcr.io/merchloubna70-dot/autodev-ai:0.1.0a3 --help
+docker pull ghcr.io/merchloubna70-dot/autodev-ai:0.1.0a4
+docker run --rm ghcr.io/merchloubna70-dot/autodev-ai:0.1.0a4 --help
 ```
 
 ### Homebrew (macOS / Linux)
