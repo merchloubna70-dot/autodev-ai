@@ -1433,5 +1433,89 @@ def deliver_multi(
     )
 
 
+# --- REVERSE-DOC WATCHER ---
+
+
+@app.command("reverse-doc")
+def reverse_doc_cmd(
+    src_path: str = typer.Option(".", "--watch", help="Source directory to document (and watch when --watch is given)"),
+    out: str = typer.Option("docs/_auto", "--out", help="Output directory for generated docs"),
+    debounce: float = typer.Option(1.0, "--debounce", help="Debounce window in seconds (watch mode only)"),
+    languages: str = typer.Option("python", "--languages", help="Comma-separated language hints"),
+    watch: bool = typer.Option(False, "--watch/--no-watch", help="Stay running and re-doc on file changes", hidden=True),
+) -> None:
+    """Generate brownfield docs from <src_path>; optionally watch for changes.
+
+    Single-pass (default): document once and exit.
+
+    Watch mode (--watch): stay foreground and re-run on every debounced batch
+    of file-system changes.  Press Ctrl-C to stop.
+    """
+    # NOTE: Typer maps --watch to both the src_path option and the boolean flag;
+    # the boolean --watch/--no-watch takes precedence when no value follows --watch.
+    # We therefore accept src_path via --watch <dir> OR positional usage.
+    # When the user passes only --watch (no value), src_path defaults to "." and
+    # watch=True is set by the flag variant.  When the user passes --watch <dir>,
+    # Typer sets src_path=<dir> and watch remains False unless --watch flag is
+    # repeated.  This dual-use is intentional (see CLI spec).
+    from .flows.reverse_doc_watcher_flow import ReverseDocWatcherFlow
+
+    langs = _parse_languages(languages)
+
+    try:
+        flow = ReverseDocWatcherFlow(
+            src_path=src_path,
+            out_dir=out,
+            debounce_seconds=debounce,
+            languages=langs,
+        )
+    except Exception as exc:
+        typer.echo(f"[reverse-doc] error: {exc}", err=True)
+        raise typer.Exit(1) from None
+
+    if not watch:
+        # Single-pass mode
+        try:
+            doc = flow.run_once()
+        except FileNotFoundError as exc:
+            typer.echo(f"[reverse-doc] {exc}", err=True)
+            raise typer.Exit(1) from None
+        typer.echo(f"[reverse-doc] repo={doc.repo_path} sections={len(doc.sections)}")
+        typer.echo(f"  output_dir: {doc.output_dir}")
+        for section in doc.sections:
+            typer.echo(f"  - {section.name}: {section.file_path}")
+        return
+
+    # Watch mode — stay foreground
+    import signal
+    import time as _time
+
+    try:
+        flow.start()
+    except FileNotFoundError as exc:
+        typer.echo(f"[reverse-doc] {exc}", err=True)
+        raise typer.Exit(1) from None
+
+    typer.echo(f"[reverse-doc] watching {src_path!r} → {out!r} (debounce={debounce}s) — Ctrl-C to stop")
+
+    def _stop(sig: int, frame: object) -> None:  # noqa: ARG001
+        flow.stop()
+        raise typer.Exit()
+
+    signal.signal(signal.SIGINT, _stop)
+    signal.signal(signal.SIGTERM, _stop)
+
+    try:
+        while flow.is_alive():
+            _time.sleep(0.5)
+    except (KeyboardInterrupt, SystemExit):
+        pass
+    finally:
+        flow.stop()
+
+
+# --- END REVERSE-DOC WATCHER ---
+
+
 if __name__ == "__main__":  # pragma: no cover
     app()
