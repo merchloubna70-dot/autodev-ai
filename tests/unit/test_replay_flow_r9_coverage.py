@@ -27,7 +27,6 @@ from autodev.flows.replay_flow import ReplayFlow, _snapshot_run
 from autodev.schemas import Language, PipelineMode
 from autodev.state import RunState
 
-
 # ---------------------------------------------------------------------------
 # Shared seed helper — identical to test_replay_flow.py to build a real run
 # ---------------------------------------------------------------------------
@@ -353,7 +352,7 @@ class TestReplayFromStep:
         run = _seed_run(tmp_path)
         run_id = run.run_id
 
-        replayed = ReplayFlow().replay(
+        ReplayFlow().replay(
             run_id=run_id,
             repo_path=str(tmp_path),
             from_step="final_report",

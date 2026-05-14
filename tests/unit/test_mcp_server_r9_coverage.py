@@ -28,10 +28,8 @@ from __future__ import annotations
 
 import io
 import json
-import sys
 from typing import Any
 from unittest.mock import patch
-
 
 # ---------------------------------------------------------------------------
 # Helpers shared across tests
@@ -293,10 +291,10 @@ def test_run_skips_blank_lines():
 
     output = fake_stdout.getvalue()
     found = any(
-        json.loads(l.strip()).get("id") == 99
-        for l in output.splitlines()
-        if l.strip()
-        and _is_json(l.strip())
+        json.loads(line.strip()).get("id") == 99
+        for line in output.splitlines()
+        if line.strip()
+        and _is_json(line.strip())
     )
     assert found
 
@@ -315,7 +313,7 @@ def test_run_notification_does_not_write_response():
     # stdout should contain no JSON-RPC response (possibly just empty or log msgs)
     output = fake_stdout.getvalue().strip()
     # Nothing should have been written (notifications produce no response)
-    json_lines = [l for l in output.splitlines() if l.strip() and _is_json(l.strip())]
+    json_lines = [line for line in output.splitlines() if line.strip() and _is_json(line.strip())]
     assert json_lines == []
 
 
@@ -331,9 +329,9 @@ def test_run_error_response_for_bad_json():
 
     output = fake_stdout.getvalue()
     found_error = any(
-        json.loads(l.strip()).get("error", {}).get("code") == -32700
-        for l in output.splitlines()
-        if l.strip() and _is_json(l.strip())
+        json.loads(line.strip()).get("error", {}).get("code") == -32700
+        for line in output.splitlines()
+        if line.strip() and _is_json(line.strip())
     )
     assert found_error
 

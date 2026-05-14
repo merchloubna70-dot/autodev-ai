@@ -17,19 +17,13 @@ import json
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import pytest
 from typer.testing import CliRunner
 
 from autodev.cli import app
 from autodev.schemas import (
     ExecutionBackend,
-    ImplementationResult,
-    Milestone,
-    MilestonePlan,
     PipelineMode,
-    PipelineRunState,
 )
-from autodev.state import RunState
 
 runner = CliRunner()
 
@@ -356,8 +350,8 @@ class TestCreatePrdCLI:
         with patch("autodev.cli.ProductManagerAgent") as MockPM, \
              patch("autodev.cli.RequirementAnalystAgent") as MockRA, \
              patch("autodev.cli.PRDWriterAgent") as MockPW, \
-             patch("autodev.cli.write_text") as MockWT, \
-             patch("autodev.cli.write_json") as MockWJ:
+             patch("autodev.cli.write_text"), \
+             patch("autodev.cli.write_json"):
             MockPW.return_value = mock_prd_writer
             MockPM.return_value.build_brief.return_value = MagicMock()
             MockRA.return_value.derive.return_value = ([], [], [])
@@ -594,7 +588,7 @@ class TestContinueRunCLI:
 
         # After continue-run finishes, RunState.load is called again; we need
         # to return an updated state showing M2 is also done.
-        updated_state = _make_run_state_dict(
+        _make_run_state_dict(
             run_id="run-cr-one",
             milestones=[
                 {"milestone_id": "M1", "title": "Done", "objective": "x"},
@@ -1088,7 +1082,7 @@ class TestMcpServeCLI:
         # MCPServer is a lazy import inside the command; patch at the source module
         with patch("autodev.mcp_server.server.MCPServer") as MockMCP:
             MockMCP.return_value.run.return_value = None
-            result = runner.invoke(app, ["mcp-serve"])
+            runner.invoke(app, ["mcp-serve"])
 
         # MCPServer.run() either blocks or returns; we just check it was called
         MockMCP.return_value.run.assert_called_once()
@@ -1360,7 +1354,7 @@ class TestDashboardCLI:
         original = sys.modules.get("autodev.tui.dashboard")
         sys.modules["autodev.tui.dashboard"] = fake_tui_module
         try:
-            result = runner.invoke(app, [
+            runner.invoke(app, [
                 "dashboard",
                 "--root", str(tmp_path / ".dev-factory"),
             ])

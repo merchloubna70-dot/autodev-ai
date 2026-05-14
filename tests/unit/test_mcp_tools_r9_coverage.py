@@ -14,24 +14,19 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-from typing import Any
 from unittest import mock
-
-import pytest
 
 from autodev.mcp_server.tools import (
     _ENV_ALLOW_APPLY,
     _ENV_AUDIT_LOG,
-    _DEFAULT_AUDIT_LOG,
-    _write_audit_log,
     _handle_create_prd,
     _handle_deliver_project,
     _handle_list_runs,
     _handle_release_check,
     _handle_report,
     _handle_run_issue,
+    _write_audit_log,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helper: strip guardrail env vars so path-safety is the only denial path

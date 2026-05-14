@@ -14,23 +14,23 @@ from __future__ import annotations
 import socket
 import urllib.error
 import urllib.request
+import uuid
 from datetime import datetime, timezone
 from http.client import HTTPMessage
 from io import BytesIO
-from unittest.mock import MagicMock, patch
-import uuid
+from unittest.mock import MagicMock
 
 import pytest
 
 from autodev.adapters.a2a.transports.http import (
     A2AHttpSSRFError,
     A2AHttpTransport,
+    _build_pinned_opener,
+    _is_private_address,
     _NoRedirectHandler,
     _PinnedHTTPHandler,
     _PinnedHTTPSConnection,
     _PinnedHTTPSHandler,
-    _build_pinned_opener,
-    _is_private_address,
     _resolve_and_pin_host,
     _validate_url,
 )
@@ -483,7 +483,7 @@ def test_make_request_redirect_no_location(monkeypatch) -> None:
     monkeypatch.delenv("AUTODEV_A2A_ALLOW_PRIVATE_NETWORKS", raising=False)
     monkeypatch.setattr(socket, "getaddrinfo", _gai_public)
 
-    hdrs = HTTPMessage()
+    HTTPMessage()
     # No Location header set.
 
     def _fake_build(*args, **kwargs):
