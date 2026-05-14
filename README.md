@@ -2,114 +2,274 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python ≥3.10](https://img.shields.io/badge/python-%E2%89%A53.10-blue)](https://www.python.org)
+[![PyPI](https://img.shields.io/pypi/v/autodev-ai)](https://pypi.org/project/autodev-ai/)
 
-A CrewAI + **Codex CLI** + **Claude Code CLI** software factory that supports
-two delivery modes against any Python / Rust / TypeScript repository.
+**A multi-CLI software factory powered by CrewAI agents, Codex CLI, and Claude Code CLI.**
 
-PyPI distribution name: **`autodev-ai`** (CLI command: `autodev`, import: `from autodev import …`).
+From a one-paragraph project brief to milestone-driven, gate-protected delivery — with a full
+audit trail, A2A agent networking, MCP server support, and sprint-mode planning.
 
-- **Issue Mode** — turn a GitHub issue / local `issue.md` into a structured
-  change with audit trail, gates, and PR-ready artifacts.
-- **Project Delivery Mode** — from project brief / PRD (or even an empty
-  repo) to milestone-driven, gate-protected delivery.
+---
 
-All CLI traffic is funneled through one `ExecutorRouter` that automatically
-chooses between Codex CLI (small patches, scaffolds, tests, lint fixes) and
-Claude Code CLI (architecture, cross-language, security, release, docs), with
-deterministic mock fall-backs for CI environments.
+<!-- 30-sec demo gif placeholder -->
+<!-- ![autodev demo](docs/assets/demo.gif) -->
+
+---
 
 ## Install
 
+```bash
+pip install autodev-ai
 ```
+
+Or from source:
+
+```bash
+git clone https://github.com/your-org/autodev-ai.git
+cd autodev-ai
 pip install -e ".[dev]"
-# optional: real CrewAI runtime
+```
+
+Optional — real CrewAI runtime:
+
+```bash
 pip install -e ".[crewai]"
 ```
 
-## Quick examples
+---
+
+## 5-minute quickstart
+
+No API key required — the mock executor generates realistic artifacts instantly.
 
 ```bash
-autodev scan --repo-path .
-
-autodev run-issue \
-  --repo-path . \
-  --issue-file tests/fixtures/issue_project/issue.md \
-  --languages python \
+# Deliver a full project from a brief (dry-run, mock mode)
+autodev deliver-project \
+  --project-brief examples/01-mdlines/brief.md \
+  --from-scratch true \
   --mode dry-run \
   --executor auto \
+  --allow-mock-executor true \
+  --repo-path /tmp/mdlines-demo
+
+# Explore what was produced
+ls /tmp/mdlines-demo/.dev-factory/runs/*/delivery/
+cat /tmp/mdlines-demo/.dev-factory/runs/*/delivery/final_report.md
+```
+
+Expected output:
+
+```
+[autodev] --scale not given; will auto-infer from PRD/brief
+run_id=20240514-143012-a1b2c3 mode=dry-run mock=True release=NotReleaseReady
+```
+
+See the full [5-minute quickstart guide](docs/quickstart.md).
+
+---
+
+## Features
+
+### CrewAI agents — full pipeline coverage
+
+A structured agent graph converts any input (brief / PRD / GitHub issue / bug
+description) into structured delivery artifacts:
+
+```
+InputClassifier → ProductManager → PRDWriter → SystemArchitect
+    → MilestonePlanner → TaskDecomposer → ExecutorRouter
+    → QualityGate → SecurityReviewer → Verifier → DocWriter
+    → ReleaseManager → audit artifacts on disk
+```
+
+### Multi-CLI executor routing
+
+All CLI traffic passes through a single `ExecutorRouter`. It automatically
+selects between **Codex CLI** (mechanical writes, small patches, tests,
+scaffolds) and **Claude Code CLI** (architecture, long-context refactors,
+security reviews, release roll-ups).
+
+```bash
+autodev deliver-project ... --executor auto    # smart routing (default)
+autodev deliver-project ... --executor codex   # force Codex for everything
+autodev deliver-project ... --executor claude  # force Claude Code for everything
+```
+
+| Task type | Default backend |
+|-----------|----------------|
+| Scaffold, test generation, small patch | Codex CLI |
+| Architecture, refactor, security, docs, release | Claude Code CLI |
+| Either CLI missing + `--allow-mock-executor true` | Mock (deterministic) |
+
+### 4-stage bug-fix flow
+
+```bash
+autodev fix-bug \
+  --bug "p99 latency is wrong: off-by-one index in aggregate.py" \
+  --repo-path /tmp/log-analyzer \
+  --mode dry-run \
   --allow-mock-executor true
-
-autodev deliver-project \
-  --repo-path tests/fixtures/empty_project \
-  --project-brief tests/fixtures/prd_project/project_brief.md \
-  --from-scratch true \
-  --languages python,typescript \
-  --mode dry-run
-
-autodev execute-milestone \
-  --run-id <latest_run_id> \
-  --milestone-id M2 \
-  --executor claude-code \
-  --allow-mock-executor true
-
-autodev report --run-id <latest_run_id>
 ```
 
-## Multi-CLI executor routing
+Stages: **Reproduce → Locate → Patch → Verify**. Every step produces a
+structured JSON artifact. See [Tutorial 01 — Bug-fix flow](docs/tutorials/01-bug-fix.md).
 
-| Task type      | Default backend      | Why                                                      |
-|----------------|----------------------|----------------------------------------------------------|
-| scaffold       | Codex                | small mechanical writes; deterministic templates         |
-| test           | Codex                | targeted unit-test additions                             |
-| feature (small)| Codex                | ≤5 files, low risk                                       |
-| feature (big)  | Claude Code          | many files OR high risk OR cross-language                |
-| refactor       | Claude Code          | requires long-context reasoning                          |
-| architecture   | Claude Code          | system design / contracts                                |
-| integration    | Claude Code if cross-language, else Codex | API / schema contracts |
-| docs           | Claude Code          | tone & cohesion                                          |
-| security       | Claude Code          | deeper review                                            |
-| release        | Claude Code          | rolls up evidence                                        |
+### BMAD-derived sprint mode
 
-If the chosen CLI is not installed and `--allow-mock-executor true`, the
-router substitutes the matching `MockCodexExecutor` / `MockClaudeExecutor`
-**and records `mock_used=true`** in every audit record so downstream gates
-can refuse to mark the run release-ready off mock evidence alone.
+Plan and track multi-week sprints with course-correction support:
 
-If `--allow-mock-executor false` and the CLI is missing, the run **fails
-closed**.
-
-## Audit trail
-
-Every run lives at `<repo>/.dev-factory/runs/<run_id>/`:
-
-```
-input/         classification.json, raw_input.md
-product/       product_brief.json, prd.md, prd.json
-architecture/  architecture.md, module_map.json, api_contract.json, ...
-planning/      milestones.json, tasks.json, delivery_plan.md
-execution/     executor_selection_*.json, execution_calls.jsonl,
-               codex_calls.jsonl, claude_code_calls.jsonl,
-               milestone_*_results.json
-quality/       test_plan.json, quality_gate.json, security_review.json,
-               code_review.json, integration_review.json
-verification/  verification_report.json, release_check.json
-delivery/      README.generated.md, usage.generated.md, release_notes.md,
-               delivery_report.md, final_report.md
-run_state.json
+```bash
+autodev sprint-start  --goal "Deliver MVP slug library" --duration-days 10
+autodev sprint-status
+autodev sprint-retro  --sprint-id sprint-001
+autodev sprint-correct --sprint-id sprint-001 --change "Add JSON output mode"
 ```
 
-See `docs/architecture.md` and `docs/multi_cli_executor.md` for details.
+See [Tutorial 04 — Sprint mode](docs/tutorials/04-sprint-mode.md).
 
-## Safety rules baked in
+### Roundtable party-mode (A2A)
 
-- No business code calls `codex` or `claude` directly — only `ExecutorRouter`.
-- Shell executor is allowlist-only; dangerous patterns (`rm -rf`, `sudo`,
-  `cat .env`, `curl|bash`, …) are denied in **all** modes.
-- `commit`, `push`, `tag`, `release` are off by default and require explicit
-  flags.
-- `final_report.md` refuses to relabel `skipped` / `failed` gates as `passed`.
-- `release_check` returns `NotReleaseReady` when any of `dry_run`,
-  `mock_execution_used`, or a failed gate are observed.
+Recruit N specialist agents by skill, get independent analysis, synthesize:
+
+```bash
+autodev roundtable \
+  --topic "SQLite vs PostgreSQL for the kanban board" \
+  --skills security,arch,perf \
+  --repo-path /tmp/my-project
+```
+
+Set `FACTORY_FORCE_MOCK=1` for CI / no-API-key usage. See
+[Tutorial 05 — Roundtable](docs/tutorials/05-roundtable.md).
+
+### MCP server — use autodev from Claude Desktop
+
+```bash
+autodev mcp-serve   # JSON-RPC 2.0 over stdio
+```
+
+Add to `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "autodev": {
+      "command": "autodev",
+      "args": ["mcp-serve"]
+    }
+  }
+}
+```
+
+See [Tutorial 06 — MCP server](docs/tutorials/06-mcp-server.md).
+
+### A2A server — accept tasks from external agents
+
+```bash
+autodev a2a-serve --port 8421
+autodev a2a-call --endpoint http://127.0.0.1:8421 --skill fix-bug \
+  --task-json '{"text": "Fix the percentile bug"}'
+```
+
+See [Tutorial 07 — A2A server](docs/tutorials/07-a2a-server.md).
+
+### Full audit trail
+
+Every run writes a structured artifact tree under
+`<repo>/.dev-factory/runs/<run_id>/`:
+
+```
+input/ product/ architecture/ planning/ execution/
+quality/ verification/ delivery/ run_state.json
+```
+
+Runs are resumable (`autodev continue-run`), replayable (`autodev replay`),
+and support milestone-by-milestone execution (`autodev execute-milestone`).
+
+### Safety baked in
+
+- No business code calls `codex` or `claude` directly — only `ExecutorRouter`
+- Shell executor blocks `rm -rf`, `sudo`, `cat .env`, `curl | bash`, etc. in all modes
+- `--commit`, `--push`, `--tag` are off by default — opt in explicitly
+- `release_check` returns `NotReleaseReady` when mock execution or `dry-run` was used
+- `final_report.md` never relabels a failed gate as passed
+
+---
+
+## Multi-CLI routing table
+
+| Task type | Default backend | Why |
+|-----------|----------------|-----|
+| scaffold | Codex | Small mechanical writes |
+| test | Codex | Targeted unit-test additions |
+| feature (≤5 files, low/medium risk) | Codex | Fast, deterministic |
+| feature (>5 files or high risk) | Claude Code | Long-context reasoning |
+| refactor | Claude Code | Multi-file coherence |
+| architecture | Claude Code | System design |
+| integration (single-language) | Codex | Targeted API changes |
+| integration (cross-language) | Claude Code | Contract reasoning |
+| security | Claude Code | Deeper threat review |
+| docs | Claude Code | Tone and cohesion |
+| release | Claude Code | Evidence roll-up |
+
+---
+
+## All CLI commands
+
+```
+autodev deliver-project    — Brief/PRD → full project delivery
+autodev run-issue          — GitHub issue → structured change
+autodev fix-bug            — 4-stage bug-fix: reproduce/locate/patch/verify
+autodev multi-patch-fix-bug — Generate N patch candidates, vote for best
+autodev execute-milestone  — Run a single milestone from a completed plan
+autodev continue-run       — Resume a failed run from last checkpoint
+autodev replay             — Re-run a stage from a checkpoint
+autodev scan               — Scan repo for context
+autodev verify             — Run verification on a completed run
+autodev release-check      — Evaluate release readiness
+autodev report             — Print run summary
+autodev export-delivery    — Export delivery artifacts to a directory
+autodev push               — Push committed changes to remote
+autodev create-pr          — Open a GitHub PR for a completed run
+autodev sprint-start       — Open a new sprint
+autodev sprint-status      — Check sprint health metrics
+autodev sprint-retro       — Run a retrospective
+autodev sprint-correct     — Analyse mid-sprint change impact
+autodev roundtable         — Party-mode A2A discussion by skill
+autodev mcp-serve          — Start MCP server over stdio
+autodev a2a-serve          — Start A2A HTTP server
+autodev a2a-register       — Register a remote A2A agent
+autodev a2a-call           — Send a task to a remote A2A agent
+autodev next               — Suggest next action from run state
+autodev design-ux          — BMAD-Sally UX design workflow
+autodev investigate        — Open a structured investigation case
+autodev generate-context   — Generate project-context.md from repo
+autodev document-project   — Generate brownfield AI-onboarding docs
+autodev classify-input     — Classify a brief/issue into mode + metadata
+autodev create-prd         — Generate a PRD from a brief
+autodev plan-project       — Generate a project plan from PRD
+autodev plan-milestones    — Generate milestones from a project plan
+autodev plan-tasks         — Generate tasks from milestones
+autodev review             — Approve/reject a paused human-review gate
+```
+
+---
+
+## Documentation
+
+| Doc | Contents |
+|-----|----------|
+| [5-minute quickstart](docs/quickstart.md) | Install → credentials → first run → explore artifacts |
+| [Tutorial 01 — Bug-fix flow](docs/tutorials/01-bug-fix.md) | 4-stage fix-bug on log-analyzer |
+| [Tutorial 02 — Rust project](docs/tutorials/02-rust-project.md) | Deliver slug-rs from brief |
+| [Tutorial 03 — Multi-CLI routing](docs/tutorials/03-multi-cli-routing.md) | ExecutorRouter internals |
+| [Tutorial 04 — Sprint mode](docs/tutorials/04-sprint-mode.md) | sprint-start / status / retro / correct |
+| [Tutorial 05 — Roundtable](docs/tutorials/05-roundtable.md) | Party-mode A2A discussion |
+| [Tutorial 06 — MCP server](docs/tutorials/06-mcp-server.md) | Claude Desktop integration |
+| [Tutorial 07 — A2A server](docs/tutorials/07-a2a-server.md) | HTTP agent-to-agent |
+| [Architecture reference](docs/architecture.md) | Layers, flows, audit trail, failure policy |
+| [FAQ](docs/faq.md) | Top 15 questions |
+
+---
 
 ## License
 
