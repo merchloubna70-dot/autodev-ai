@@ -8,7 +8,10 @@ from __future__ import annotations
 import math
 import re
 from collections import defaultdict
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from .distillator import Distillator
 
 
 def _tokenize(text: str) -> list[str]:
@@ -94,8 +97,9 @@ class EmbeddingsIndex:
         hits = idx.search("quick fox", k=3)
     """
 
-    def __init__(self) -> None:
+    def __init__(self, distillator: "Distillator | None" = None) -> None:
         self._store: _InMemoryStore = _InMemoryStore()
+        self._distillator = distillator
 
     def add(self, run_id: str, text_id: str, text: str) -> None:
         """Index a text chunk from a specific run.
@@ -109,7 +113,10 @@ class EmbeddingsIndex:
         text:
             The text content to index.
         """
-        self._store.add(run_id, text_id, text)
+        index_text = text
+        if self._distillator is not None:
+            index_text = self._distillator.distill(text).distilled_text or text
+        self._store.add(run_id, text_id, index_text)
 
     def search(self, query: str, k: int = 5) -> list[dict[str, Any]]:
         """Return the top-k most similar documents to *query*.

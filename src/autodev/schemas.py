@@ -1161,9 +1161,111 @@ class EditorialReport(BaseModel):
 
 # === MARKER BMAD5 SHARD-DISTILL ===
 
+
+class ShardEntry(BaseModel):
+    path: str
+    title: str
+    level: int  # H2=2, H3=3
+    char_count: int
+
+
+class ShardingReport(BaseModel):
+    source_chars: int
+    sharded: bool
+    shard_count: int = 0
+    toc_path: str | None = None
+    shards: list[ShardEntry] = Field(default_factory=list)
+
+
+class DistillResult(BaseModel):
+    source_sha: str
+    source_chars: int
+    distilled_text: str
+    distilled_chars: int = 0
+    ratio: float = 0.0
+    method: str = "tf-idf-sentences"
+    generated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
 # === MARKER BMAD6 CONFIG-PRFAQ ===
 
+
+class ConfigLayer(BaseModel):
+    name: str  # "user-global" / "project-team" / "project-user" / "runtime"
+    path: str | None = None
+    loaded: bool = False
+    keys_count: int = 0
+
+
+class ConfigStackReport(BaseModel):
+    layers: list[ConfigLayer] = Field(default_factory=list)
+    merged_keys: list[str] = Field(default_factory=list)
+    conflicts: list[str] = Field(default_factory=list)
+
+
+class PRFAQDocument(BaseModel):
+    product_name: str
+    headline: str = ""
+    body: str = ""
+    customer_quote: str = ""
+    availability: str = ""
+    faqs: list[dict] = Field(default_factory=list)  # [{question, answer}, ...]
+
+
 # === MARKER BMAD7 SPRINT ===
+
+
+class SprintInput(BaseModel):
+    repo_path: str = "."
+    product_name: str = ""
+    goal: str = ""
+    duration_days: int = 14
+
+
+class SprintState(BaseModel):
+    sprint_id: str  # "sprint-NNN"
+    goal: str = ""
+    started_at: str
+    previous_sprint_id: str | None = None
+    previous_retrospective_summary: str = ""
+    tasks: list[DeliveryTask] = Field(default_factory=list)
+    acceptance_criteria_carryover: list[str] = Field(default_factory=list)
+    planning_artifacts_path: str
+    implementation_artifacts_path: str
+
+
+class SprintStatus(BaseModel):
+    sprint_id: str
+    health: str = "unknown"  # "on-track" / "at-risk" / "blocked" / "complete"
+    tasks_total: int = 0
+    tasks_done: int = 0
+    tasks_failed: int = 0
+    blockers: list[str] = Field(default_factory=list)
+    progress_pct: float = 0.0
+
+
+class RetrospectiveReport(BaseModel):
+    sprint_id: str
+    what_went_well: list[str] = Field(default_factory=list)
+    what_went_wrong: list[str] = Field(default_factory=list)
+    surprises: list[str] = Field(default_factory=list)
+    actions_for_next_sprint: list[str] = Field(default_factory=list)
+    carryover_acceptance_criteria: list[str] = Field(default_factory=list)
+    raw_evidence_refs: list[str] = Field(default_factory=list)
+    generated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
+class SprintChangeImpact(BaseModel):
+    artifact: str  # "PRD" / "Epic" / "Architecture" / "UX" / "Tests"
+    change_summary: str
+    severity: Severity = Severity.MAJOR
+
+
+class SprintChangeProposal(BaseModel):
+    sprint_id: str
+    change_description: str
+    impacts: list[SprintChangeImpact] = Field(default_factory=list)
+    recommended_actions: list[str] = Field(default_factory=list)
+    generated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 
 # === MARKER BMAD8 UX-SALLY ===

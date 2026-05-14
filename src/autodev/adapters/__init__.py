@@ -7,3 +7,4 @@ from .embeddings_index import EmbeddingsIndex  # noqa: F401
 from .pydantic_ai_bridge import PydanticAIAgentFactory  # noqa: F401
 from .a2a.roster import AgentRoster  # noqa: F401
 from .a2a.client import A2AClient  # noqa: F401
+from .distillator import Distillator  # noqa: F401

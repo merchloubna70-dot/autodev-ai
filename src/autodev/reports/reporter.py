@@ -1,6 +1,8 @@
 """Generic reporter — writes final_report.md and run-state summary."""
 from __future__ import annotations
 
+from pathlib import Path
+
 from ..schemas import GateStatus, PipelineRunState, ReleaseDecision
 from ..state import RunState
 
@@ -87,6 +89,16 @@ class Reporter:
     def write_final_report(self, run: RunState) -> str:
         content = self.render_final_report(run)
         path = run.save_text("delivery/final_report.md", content)
+        # If the report is large, also write a sharded version for easier navigation
+        _SHARD_THRESHOLD = 3000
+        if len(content) > _SHARD_THRESHOLD:
+            try:
+                from ..utils.doc_sharder import DocSharder
+                sharder = DocSharder(threshold=_SHARD_THRESHOLD)
+                delivery_dir = Path(path).parent
+                sharder.shard(content, target_dir=delivery_dir, base_name="final_report_shards")
+            except Exception:
+                pass  # sharding is best-effort; never break report writing
         return str(path)
 
     def summarize(self, state: PipelineRunState) -> str:
