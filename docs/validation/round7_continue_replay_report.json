@@ -1,0 +1,195 @@
+{
+  "round": "round7",
+  "agent_n": 5,
+  "agent_name": "continue_replay",
+  "status": "completed",
+  "overall_result": "partial",
+  "p0_count": 1,
+  "p1_count": 3,
+  "p2_count": 2,
+  "p3_count": 2,
+  "p4_count": 0,
+  "run_state_layout": {
+    "runs_dir": "<repo_path>/.dev-factory/runs/",
+    "state_file_path_pattern": "<repo_path>/.dev-factory/runs/<run_id>/run_state.json",
+    "subdirs": ["input", "product", "architecture", "planning", "execution", "quality", "verification", "delivery"],
+    "execution_logs": ["execution/execution_calls.jsonl", "execution/codex_calls.jsonl", "execution/claude_code_calls.jsonl"],
+    "fields_observed": [
+      "run_id", "started_at", "finished_at", "mode", "flow", "repo_path",
+      "languages", "classification", "product_brief", "prd", "architecture",
+      "milestone_plan", "implementation_results", "quality_gates",
+      "security_review", "code_review", "integration_review", "verification",
+      "release_check", "delivery_report", "backends_used", "mock_execution_used", "errors"
+    ]
+  },
+  "scenarios": [
+    {
+      "id": "A",
+      "name": "happy_path",
+      "result": "pass",
+      "run_id": "run_20260514T093202_513070cc",
+      "exit_code": 0,
+      "artifacts_created": 38,
+      "finished_at_set": true,
+      "mock_execution_used": true,
+      "backends_used": ["mock_codex"],
+      "details": "deliver-project completed successfully with FACTORY_FORCE_MOCK=1; all 8 subdirs populated; run_state.json correctly serialized with all pipeline fields"
+    },
+    {
+      "id": "B",
+      "name": "paused_construction",
+      "result": "pass",
+      "technique": "JSON mutation — set implementation_results=[] and finished_at=null in run_state.json",
+      "details": "No native pause checkpoint mechanism exists in PipelineRunState. 'Paused' state is inferred from empty implementation_results. Simulated by direct JSON mutation of run_state.json."
+    },
+    {
+      "id": "C",
+      "name": "continue_run",
+      "result": "fail",
+      "exit_code": 0,
+      "details": "continue-run is a STUB. cli.py:332-341 only echoes 'remaining milestones: [M2]' — no execution, no state transition, no resumption of pipeline. State remains paused after calling continue-run.",
+      "severity": "P0"
+    },
+    {
+      "id": "D",
+      "name": "replay_stability",
+      "result": "fail",
+      "exit_code": 0,
+      "hash_stable": false,
+      "details": "Replay executes successfully (exit 0) but is non-deterministic. Second replay produces different MD5 hashes for planning/milestones.json, planning/tasks.json, execution/milestone_M*.json, execution_calls.jsonl, verification/*, and run_state.json. Replay also mutates original run artifacts in-place with no snapshot protection.",
+      "severity": "P2",
+      "audit_annotation": "state.errors[] appended with 'replayed from stage planning at <timestamp>'"
+    },
+    {
+      "id": "E1",
+      "name": "missing_file_handling",
+      "result": "fail",
+      "graceful": false,
+      "exit_code": 1,
+      "details": "Deleting a sidecar artifact (input/classification.json) does not affect continue-run since state is embedded in run_state.json. But using a nonexistent run_id raises raw FileNotFoundError traceback (Rich-formatted) with exit 1. No user-friendly error message.",
+      "severity": "P1",
+      "error_type": "FileNotFoundError",
+      "traceback_visible": true
+    },
+    {
+      "id": "E2",
+      "name": "corrupt_json_handling",
+      "result": "fail",
+      "graceful": false,
+      "exit_code": 1,
+      "details": "Writing '{garbage' to run_state.json causes raw JSONDecodeError traceback on replay. No graceful error message like 'run_state.json is corrupt, please restore from backup'.",
+      "severity": "P1",
+      "error_type": "JSONDecodeError",
+      "traceback_visible": true
+    },
+    {
+      "id": "E3",
+      "name": "invalid_state_handling",
+      "result": "fail",
+      "graceful": false,
+      "exit_code": 1,
+      "details": "Setting mode='invalid_state_value' in run_state.json causes Pydantic ValidationError traceback on continue-run. Message is technically informative ('Input should be dry-run or apply') but surfaces as raw traceback. replay --from-stage invalid_stage raises ValueError with valid stage list but also as raw traceback.",
+      "severity": "P1",
+      "error_type": "ValidationError",
+      "traceback_visible": true
+    }
+  ],
+  "findings": [
+    {
+      "severity": "P0",
+      "title": "continue-run is a non-functional stub",
+      "detail": "cli.py:332-341 only echoes remaining milestone IDs. No execution, no state transition, no 'done' outcome. Any user relying on continue-run to resume a paused pipeline will be misled by exit 0 + no-op behavior."
+    },
+    {
+      "severity": "P1",
+      "title": "Missing run / nonexistent run_id raises raw FileNotFoundError",
+      "detail": "RunState.load() raises FileNotFoundError unhandled. CLI should catch and emit friendly 'Run <id> not found in <repo>' message with exit 2."
+    },
+    {
+      "severity": "P1",
+      "title": "Corrupted run_state.json raises raw JSONDecodeError",
+      "detail": "json_io.read_json() raises JSONDecodeError unhandled. CLI should catch and emit friendly 'run_state.json is corrupt or unreadable' with recovery hint."
+    },
+    {
+      "severity": "P1",
+      "title": "Invalid enum field in run_state.json raises raw Pydantic ValidationError",
+      "detail": "PipelineRunState.model_validate() raises ValidationError unhandled. CLI should catch and emit friendly validation summary with field-level guidance."
+    },
+    {
+      "severity": "P2",
+      "title": "replay is non-deterministic across invocations",
+      "detail": "All execution artifacts (milestones, tasks, implementation results) change between replays because LLM-backed agents regenerate content. Replay cannot be used as an audit-safe 'read-only verification' mechanism."
+    },
+    {
+      "severity": "P2",
+      "title": "replay mutates original run artifacts in-place",
+      "detail": "Replaying from 'planning' overwrites planning/milestones.json, planning/tasks.json, all execution artifacts, verification reports, and run_state.json with no backup/snapshot protection."
+    },
+    {
+      "severity": "P3",
+      "title": "No native pause/resume checkpoint mechanism",
+      "detail": "PipelineRunState has no 'status' field. Paused state must be simulated by JSON mutation. There is no way to interrupt a run cleanly and checkpoint it for later resumption."
+    },
+    {
+      "severity": "P3",
+      "title": "Pydantic protected_namespaces warning on every CLI invocation",
+      "detail": "AgentCard.model_hint and AgentSpec.model_settings trigger UserWarning on import. Should add model_config['protected_namespaces']=() to suppress."
+    }
+  ],
+  "commands_run": [
+    {
+      "cmd": "FACTORY_FORCE_MOCK=1 autodev deliver-project --repo-path /tmp/r7-replay-sandbox --project-brief brief.txt --project-name hello-world --languages python --mode dry-run --allow-mock-executor true",
+      "exit": 0,
+      "stdout_head": "run_id=run_20260514T093202_513070cc mode=dry-run mock=True release=NotReleaseReady",
+      "duration_ms": 510
+    },
+    {
+      "cmd": "FACTORY_FORCE_MOCK=1 autodev continue-run --run-id run_20260514T093202_513070cc --repo-path /tmp/r7-replay-sandbox (paused state)",
+      "exit": 0,
+      "stdout_head": "remaining milestones: ['M2']",
+      "duration_ms": 350
+    },
+    {
+      "cmd": "FACTORY_FORCE_MOCK=1 autodev replay --run-id run_20260514T093202_513070cc --repo-path /tmp/r7-replay-sandbox --from-stage planning (run 1)",
+      "exit": 0,
+      "stdout_head": "run_id=run_20260514T093202_513070cc stage=planning",
+      "duration_ms": 457
+    },
+    {
+      "cmd": "FACTORY_FORCE_MOCK=1 autodev replay --run-id run_20260514T093202_513070cc --repo-path /tmp/r7-replay-sandbox --from-stage planning (run 2 - stability check)",
+      "exit": 0,
+      "stdout_head": "run_id=run_20260514T093202_513070cc stage=planning",
+      "duration_ms": 420
+    },
+    {
+      "cmd": "FACTORY_FORCE_MOCK=1 autodev continue-run --run-id nonexistent_run_id --repo-path /tmp/r7-replay-sandbox",
+      "exit": 1,
+      "stdout_head": "FileNotFoundError: run not found: /private/tmp/r7-replay-sandbox/.dev-factory/runs/nonexistent_run_id",
+      "duration_ms": 300
+    },
+    {
+      "cmd": "FACTORY_FORCE_MOCK=1 autodev replay --run-id <id> --repo-path /tmp/r7-replay-sandbox (corrupt run_state.json)",
+      "exit": 1,
+      "stdout_head": "JSONDecodeError: Expecting property name enclosed in double quotes: line 1 column 2",
+      "duration_ms": 290
+    },
+    {
+      "cmd": "FACTORY_FORCE_MOCK=1 autodev continue-run --run-id <id> --repo-path /tmp/r7-replay-sandbox (mode=invalid_state_value)",
+      "exit": 1,
+      "stdout_head": "ValidationError: 1 validation error for PipelineRunState mode",
+      "duration_ms": 310
+    },
+    {
+      "cmd": "FACTORY_FORCE_MOCK=1 autodev replay --run-id <id> --from-stage invalid_stage",
+      "exit": 1,
+      "stdout_head": "ValueError: Unknown stage 'invalid_stage'. Valid stages: [...]",
+      "duration_ms": 300
+    }
+  ],
+  "evidence_files": [
+    "/tmp/r7-hashes-before.txt (pre-replay MD5 hashes)",
+    "/tmp/r7-hashes-after-replay.txt (post-replay-1 MD5 hashes)",
+    "/tmp/r7-hashes-after-replay2.txt (post-replay-2 MD5 hashes - instability evidence)"
+  ],
+  "summary_one_line": "continue-run is a stub (P0), replay succeeds but is non-deterministic and mutates originals (P2), all 3 error scenarios surface raw Python tracebacks rather than friendly messages (P1x3)"
+}

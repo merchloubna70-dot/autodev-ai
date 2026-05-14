@@ -1,0 +1,171 @@
+{
+  "round": "round7",
+  "agent_n": 1,
+  "agent_name": "repo_baseline_auditor",
+  "status": "completed",
+  "overall_result": "pass",
+  "p0_count": 0,
+  "p1_count": 0,
+  "p2_count": 0,
+  "p3_count": 0,
+  "p4_count": 2,
+  "git": {
+    "branch": "main",
+    "head_full": "0a227d4701edb48208a2d1dcfc161dd1140c0f49",
+    "head_short": "0a227d4",
+    "dirty": false,
+    "commits_total": 88,
+    "latest_tags": [
+      "v0.1.0a3",
+      "v0.1.0a2",
+      "v0.1.0a1",
+      "v0.1.0-alpha"
+    ],
+    "last_commits": [
+      "0a227d4 homebrew: tap published + audit reorder",
+      "f862968 post-publish: v0.1.0a3 verified — Homebrew formula backfilled to 0.1.0a3",
+      "cc76f05 release: v0.1.0a3 — bump version + CHANGELOG (typer + shim fix → PyPI)",
+      "e52fbad fix(r5): quick post-publish hygiene — typer dep + gate wheel-shim + Homebrew tap prep",
+      "967a13b audit(r4.5): post-release hygiene — PyPI/GH/Docker verified, secret-leak=0, rotation checklist ready",
+      "762719d release(v0.1.0a2): PyPI published + Homebrew sha256 backfilled (Path B full)",
+      "d674d08 release: v0.1.0a2 — bump version + CHANGELOG (PyPI Path B publish)",
+      "357af6a audit(post-publish): v0.1.0a1 verification — GitHub Release + Docker live, PyPI/Homebrew honestly skipped",
+      "1e2bf90 fix(docker): glob pattern for wheel COPY — 5th pre-publish blocker",
+      "70a6e70 fix(ci): add mypy>=1.5 to [dev] extras — 4th pre-publish blocker"
+    ]
+  },
+  "python": {
+    "version": "3.14.4",
+    "pip_version": "26.0.1",
+    "uv_present": true,
+    "uv_path": "/opt/homebrew/bin/uv"
+  },
+  "code_inventory": {
+    "src_autodev": {
+      "py_files": 174,
+      "py_loc": 25681,
+      "modules": {
+        "agents": {"files": 44, "loc": 7465},
+        "flows": {"files": 19, "loc": 3080},
+        "adapters": {"files": 20, "loc": 2932},
+        "executors": {"files": 14, "loc": 2150},
+        "planners": {"files": 8, "loc": 1120},
+        "mcp_server": {"files": 4, "loc": 964},
+        "gates": {"files": 9, "loc": 911},
+        "tui": {"files": 4, "loc": 634},
+        "utils": {"files": 11, "loc": 795},
+        "reports": {"files": 5, "loc": 399},
+        "scanners": {"files": 7, "loc": 469},
+        "context_providers": {"files": 6, "loc": 262},
+        "tasks": {"files": 16, "loc": 214},
+        "top_level_py": {"files": 7, "loc": 4286}
+      }
+    },
+    "tests": {
+      "unit": {
+        "files": 117,
+        "loc": 17007,
+        "test_funcs": 780
+      },
+      "integration": {
+        "files": 36,
+        "loc": 5174,
+        "test_funcs": 100
+      },
+      "conftest_files": 1,
+      "total_test_funcs": 880,
+      "total_test_loc": 22181
+    },
+    "docs": {
+      "md_total": 149,
+      "validation_files": 162,
+      "validation_md_files": 80,
+      "other_docs_md_files": 32,
+      "other_md_loc": 6245,
+      "readme_loc": 294,
+      "changelog_loc": 190,
+      "license_loc": 21
+    },
+    "packaging": {
+      "packaging_dir_files": 23,
+      "pyproject_toml": 1,
+      "github_files": 5,
+      "total_packaging_files": 29
+    },
+    "workflows": [
+      {"name": "docker-publish.yml", "lines": 109},
+      {"name": "release.yml", "lines": 75},
+      {"name": "test.yml", "lines": 37},
+      {"name": "lint.yml", "lines": 28}
+    ]
+  },
+  "pyproject": {
+    "name": "autodev-ai",
+    "version": "0.1.0a3",
+    "requires_python": ">=3.10",
+    "build_backend": "hatchling.build",
+    "hatch_requires": "hatchling>=1.21",
+    "dependencies": [
+      "pydantic>=2.5,<3.0",
+      "typer>=0.12",
+      "rich>=13.7",
+      "shellingham>=1.5",
+      "PyYAML>=6.0",
+      "jinja2>=3.1"
+    ],
+    "optional_deps": {
+      "crewai": ["crewai>=0.30"],
+      "tui": ["textual>=0.60"],
+      "dev": [
+        "pytest>=8.0",
+        "pytest-asyncio>=0.23",
+        "pytest-cov>=4.1",
+        "ruff>=0.4",
+        "mypy>=1.5",
+        "tomli>=2.0 (python_version < '3.11')"
+      ]
+    },
+    "entry_points": {
+      "autodev": "autodev.cli:app"
+    },
+    "hatch_wheel_packages": ["src/autodev"]
+  },
+  "findings": [
+    {
+      "severity": "P4",
+      "title": "tasks module thin LoC",
+      "detail": "16 .py files in src/autodev/tasks/ total only 214 LoC (~13 lines/file average). Task definitions appear intentionally minimal (stub/data containers). Not a defect but indicates tasks module is a thin delegation layer."
+    },
+    {
+      "severity": "P4",
+      "title": "Python 3.14.4 runtime vs classifier list (3.10-3.12)",
+      "detail": "Dev environment runs Python 3.14.4. pyproject.toml classifiers only enumerate 3.10, 3.11, 3.12. No observed compatibility issues but classifier list does not reflect actual tested runtime range."
+    }
+  ],
+  "commands_run": [
+    {"cmd": "git status --short", "exit": 0, "stdout_head": "(empty — clean working tree)", "duration_ms": 120},
+    {"cmd": "git rev-parse HEAD", "exit": 0, "stdout_head": "0a227d4701edb48208a2d1dcfc161dd1140c0f49", "duration_ms": 80},
+    {"cmd": "git rev-parse --short HEAD", "exit": 0, "stdout_head": "0a227d4", "duration_ms": 75},
+    {"cmd": "git branch --show-current", "exit": 0, "stdout_head": "main", "duration_ms": 70},
+    {"cmd": "git tag --sort=-creatordate | head -10", "exit": 0, "stdout_head": "v0.1.0a3\nv0.1.0a2\nv0.1.0a1\nv0.1.0-alpha", "duration_ms": 100},
+    {"cmd": "git rev-list --count HEAD", "exit": 0, "stdout_head": "88", "duration_ms": 90},
+    {"cmd": "git log --oneline -10", "exit": 0, "stdout_head": "0a227d4 homebrew: tap published + audit reorder", "duration_ms": 100},
+    {"cmd": "python3 --version", "exit": 0, "stdout_head": "Python 3.14.4", "duration_ms": 200},
+    {"cmd": "which uv", "exit": 0, "stdout_head": "/opt/homebrew/bin/uv", "duration_ms": 50},
+    {"cmd": "git ls-files | grep '^src/autodev/.*\\.py$' | wc -l", "exit": 0, "stdout_head": "174", "duration_ms": 150},
+    {"cmd": "git ls-files | grep '^src/autodev/.*\\.py$' | xargs wc -l | tail -1", "exit": 0, "stdout_head": "25681 total", "duration_ms": 300},
+    {"cmd": "git ls-files | grep '^tests/unit/.*\\.py$' | wc -l", "exit": 0, "stdout_head": "117", "duration_ms": 120},
+    {"cmd": "git ls-files | grep '^tests/unit/.*\\.py$' | xargs wc -l | tail -1", "exit": 0, "stdout_head": "17007 total", "duration_ms": 250},
+    {"cmd": "git ls-files | grep '^tests/integration/.*\\.py$' | wc -l", "exit": 0, "stdout_head": "36", "duration_ms": 120},
+    {"cmd": "git ls-files | grep '^tests/integration/.*\\.py$' | xargs wc -l | tail -1", "exit": 0, "stdout_head": "5174 total", "duration_ms": 250},
+    {"cmd": "grep -rE '^def test_|^async def test_' tests/unit/ (via xargs)", "exit": 0, "stdout_head": "780 functions", "duration_ms": 400},
+    {"cmd": "grep -rE '^def test_|^async def test_' tests/integration/ (via xargs)", "exit": 0, "stdout_head": "100 functions", "duration_ms": 200},
+    {"cmd": "git ls-files | grep '\\.md$' | wc -l", "exit": 0, "stdout_head": "149", "duration_ms": 120},
+    {"cmd": "git ls-files | grep '^docs/validation/'| wc -l", "exit": 0, "stdout_head": "162", "duration_ms": 120}
+  ],
+  "evidence_files": [
+    "/Users/macworkers/autodev/docs/validation/round7_baseline_inventory.md",
+    "/Users/macworkers/autodev/docs/validation/round7_baseline_inventory.json"
+  ],
+  "summary_one_line": "BASELINE: 174 src .py / 25,681 src LoC / 880 test funcs (22,181 test LoC) / 4 tags (latest v0.1.0a3) / git clean / Python 3.14.4 + uv present"
+}

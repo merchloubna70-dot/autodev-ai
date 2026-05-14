@@ -115,24 +115,36 @@ def test_formula_sha256_placeholder_is_explicit():
 # BLOCKER-PKG-03: macOS .app Info.plist version
 # ---------------------------------------------------------------------------
 
-def test_plist_short_version_is_0_1_0a1():
-    """CFBundleShortVersionString must be updated to 0.1.0a1."""
+def _current_pyproject_version() -> str:
+    """Read version from pyproject.toml to keep these tests in sync with releases."""
+    import re
+    pyproject = (PLIST_PATH.parent.parent.parent.parent.parent / "pyproject.toml")
+    text = pyproject.read_text(encoding="utf-8")
+    m = re.search(r'^version\s*=\s*"([^"]+)"', text, re.MULTILINE)
+    assert m, "pyproject.toml has no version field"
+    return m.group(1)
+
+
+def test_plist_short_version_matches_pyproject():
+    """CFBundleShortVersionString must match pyproject.toml current version."""
     assert PLIST_PATH.exists(), f"Info.plist not found at {PLIST_PATH}"
     with PLIST_PATH.open("rb") as f:
         data = plistlib.load(f)
-    assert data.get("CFBundleShortVersionString") == "0.1.0a1", (
+    expected = _current_pyproject_version()
+    assert data.get("CFBundleShortVersionString") == expected, (
         f"BLOCKER-PKG-03: CFBundleShortVersionString is "
-        f"{data.get('CFBundleShortVersionString')!r}, expected '0.1.0a1'"
+        f"{data.get('CFBundleShortVersionString')!r}, expected {expected!r} (from pyproject.toml)"
     )
 
 
-def test_plist_bundle_version_is_0_1_0a1():
-    """CFBundleVersion must be updated to 0.1.0a1."""
+def test_plist_bundle_version_matches_pyproject():
+    """CFBundleVersion must match pyproject.toml current version."""
     with PLIST_PATH.open("rb") as f:
         data = plistlib.load(f)
-    assert data.get("CFBundleVersion") == "0.1.0a1", (
+    expected = _current_pyproject_version()
+    assert data.get("CFBundleVersion") == expected, (
         f"BLOCKER-PKG-03: CFBundleVersion is "
-        f"{data.get('CFBundleVersion')!r}, expected '0.1.0a1'"
+        f"{data.get('CFBundleVersion')!r}, expected {expected!r} (from pyproject.toml)"
     )
 
 

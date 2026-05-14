@@ -14,6 +14,9 @@ target/
 .autodev/
 _autodev/
 .coverage
+coverage.xml
+# Worktrees managed by Claude Code agents (transient)
+.claude/
 # Secret files (defense in depth — should never be in repo)
 .env
 .env.*

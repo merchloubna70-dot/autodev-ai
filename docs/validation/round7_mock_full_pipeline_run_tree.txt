@@ -1,0 +1,168 @@
+Round 7 Mock Full Pipeline — Audit Tree Snapshot
+Generated: 2026-05-14T09:34:00Z
+Sandbox: /tmp/r7-mock-sandbox
+
+=== DIRECTORY TREE ===
+/tmp/r7-mock-sandbox/.dev-factory
+/tmp/r7-mock-sandbox/.dev-factory/runs
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/architecture
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/delivery
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/execution
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/input
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/planning
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/product
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/quality
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/verification
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093309_ecee3960
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093309_ecee3960/architecture
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093309_ecee3960/delivery
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093309_ecee3960/execution
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093309_ecee3960/input
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093309_ecee3960/planning
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093309_ecee3960/product
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093309_ecee3960/quality
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093309_ecee3960/verification
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/architecture
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/delivery
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/execution
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/input
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/planning
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/product
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/quality
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/verification
+
+=== ALL FILES ===
+/tmp/r7-mock-sandbox/.dev-factory/prd.json
+/tmp/r7-mock-sandbox/.dev-factory/prd.md
+
+--- run_20260514T093218_e5f8c91d (deliver-project, F) ---
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/architecture/api_contract.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/architecture/architecture.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/architecture/architecture.md
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/architecture/data_model.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/architecture/dependency_graph.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/architecture/module_map.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/delivery/COMMIT_MSG.txt
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/delivery/delivery_report.md
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/delivery/final_report.md
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/delivery/PR_BODY.md
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/delivery/README.generated.md
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/delivery/release_notes.md
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/delivery/usage.generated.md
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/execution/claude_code_calls.jsonl
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/execution/codex_calls.jsonl
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/execution/crew_assembly.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/execution/execution_calls.jsonl
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/execution/executor_selection_M1-T1.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/execution/executor_selection_M2-T2.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/execution/executor_selection_M4-T3.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/execution/executor_selection_M4-T4.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/execution/executor_selection_M5-T5.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/execution/executor_selection_M5-T6.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/execution/milestone_M1_results.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/execution/milestone_M2_results.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/execution/milestone_M4_results.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/execution/milestone_M5_results.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/input/classification.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/input/raw_input.md
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/input/repo_scan.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/planning/delivery_plan.md
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/planning/milestones.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/planning/scaffold_plan.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/planning/tasks.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/product/prd.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/product/prd.md
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/product/product_brief.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/quality/code_review.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/quality/integration_review.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/quality/quality_gate.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/quality/scaffold_verification.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/quality/security_review.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/quality/test_plan.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/run_state.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/verification/release_check.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/verification/verification_report.json
+
+--- run_20260514T093309_ecee3960 (run-issue, E) ---
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093309_ecee3960/architecture/architecture.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093309_ecee3960/architecture/architecture.md
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093309_ecee3960/delivery/COMMIT_MSG.txt
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093309_ecee3960/delivery/final_report.md
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093309_ecee3960/delivery/PR_BODY.md
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093309_ecee3960/execution/codex_calls.jsonl
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093309_ecee3960/execution/crew_assembly.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093309_ecee3960/execution/execution_calls.jsonl
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093309_ecee3960/execution/executor_selection_MI-1-T1.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093309_ecee3960/execution/milestone_MI-1_results.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093309_ecee3960/input/classification.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093309_ecee3960/input/raw_input.md
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093309_ecee3960/input/repo_scan.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093309_ecee3960/planning/milestones.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093309_ecee3960/planning/tasks.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093309_ecee3960/quality/code_review.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093309_ecee3960/quality/quality_gate.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093309_ecee3960/run_state.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093309_ecee3960/verification/verification_report.json
+
+--- run_20260514T093354_ead6fe55 (deliver-project rerun, scenarios D/G/H target) ---
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/architecture/api_contract.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/architecture/architecture.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/architecture/architecture.md
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/architecture/data_model.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/architecture/dependency_graph.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/architecture/module_map.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/delivery/COMMIT_MSG.txt
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/delivery/delivery_report.md
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/delivery/final_report.md
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/delivery/PR_BODY.md
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/delivery/README.generated.md
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/delivery/release_notes.md
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/delivery/usage.generated.md
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/execution/claude_code_calls.jsonl
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/execution/codex_calls.jsonl
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/execution/crew_assembly.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/execution/execution_calls.jsonl
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/execution/executor_selection_M1-T1.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/execution/executor_selection_M2-T2.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/execution/executor_selection_M4-T3.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/execution/executor_selection_M4-T4.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/execution/executor_selection_M5-T5.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/execution/executor_selection_M5-T6.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/execution/milestone_M1_results.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/execution/milestone_M2_results.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/execution/milestone_M4_results.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/execution/milestone_M5_results.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/input/classification.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/input/raw_input.md
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/input/repo_scan.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/planning/delivery_plan.md
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/planning/milestones.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/planning/scaffold_plan.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/planning/tasks.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/product/prd.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/product/prd.md
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/product/product_brief.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/quality/code_review.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/quality/integration_review.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/quality/quality_gate.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/quality/scaffold_verification.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/quality/security_review.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/quality/test_plan.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/run_state.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/verification/release_check.json
+/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093354_ead6fe55/verification/verification_report.json
+
+=== AUDIT TREE VERIFICATION ===
+Required subdirs: input, product, architecture, planning, execution, quality, verification, delivery
+run_20260514T093218_e5f8c91d (deliver-project): ALL 8 PRESENT
+run_20260514T093309_ecee3960 (run-issue):       ALL 8 PRESENT (product dir empty - expected for issue flow)
+run_20260514T093354_ead6fe55 (deliver-project): ALL 8 PRESENT
+
+=== NOTES ===
+- create-prd / plan-project / plan-milestones are standalone commands that output to stdout
+  and do NOT create runs/<run_id> audit trees. They are pipeline-prep helpers.
+- deliver-project and run-issue are the full-pipeline flow commands that create the audit tree.
+- plan-tasks requires RunState.latest() to exist (created by deliver-project).
+- verify / report operate on an existing run_id.

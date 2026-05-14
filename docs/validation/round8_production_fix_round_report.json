@@ -1,0 +1,76 @@
+{
+  "round": "round8",
+  "name": "R8 Production Fix Round",
+  "status": "completed",
+  "overall_result": "pass",
+  "date": "2026-05-14",
+  "version_under_test": "0.1.0a3",
+  "scope": "Close R7 P0/P1/P2 findings without breaking existing functionality",
+  "agents_dispatched": 6,
+  "agents_succeeded": 6,
+  "agents": [
+    {"id": "F1", "name": "cli_pipeline", "branch": "r8-f1-cli-pipeline", "commit": "4750757", "files_changed": 3, "closes": ["P0-01", "P1-01", "P1-02", "P1-03", "P2_replay_snapshot"], "files": ["src/autodev/cli.py", "src/autodev/flows/replay_flow.py", "src/autodev/utils/cli_errors.py (new)"]},
+    {"id": "F2", "name": "security_gates", "branch": "r8-f2-security-gates", "commit": "7dc2689", "files_changed": 4, "closes": ["P1-04", "P1-05", "P1-06"], "files": ["src/autodev/mcp_server/path_safety.py", "src/autodev/utils/command_safety.py", "tests/integration/test_mcp_path_secret_denial.py (+9 tests)", "tests/unit/test_shell_safety.py (+9 tests)"], "note": "committed directly to main (worktree hygiene issue but no functional impact)"},
+    {"id": "F3", "name": "ci_pydantic", "branch": "r8-f3-ci-parity", "commit": "e6f1361", "files_changed": 3, "closes": ["P1-07", "P1-08", "P2_pydantic_AgentCard"], "files": ["pyproject.toml", ".github/workflows/lint.yml", "src/autodev/schemas.py"], "residual_p3": "AgentSpec runtime pydantic warning still leaks (filterwarnings only applies in pytest)"},
+    {"id": "F4", "name": "docs_drift", "branch": "r8-f4-docs", "commit": "a80285e", "files_changed": 6, "closes": ["P2-01..07", "P3-01", "P3-02", "P3-03"], "files": ["README.md", "docs/quickstart.md", "docs/architecture.md", "docs/mcp_server.md", "docs/troubleshooting.md", "docs/configuration.md"]},
+    {"id": "F5", "name": "package_hygiene", "branch": "r8-f5-pkg-hygiene", "commit": "8e64c84", "files_changed": 2, "closes": ["P2_stale_dist", "P2_info_plist", "P2_dockerfile_target"], "files": ["packaging/desktop/autodev-ai.app/Contents/Info.plist", "packaging/docker/Dockerfile"], "regression_introduced": "test_plist_short/bundle_version_is_0_1_0a1 hardcoded version mismatch — fixed inline by Opus"},
+    {"id": "F6", "name": "investigator_cwd", "branch": "r8-f6-investigator-cwd", "commit": "dc4a56b", "files_changed": 1, "closes": ["P2_investigate_repo_path"], "files": ["src/autodev/agents/investigator.py"], "details": "4 CWD bugs fixed: _collect_error_msg / _collect_prose / _collect_code_area / _git_blame"}
+  ],
+  "merge_commits_on_main": [
+    {"sha": "7dc2689", "title": "r8(f2) — direct commit to main (worktree leak, no functional issue)"},
+    {"sha": "2268c31", "title": "merge: r8(f1) CLI/pipeline"},
+    {"sha": "3826646", "title": "merge: r8(f3) CI parity"},
+    {"sha": "615418a", "title": "merge: r8(f4) docs drift"},
+    {"sha": "f0c0b9f", "title": "merge: r8(f5) package hygiene"},
+    {"sha": "234fee2", "title": "merge: r8(f6) investigate --repo-path anchor"}
+  ],
+  "verification": {
+    "pytest_total": 1321,
+    "pytest_passed": 1321,
+    "pytest_failed": 0,
+    "pytest_skipped": 9,
+    "pytest_duration_s": 30.19,
+    "ruff": "All checks passed",
+    "mypy_local_caveat": "1 local-env error in pydantic_ai_bridge.py (pydantic-ai overload strictness; CI safe; pre-existing not introduced by R8)",
+    "release_readiness_gate_module_form": "verified post-R8 (5 honest fails on coverage debt — pre-existing, tracked as R9 candidate)",
+    "continue_run_e2e": "verified — actually executes remaining milestones in mock mode",
+    "friendly_errors": "verified — FileNotFound/JSONDecodeError/ValidationError all surface as friendly typer.Exit with proper codes"
+  },
+  "p0_closed": 1,
+  "p1_closed_code": 8,
+  "p1_unfixable_host_env": 1,
+  "p2_closed": 18,
+  "p2_residual_p3": 3,
+  "regressions_introduced_and_closed_inline": [
+    {"id": "R8-INLINE-01", "agent": "F5", "issue": "test_plist_short/bundle_version_is_0_1_0a1 hardcoded 0.1.0a1 expectation when Info.plist bumped to 0.1.0a3", "fix": "Renamed tests to test_plist_short/bundle_version_matches_pyproject + refactored to read pyproject.toml version dynamically", "fixer": "Opus inline"}
+  ],
+  "residual_p3_p4": [
+    {"id": "R8-P3-01", "title": "AgentSpec runtime pydantic warning leak", "effort": "10 min", "fix": "Add warnings.filterwarnings at import time in autodev/__init__.py"},
+    {"id": "R8-P3-02", "title": "Replay non-determinism (intrinsic to LLM regen)", "effort": "2-3 h", "fix": "Deterministic mock seeding OR freeze-mode replay from snapshot"},
+    {"id": "R8-P3-03", "title": "Coverage debt on 5 modules (cli.py 48% / replay_flow.py 60% / mcp_server/server.py 79% / mcp_server/tools.py 79% / a2a/transports/http.py 78%)", "effort": "6-8 h", "fix": "Backfill tests for these modules"},
+    {"id": "R8-P3-04", "title": "a2a-serve --port 0 not supported", "effort": "30 min"},
+    {"id": "R8-P3-05", "title": "SSRF block error message generic 'connection error'", "effort": "30 min"},
+    {"id": "R8-P4-01", "title": "FACTORY_NET_ALLOW undocumented", "effort": "10 min"}
+  ],
+  "r9_recommendation": {
+    "name": "R9 Production Coverage + Polish (or skip to 0.1.0b1 beta promotion)",
+    "scope": "Address residual P3s (mostly coverage backfill + minor UX); optionally bundle with R6 enterprise hardening (SLSA L3 + SBOM + cosign + per-caller MCP auth) for 0.1.0 GA path",
+    "estimated_hours": "8-12 h for R9 alone; +17-25 h if combined with R6"
+  },
+  "git_state_at_end": {
+    "branch": "main",
+    "head_committed": "after_r7_r8_synthesis_commit",
+    "pushed_to_remote": false,
+    "awaiting_user_signoff_for_push": true
+  },
+  "quality_red_lines_upheld": [
+    "Did NOT push to remote (awaiting user signoff)",
+    "Did NOT touch PyPI/GitHub Release/Docker/Homebrew published artifacts",
+    "Did NOT modify v0.1.0a3 release",
+    "Did NOT bump version number (still 0.1.0a3; bump deferred)",
+    "Did NOT read or print real secrets",
+    "Did NOT skip tests to hide regressions (F5's test break was caught and fixed inline)",
+    "Did NOT lower coverage gate thresholds (debt explicitly tracked as R9 candidate)",
+    "Did NOT mark any P0/P1 as wontfix without explicit reason"
+  ]
+}

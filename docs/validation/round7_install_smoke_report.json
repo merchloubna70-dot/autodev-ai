@@ -1,0 +1,123 @@
+{
+  "round": "round7",
+  "agent_n": 2,
+  "agent_name": "clean_install_smoke",
+  "status": "completed",
+  "overall_result": "pass",
+  "p0_count": 0,
+  "p1_count": 1,
+  "p2_count": 1,
+  "p3_count": 0,
+  "p4_count": 0,
+  "environment_note": "python3.12 pip install BROKEN on this host due to pyexpat/libexpat ABI mismatch. Validation run with python3.11.15 as functional fallback.",
+  "editable_install": {
+    "venv_path": "/tmp/r7-venv-editable",
+    "python_version": "3.11.15",
+    "python_requested": "3.12",
+    "python_3_12_pip_blocked": true,
+    "python_3_12_block_reason": "ImportError: dlopen(pyexpat.cpython-312-darwin.so): Symbol not found: _XML_SetAllocTrackerActivationThreshold — libexpat ABI mismatch",
+    "pip_version": "26.1.1",
+    "install_cmd": "pip install -e .",
+    "install_exit": 0,
+    "typer_extra_all_warning": false,
+    "other_warnings": [
+      "SSL EOF retry on jinja2 (transient, recovered via retry 4/4)"
+    ],
+    "autodev_version_output": "autodev-ai 0.1.0a3",
+    "autodev_help_exit": 0,
+    "autodev_help_traceback": false,
+    "import_smoke": "ok",
+    "import_version": "0.1.0a3",
+    "python_m_cli_version": "autodev-ai 0.1.0a3",
+    "python_m_cli_exit": 0,
+    "module_form_gate_exit": 0,
+    "module_form_gate_traceback": false,
+    "module_form_gate_result": "2 pass / 30 fail / 4 skip (expected: running from /tmp without project root)",
+    "subcommand_help_failures": []
+  },
+  "pypi_install": {
+    "venv_path": "/tmp/r7-venv-pypi",
+    "python_version": "3.11.15",
+    "python_requested": "3.12",
+    "python_3_12_pip_blocked": true,
+    "python_3_12_block_reason": "ImportError: dlopen(pyexpat.cpython-312-darwin.so): Symbol not found: _XML_SetAllocTrackerActivationThreshold — libexpat ABI mismatch",
+    "pip_version": "26.1.1",
+    "install_cmd": "pip install --pre autodev-ai==0.1.0a3",
+    "install_exit": 0,
+    "typer_extra_all_warning": false,
+    "other_warnings": [],
+    "autodev_version_output": "autodev-ai 0.1.0a3",
+    "autodev_help_exit": 0,
+    "autodev_help_traceback": false,
+    "import_smoke": "ok",
+    "import_version": "0.1.0a3",
+    "python_m_cli_version": "autodev-ai 0.1.0a3",
+    "python_m_cli_exit": 0,
+    "module_form_gate_exit": 0,
+    "module_form_gate_traceback": false,
+    "module_form_gate_result": "2 pass / 30 fail / 4 skip (expected: running from /tmp without project root)",
+    "subcommand_help_failures": [],
+    "subcommand_help_checks": {
+      "classify-input": {"exit": 0, "traceback": false},
+      "mcp-serve": {"exit": 0, "traceback": false},
+      "scan": {"exit": 0, "traceback": false}
+    }
+  },
+  "version_diff_local_vs_pypi": null,
+  "version_local": "0.1.0a3",
+  "version_pypi": "0.1.0a3",
+  "r5_fix_verification": {
+    "typer_extra_all_warning_absent_editable": true,
+    "typer_extra_all_warning_absent_pypi": true,
+    "module_form_gate_no_traceback_editable": true,
+    "module_form_gate_no_traceback_pypi": true,
+    "r5_fixes_confirmed": true
+  },
+  "findings": [
+    {
+      "severity": "P1",
+      "category": "environment",
+      "title": "python3.12 pip install broken on this host — pyexpat/libexpat ABI mismatch",
+      "detail": "Python 3.12.13 (Homebrew) was compiled against a newer libexpat than the macOS system provides. All pip install subcommands fail with ImportError on pyexpat.cpython-312-darwin.so. ensurepip also fails. This affects only pip install, not running already-installed packages. Validated with python3.11.15 as fallback.",
+      "evidence": "ImportError: dlopen(/opt/homebrew/Cellar/python@3.12/3.12.13_2/.../pyexpat.cpython-312-darwin.so): Symbol not found: _XML_SetAllocTrackerActivationThreshold. Referenced from pyexpat.so, Expected in /usr/lib/libexpat.1.dylib",
+      "recommendation": "brew reinstall python@3.12 or upgrade macOS. Not a package defect."
+    },
+    {
+      "severity": "P2",
+      "category": "network",
+      "title": "SSL EOF retry on jinja2 during editable install (transient)",
+      "detail": "One SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING]') on jinja2 download. Recovered using cached wheel after retry. PyPI install had no such warning.",
+      "evidence": "WARNING: Retrying (Retry(total=4, connect=None, read=None, redirect=None, status=None)) after connection broken by 'SSLEOFError(8, ...)'",
+      "recommendation": "Transient network issue — no action required."
+    }
+  ],
+  "commands_run": [
+    {"cmd": "rm -rf /tmp/r7-venv-editable /tmp/r7-venv-pypi", "exit": 0, "stdout_head": "Cleaned up old venvs"},
+    {"cmd": "python3.12 -m venv /tmp/r7-venv-editable", "exit": 1, "stdout_head": "ensurepip failed — pyexpat/libexpat mismatch"},
+    {"cmd": "python3.11 -m venv /tmp/r7-venv-editable", "exit": 0, "stdout_head": "Editable venv exit: 0"},
+    {"cmd": "/tmp/r7-venv-editable/bin/pip install -U pip", "exit": 0, "stdout_head": "Successfully installed pip-26.1.1"},
+    {"cmd": "cd /Users/macworkers/autodev && /tmp/r7-venv-editable/bin/pip install -e .", "exit": 0, "stdout_head": "Successfully installed autodev-ai-0.1.0a3"},
+    {"cmd": "/tmp/r7-venv-editable/bin/autodev --version", "exit": 0, "stdout_head": "autodev-ai 0.1.0a3"},
+    {"cmd": "/tmp/r7-venv-editable/bin/autodev --help", "exit": 0, "stdout_head": "Usage: autodev [OPTIONS] COMMAND [ARGS]..."},
+    {"cmd": "/tmp/r7-venv-editable/bin/python -c 'import autodev; print(autodev.__version__)'", "exit": 0, "stdout_head": "0.1.0a3"},
+    {"cmd": "/tmp/r7-venv-editable/bin/python -m autodev.cli --version", "exit": 0, "stdout_head": "autodev-ai 0.1.0a3"},
+    {"cmd": "cd /tmp && /tmp/r7-venv-editable/bin/python -m autodev.release_readiness_gate", "exit": 0, "stdout_head": "=== Release Readiness Gate === overall: fail pass: 2 fail: 30 skip: 4"},
+    {"cmd": "python3.11 -m venv /tmp/r7-venv-pypi", "exit": 0, "stdout_head": "PyPI venv exit: 0"},
+    {"cmd": "/tmp/r7-venv-pypi/bin/pip install -U pip", "exit": 0, "stdout_head": "Successfully installed pip-26.1.1"},
+    {"cmd": "/tmp/r7-venv-pypi/bin/pip install --pre autodev-ai==0.1.0a3", "exit": 0, "stdout_head": "Successfully installed autodev-ai-0.1.0a3"},
+    {"cmd": "/tmp/r7-venv-pypi/bin/autodev --version", "exit": 0, "stdout_head": "autodev-ai 0.1.0a3"},
+    {"cmd": "/tmp/r7-venv-pypi/bin/autodev --help", "exit": 0, "stdout_head": "Usage: autodev [OPTIONS] COMMAND [ARGS]..."},
+    {"cmd": "/tmp/r7-venv-pypi/bin/autodev classify-input --help", "exit": 0, "stdout_head": "Usage: autodev classify-input [OPTIONS]"},
+    {"cmd": "/tmp/r7-venv-pypi/bin/autodev mcp-serve --help", "exit": 0, "stdout_head": "Usage: autodev mcp-serve [OPTIONS]"},
+    {"cmd": "/tmp/r7-venv-pypi/bin/autodev scan --help", "exit": 0, "stdout_head": "Usage: autodev scan [OPTIONS]"},
+    {"cmd": "/tmp/r7-venv-pypi/bin/python -c 'import autodev; print(autodev.__version__)'", "exit": 0, "stdout_head": "0.1.0a3"},
+    {"cmd": "/tmp/r7-venv-pypi/bin/python -m autodev.cli --version", "exit": 0, "stdout_head": "autodev-ai 0.1.0a3"},
+    {"cmd": "cd /tmp && /tmp/r7-venv-pypi/bin/python -m autodev.release_readiness_gate", "exit": 0, "stdout_head": "=== Release Readiness Gate === overall: fail pass: 2 fail: 30 skip: 4"},
+    {"cmd": "rm -rf /tmp/r7-venv-editable /tmp/r7-venv-pypi", "exit": 0, "stdout_head": "cleanup done"}
+  ],
+  "evidence_files": [
+    "/Users/macworkers/autodev/docs/validation/round7_install_smoke_report.md",
+    "/Users/macworkers/autodev/docs/validation/round7_install_smoke_report.json"
+  ],
+  "summary_one_line": "Both editable and PyPI installs of autodev-ai 0.1.0a3 passed all smoke checks on Python 3.11 (3.12 pip broken by host libexpat mismatch); R5 typer[all] warning ABSENT and module-form gate traceback ABSENT confirmed."
+}

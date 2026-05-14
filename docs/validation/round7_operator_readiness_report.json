@@ -1,0 +1,230 @@
+{
+  "round": "round7",
+  "agent_n": 12,
+  "agent_name": "operator_readiness",
+  "status": "completed",
+  "overall_result": "partial",
+  "p0_count": 0,
+  "p1_count": 0,
+  "p2_count": 7,
+  "p3_count": 3,
+  "p4_count": 1,
+  "docs_inventory": [
+    {"path": "README.md", "size_loc": 294, "covered": true},
+    {"path": "CHANGELOG.md", "size_loc": 190, "covered": true},
+    {"path": "docs/quickstart.md", "size_loc": 178, "covered": true},
+    {"path": "docs/configuration.md", "size_loc": 298, "covered": true},
+    {"path": "docs/architecture.md", "size_loc": 276, "covered": true},
+    {"path": "docs/troubleshooting.md", "size_loc": 310, "covered": true},
+    {"path": "docs/faq.md", "size_loc": 255, "covered": true},
+    {"path": "docs/a2a.md", "size_loc": 103, "covered": true},
+    {"path": "docs/a2a_server.md", "size_loc": 161, "covered": true},
+    {"path": "docs/a2a_http_client.md", "size_loc": 123, "covered": true},
+    {"path": "docs/mcp_server.md", "size_loc": 83, "covered": true},
+    {"path": "docs/multi_cli_executor.md", "size_loc": 107, "covered": true},
+    {"path": "docs/project_delivery.md", "size_loc": 41, "covered": true},
+    {"path": "docs/quality_gate.md", "size_loc": 14, "covered": true},
+    {"path": "docs/release_notes/v0.1.0a1.md", "size_loc": 242, "covered": true},
+    {"path": "docs/tutorials/01-bug-fix.md", "size_loc": 182, "covered": true},
+    {"path": "docs/tutorials/02-rust-project.md", "size_loc": 156, "covered": true},
+    {"path": "docs/tutorials/03-multi-cli-routing.md", "size_loc": 163, "covered": true},
+    {"path": "docs/tutorials/04-sprint-mode.md", "size_loc": 191, "covered": true},
+    {"path": "docs/tutorials/05-roundtable.md", "size_loc": 152, "covered": true},
+    {"path": "docs/tutorials/06-mcp-server.md", "size_loc": 171, "covered": true},
+    {"path": "docs/tutorials/07-a2a-server.md", "size_loc": 208, "covered": true},
+    {"path": "docs/release/homebrew_tap_publish_checklist.md", "size_loc": 77, "covered": true},
+    {"path": "docs/release/pypi_0_1_0a1_publish_checklist.md", "size_loc": 246, "covered": true}
+  ],
+  "rubric": {
+    "ten_min_quickstart": {
+      "result": "partial",
+      "issues": [
+        "docs/quickstart.md line 19: clone URL is placeholder 'github.com/your-org/autodev-ai' — should be 'github.com/merchloubna70-dot/autodev-ai' (P2)",
+        "FACTORY_FORCE_MOCK=1 is documented in Step 2 table but not set in the Step 3 demo command (P3)"
+      ]
+    },
+    "env_var_coverage": {
+      "used_in_code": [
+        "AUTODEV_MCP_ALLOW_APPLY",
+        "AUTODEV_MCP_AUDIT_LOG",
+        "AUTODEV_A2A_ALLOW_PRIVATE_NETWORKS",
+        "AUTODEV_A2A_TOKEN",
+        "FACTORY_FORCE_MOCK",
+        "FACTORY_LOG",
+        "FACTORY_CODEX_BIN",
+        "FACTORY_CODEX_CMD",
+        "FACTORY_CLAUDE_BIN",
+        "FACTORY_CLAUDE_CMD",
+        "FACTORY_NET_ALLOW"
+      ],
+      "documented": [
+        "AUTODEV_MCP_ALLOW_APPLY",
+        "AUTODEV_MCP_AUDIT_LOG",
+        "AUTODEV_A2A_ALLOW_PRIVATE_NETWORKS",
+        "AUTODEV_A2A_TOKEN",
+        "FACTORY_FORCE_MOCK",
+        "FACTORY_LOG",
+        "FACTORY_CODEX_BIN",
+        "FACTORY_CLAUDE_BIN",
+        "FACTORY_CODEX_CMD (multi_cli_executor.md only)",
+        "FACTORY_CLAUDE_CMD (multi_cli_executor.md only)"
+      ],
+      "missing_in_docs": [
+        "FACTORY_CODEX_CMD (absent from configuration.md env var table — P3)",
+        "FACTORY_CLAUDE_CMD (absent from configuration.md env var table — P3)",
+        "FACTORY_NET_ALLOW (no user-facing documentation — P4)"
+      ],
+      "documented_but_unused": []
+    },
+    "cli_command_coverage": {
+      "undocumented_commands": [
+        "dashboard — present in cli.py, absent from README 'All CLI commands' section (P2); partially covered by troubleshooting.md §11"
+      ],
+      "stale_commands_in_docs": []
+    },
+    "security_boundary_clarity": {
+      "ssrf": "partial — documented in troubleshooting.md §5 and configuration.md §2.3; absent from a2a.md and architecture.md (P2)",
+      "path_safety": "partial — documented in CHANGELOG 0.1.0a2; absent from architecture.md and mcp_server.md (P2)",
+      "branch_injection": "partial — documented in CHANGELOG 0.1.0a2; absent from architecture.md and configuration.md (P2)",
+      "secret_redaction": "partial — documented in CHANGELOG 0.1.0a2; absent from architecture.md and mcp_server.md (P2)",
+      "apply_gate": "partial — documented in configuration.md §9; absent from mcp_server.md (P2)"
+    },
+    "alpha_limitations_disclosed": {
+      "slsa": "release_notes only — absent from README",
+      "sbom": "release_notes only — absent from README (P2)",
+      "cosign": "release_notes only — absent from README (P2)",
+      "mcp_per_caller_auth": "release_notes only — absent from README and mcp_server.md (P2)",
+      "macos_sign": "release_notes only — absent from README (P2)",
+      "coverage": "CHANGELOG has 80.5% — absent from README (P2)",
+      "enterprise_blocked": "release_notes only — absent from README (P2)"
+    },
+    "distribution_channels_accurate": {
+      "pypi": "partial — pip install --pre autodev-ai is correct; direct wheel URL in README points to stale v0.1.0a1 not v0.1.0a3 (P2)",
+      "github_release": "drift — README links to v0.1.0-alpha tag; current is v0.1.0a3 (P2)",
+      "docker": "drift — README shows ':0.1.0-alpha'; published tag is ':0.1.0a3' (P2)",
+      "homebrew": "absent — tap is live (brew tap merchloubna70-dot/autodev works); README has no Homebrew install instruction (P3); troubleshooting §9 stale (P2)"
+    }
+  },
+  "findings": [
+    {
+      "severity": "P2",
+      "title": "Quickstart clone URL is a placeholder",
+      "detail": "docs/quickstart.md line 19 uses 'github.com/your-org/autodev-ai'. A new user copying this gets a 404.",
+      "quote": "git clone https://github.com/your-org/autodev-ai.git"
+    },
+    {
+      "severity": "P2",
+      "title": "README Install wheel link points to stale v0.1.0a1",
+      "detail": "README.md line 29 references v0.1.0a1 wheel; current version is v0.1.0a3.",
+      "quote": "pip install https://github.com/merchloubna70-dot/autodev-ai/releases/download/v0.1.0a1/autodev_ai-0.1.0a1-py3-none-any.whl"
+    },
+    {
+      "severity": "P2",
+      "title": "README Docker tag is stale (:0.1.0-alpha)",
+      "detail": "README.md lines 43-44 show ':0.1.0-alpha'; confirmed published tag is ':0.1.0a3'.",
+      "quote": "docker pull ghcr.io/merchloubna70-dot/autodev-ai:0.1.0-alpha"
+    },
+    {
+      "severity": "P2",
+      "title": "`dashboard` command missing from README All CLI commands section",
+      "detail": "README lists 34 commands; CLI has 35. `dashboard` is absent. It is mentioned in troubleshooting.md §11 but not in the command reference.",
+      "quote": "README.md '## All CLI commands' section — 34 entries, no `dashboard`"
+    },
+    {
+      "severity": "P2",
+      "title": "Security boundaries absent from architecture.md and mcp_server.md",
+      "detail": "SSRF defense, path_safety, branch injection rejection, secret redaction, and apply-gate — none appear in architecture.md or mcp_server.md. Only CHANGELOG documents them. Primary reference docs leave operators unaware.",
+      "quote": "architecture.md A2A section has no SSRF mention; mcp_server.md has no apply-gate or path safety mention"
+    },
+    {
+      "severity": "P2",
+      "title": "README alpha limitations disclosure is incomplete",
+      "detail": "README §Status says only 'alpha'. Does not enumerate: SLSA L3 absent, SBOM absent, cosign absent, MCP per-caller auth absent, coverage 80.5%, enterprise use blocked. These appear only in docs/release_notes/v0.1.0a1.md.",
+      "quote": "> **Status**: alpha — [`v0.1.0-alpha`] on GitHub Releases. PyPI publish gated on user feedback..."
+    },
+    {
+      "severity": "P2",
+      "title": "troubleshooting.md §9 Homebrew section is stale",
+      "detail": "§9 says 'blocked until PyPI 0.1.0a1 published'. Homebrew tap is now live: brew tap merchloubna70-dot/autodev works and shows stable 0.1.0a3.",
+      "quote": "troubleshooting.md §9: 'Workaround until PyPI publish: pip install https://github.com/.../v0.1.0-alpha/autodev_ai-0.1.0-py3-none-any.whl'"
+    },
+    {
+      "severity": "P3",
+      "title": "FACTORY_FORCE_MOCK=1 not used in quickstart demo command",
+      "detail": "Rubric requires explicit FACTORY_FORCE_MOCK=1 in the demo. Quickstart uses --allow-mock-executor true instead; FACTORY_FORCE_MOCK only appears in the Step 2 table.",
+      "quote": "quickstart.md Step 3 command does not include FACTORY_FORCE_MOCK=1"
+    },
+    {
+      "severity": "P3",
+      "title": "FACTORY_CODEX_CMD and FACTORY_CLAUDE_CMD absent from configuration.md",
+      "detail": "Used in src/autodev/config.py to override command_template. Documented only in multi_cli_executor.md; absent from configuration.md env var table.",
+      "quote": "config.py line 73: if os.environ.get('FACTORY_CODEX_CMD'): cfg.codex.command_template = ..."
+    },
+    {
+      "severity": "P3",
+      "title": "Homebrew absent from README Install section",
+      "detail": "Homebrew tap is live (brew tap merchloubna70-dot/autodev; brew install autodev-ai) but README §Install has no Homebrew mention at all.",
+      "quote": "README.md §Install: shows pip and docker only; no brew tap/install"
+    },
+    {
+      "severity": "P4",
+      "title": "FACTORY_NET_ALLOW undocumented",
+      "detail": "Set by network_allowlist.py and injected into subprocess environments; no user-facing documentation. Internal use only but could confuse operators seeing it in subprocess logs.",
+      "quote": "src/autodev/executors/network_allowlist.py line 74: return {'FACTORY_NET_ALLOW': ','.join(domains)}"
+    }
+  ],
+  "commands_run": [
+    {
+      "cmd": "grep -rohE 'AUTODEV_[A-Z_]+' src/autodev/ | sort -u",
+      "exit": 0,
+      "stdout_head": "AUTODEV_A2A_ALLOW_PRIVATE_NETWORKS AUTODEV_A2A_TOKEN AUTODEV_MCP_ALLOW_APPLY AUTODEV_MCP_AUDIT_LOG",
+      "duration_ms": 120
+    },
+    {
+      "cmd": "grep -rohE 'FACTORY_[A-Z_]+' src/autodev/ | sort -u",
+      "exit": 0,
+      "stdout_head": "FACTORY_CLAUDE_BIN FACTORY_CLAUDE_CMD FACTORY_CODEX_BIN FACTORY_CODEX_CMD FACTORY_FORCE_MOCK FACTORY_LOG FACTORY_NET_ALLOW",
+      "duration_ms": 115
+    },
+    {
+      "cmd": "grep '@app.command' src/autodev/cli.py | grep -oE '\"[^\"]+\"' | tr -d '\"'",
+      "exit": 0,
+      "stdout_head": "run-issue deliver-project classify-input create-prd plan-project ... dashboard (35 total)",
+      "duration_ms": 80
+    },
+    {
+      "cmd": "grep -A 100 '## All CLI commands' README.md | grep '^autodev ' | wc -l",
+      "exit": 0,
+      "stdout_head": "34",
+      "duration_ms": 50
+    },
+    {
+      "cmd": "grep -rn 'SSRF|path.safe|branch.*inject|secret.*redact|apply.*gate' docs/architecture.md docs/mcp_server.md docs/a2a.md",
+      "exit": 1,
+      "stdout_head": "(empty — no matches)",
+      "duration_ms": 60
+    }
+  ],
+  "evidence_files": [
+    "/Users/macworkers/autodev/README.md",
+    "/Users/macworkers/autodev/CHANGELOG.md",
+    "/Users/macworkers/autodev/docs/quickstart.md",
+    "/Users/macworkers/autodev/docs/configuration.md",
+    "/Users/macworkers/autodev/docs/architecture.md",
+    "/Users/macworkers/autodev/docs/troubleshooting.md",
+    "/Users/macworkers/autodev/docs/faq.md",
+    "/Users/macworkers/autodev/docs/a2a.md",
+    "/Users/macworkers/autodev/docs/a2a_server.md",
+    "/Users/macworkers/autodev/docs/a2a_http_client.md",
+    "/Users/macworkers/autodev/docs/mcp_server.md",
+    "/Users/macworkers/autodev/docs/multi_cli_executor.md",
+    "/Users/macworkers/autodev/docs/release_notes/v0.1.0a1.md",
+    "/Users/macworkers/autodev/docs/release/homebrew_tap_publish_checklist.md",
+    "/Users/macworkers/autodev/docs/validation/autodev_post_publish_v0_1_0a3_round.md",
+    "/Users/macworkers/autodev/docs/validation/round7_cli_surface_contract_report.md",
+    "/Users/macworkers/autodev/src/autodev/cli.py",
+    "/Users/macworkers/autodev/src/autodev/config.py",
+    "/Users/macworkers/autodev/src/autodev/executors/network_allowlist.py"
+  ],
+  "summary_one_line": "Docs are functional for alpha use but have 7 P2 drift issues: stale install URLs (README wheel/docker/github-release still point to v0.1.0a1/0.1.0-alpha), dashboard missing from command table, security boundaries absent from architecture+mcp_server reference docs, alpha limitations incomplete in README, and troubleshooting §9 Homebrew step stale."
+}

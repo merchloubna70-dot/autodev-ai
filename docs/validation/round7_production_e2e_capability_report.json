@@ -1,0 +1,91 @@
+{
+  "round": "round7",
+  "name": "R7 Production E2E Capability Validation Round",
+  "status": "completed",
+  "date": "2026-05-14",
+  "version_under_test": "0.1.0a3",
+  "git_head_at_r7_start": "0a227d4",
+  "methodology": "12 parallel sonnet agents + Opus synthesis (read-only)",
+  "verdict": "AlphaProductionCapable",
+  "verdict_rationale": "Core mock-first pipeline + 4-channel distribution + security boundaries all work; 1 P0 (continue-run stub) breaks documented resume feature but is clearly alpha-stage gap, not foundational defect; R8 fix round addresses all P0/P1 + most P2",
+  "capability_matrix": {
+    "installability": "pass_with_limitations",
+    "cli_surface_stability": "pass_with_limitations",
+    "mock_e2e_pipeline": "pass_with_limitations",
+    "state_recovery": "fail",
+    "replayability": "partial",
+    "executor_boundary": "pass_with_limitations",
+    "security_abuse_resistance": "partial",
+    "a2a_protocol_readiness": "pass_with_limitations",
+    "mcp_protocol_readiness": "pass_with_limitations",
+    "release_packaging": "pass_with_limitations",
+    "ci_parity": "pass_with_limitations",
+    "brownfield_handling": "pass_with_limitations",
+    "operator_documentation": "partial",
+    "observability_auditability": "pass"
+  },
+  "severity_counts": {"p0": 1, "p1": 9, "p2": 23, "p3": 6, "p4": 1},
+  "p0_findings": [
+    {"id": "P0-01", "title": "continue-run is a non-functional stub at cli.py:332-341", "owner_agent": "A5", "fix_status": "closed_in_r8_f1"}
+  ],
+  "p1_findings": [
+    {"id": "P1-01", "title": "Missing run_id raw FileNotFoundError traceback", "owner_agent": "A5", "fix_status": "closed_in_r8_f1"},
+    {"id": "P1-02", "title": "Corrupted run_state.json raw JSONDecodeError traceback", "owner_agent": "A5", "fix_status": "closed_in_r8_f1"},
+    {"id": "P1-03", "title": "Invalid enum field raw ValidationError traceback", "owner_agent": "A5", "fix_status": "closed_in_r8_f1"},
+    {"id": "P1-04", "title": "command_safety denylist literal-substring miss for curl URL | bash", "owner_agent": "A6/A7", "fix_status": "closed_in_r8_f2"},
+    {"id": "P1-05", "title": "path_safety permits absolute paths like /etc/passwd", "owner_agent": "A7", "fix_status": "closed_in_r8_f2"},
+    {"id": "P1-06", "title": "SSH key names (id_rsa) bypass MCP secret-path block", "owner_agent": "A7", "fix_status": "closed_in_r8_f2"},
+    {"id": "P1-07", "title": "coverage_gate.py not invoked by any CI workflow", "owner_agent": "A10", "fix_status": "closed_in_r8_f3"},
+    {"id": "P1-08", "title": "pytest.mark.integration unregistered (warning on every CI run)", "owner_agent": "A10", "fix_status": "closed_in_r8_f3"},
+    {"id": "P1-09", "title": "Host Python 3.12.13 pyexpat ABI mismatch on this Mac", "owner_agent": "A2/A10", "fix_status": "host_environment_no_code_fix"}
+  ],
+  "p2_findings_summary": {
+    "docs_drift": 7,
+    "pydantic_warnings": 3,
+    "package_hygiene": 3,
+    "replay_determinism": 2,
+    "cli_ux": 3,
+    "other": 5,
+    "fix_status": "majority closed in R8 (F3 partial pydantic AgentSpec runtime suppression remaining as P3)"
+  },
+  "commands_aggregate": {
+    "total_executed": 210,
+    "exit_zero": 180,
+    "non_zero_intentional_rejection": 25,
+    "non_zero_regression": 5,
+    "skipped_environment": 5
+  },
+  "evidence_files": [
+    "docs/validation/round7_baseline_inventory.{md,json}",
+    "docs/validation/round7_install_smoke_report.{md,json}",
+    "docs/validation/round7_cli_surface_contract_report.{md,json}",
+    "docs/validation/round7_mock_full_pipeline_report.{md,json}",
+    "docs/validation/round7_mock_full_pipeline_run_tree.txt",
+    "docs/validation/round7_continue_replay_report.{md,json}",
+    "docs/validation/round7_executor_boundary_report.{md,json}",
+    "docs/validation/round7_security_abuse_e2e_report.{md,json}",
+    "docs/validation/round7_a2a_mcp_protocol_report.{md,json}",
+    "docs/validation/round7_release_packaging_report.{md,json}",
+    "docs/validation/round7_ci_parity_report.{md,json}",
+    "docs/validation/round7_brownfield_project_e2e_report.{md,json}",
+    "docs/validation/round7_operator_readiness_report.{md,json}",
+    "docs/validation/round7_production_e2e_capability_report.{md,json}",
+    "docs/validation/round8_production_fix_round_report.{md,json}"
+  ],
+  "r8_fix_round_outcome": {
+    "round": "R8 Production Fix Round (executed same day, 2026-05-14)",
+    "agents_dispatched": 6,
+    "agents_succeeded": 6,
+    "merge_commits_on_main": ["2268c31 (f1)", "3826646 (f3)", "615418a (f4)", "f0c0b9f (f5)", "234fee2 (f6)"],
+    "f2_committed_direct_to_main": "7dc2689 (security gates)",
+    "f5_introduced_regression_2_tests_closed_inline": "test_plist_short/bundle_version_is_0_1_0a1 → matches_pyproject (refactored to read from pyproject.toml)",
+    "final_pytest": "1321 passed / 0 failed / 9 skipped",
+    "final_ruff": "All checks passed",
+    "final_mypy": "1 local-env pydantic-ai overload error (CI safe)",
+    "p0_closed": 1,
+    "p1_closed_code": 8,
+    "p1_unfixable_host_env": 1,
+    "p2_closed": 18,
+    "p2_residual_p3": 3
+  }
+}

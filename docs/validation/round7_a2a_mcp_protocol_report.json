@@ -1,0 +1,135 @@
+{
+  "round": "round7",
+  "agent_n": 8,
+  "agent_name": "a2a_mcp_protocol",
+  "status": "completed",
+  "overall_result": "pass",
+  "p0_count": 0,
+  "p1_count": 0,
+  "p2_count": 1,
+  "p3_count": 2,
+  "p4_count": 0,
+  "a2a": {
+    "cli_helps": [
+      {"cmd": "a2a-serve --help", "exit": 0, "ok": true},
+      {"cmd": "a2a-register --help", "exit": 0, "ok": true},
+      {"cmd": "a2a-call --help", "exit": 0, "ok": true}
+    ],
+    "import_smoke": {
+      "server": "ok",
+      "client": "ok",
+      "roster": "ok"
+    },
+    "roster_roundtrip": "pass",
+    "bearer_auth": {
+      "port_used": 54321,
+      "bind": "127.0.0.1",
+      "without_token": "401",
+      "wrong_token": "401",
+      "right_token": "200"
+    },
+    "ssrf_deny": {
+      "127.0.0.1_blocked_by_default": true,
+      "10.0.0.1_blocked": true,
+      "169.254.169.254_blocked": true,
+      "mechanism": "A2AHttpSSRFError raised in _validate_url and _resolve_and_pin_host, caught in _make_request → returns (0, b'')",
+      "dns_rebinding_mitigation": "IP-pinning via _PinnedHTTPHandler/_PinnedHTTPSHandler, hostname resolved once and pinned",
+      "allow_private_env": "AUTODEV_A2A_ALLOW_PRIVATE_NETWORKS=1 bypasses blocklist for integration testing",
+      "note": "CLI a2a-call surfaces SSRF block as status=failed artifact, not explicit error code"
+    }
+  },
+  "mcp": {
+    "cli_help": "ok",
+    "import_smoke": {
+      "server": "ok",
+      "tools": "ok",
+      "path_safety": "ok"
+    },
+    "tools_discovered": [
+      {"name": "autodev_scan", "has_input_schema": true, "required_params": ["repo_path"]},
+      {"name": "autodev_classify_input", "has_input_schema": true, "required_params": ["text"]},
+      {"name": "autodev_create_prd", "has_input_schema": true, "required_params": ["brief_text"]},
+      {"name": "autodev_deliver_project", "has_input_schema": true, "required_params": ["repo_path", "brief_text"]},
+      {"name": "autodev_run_issue", "has_input_schema": true, "required_params": ["repo_path", "issue_text"]},
+      {"name": "autodev_report", "has_input_schema": true, "required_params": ["repo_path", "run_id"]},
+      {"name": "autodev_roundtable", "has_input_schema": true, "required_params": ["topic", "skills"]},
+      {"name": "autodev_release_check", "has_input_schema": true, "required_params": ["repo_path", "run_id"]},
+      {"name": "autodev_list_runs", "has_input_schema": true, "required_params": ["repo_path"]}
+    ],
+    "missing_tools_vs_spec": [],
+    "path_safety_test": [
+      {"input": ".env", "rejected": true},
+      {"input": "config.pem", "rejected": true},
+      {"input": "../../etc/passwd", "rejected": true},
+      {"input": ".env.production", "rejected": true},
+      {"input": ".env.local", "rejected": true},
+      {"input": "secret_key.txt", "rejected": true},
+      {"input": "my.token", "rejected": true},
+      {"input": "credentials.json", "rejected": true},
+      {"input": "/valid/repo/path", "rejected": false},
+      {"input": "/home/user/project", "rejected": false},
+      {"input": "relative/path", "rejected": false},
+      {"input": "secrets.toml", "rejected": true},
+      {"input": "server.key", "rejected": true},
+      {"input": "app_credential_store", "rejected": true}
+    ],
+    "apply_mode_gate": {
+      "allow_apply_only_rejected": true,
+      "env_only_rejected": true,
+      "both_set_permitted": true,
+      "missing_allow_apply_rejected": true,
+      "audit_log_emitted": true,
+      "audit_log_path": "/tmp/autodev_mcp_audit.log",
+      "env_var": "AUTODEV_MCP_ALLOW_APPLY"
+    }
+  },
+  "processes_left_running": [],
+  "findings": [
+    {
+      "severity": "P2",
+      "title": "Pydantic model_hint protected namespace warning",
+      "detail": "AgentCard.model_hint and AgentSpec.model_settings conflict with Pydantic protected namespace 'model_', producing UserWarning on every import. Fix: add model_config = ConfigDict(protected_namespaces=()) to both schemas."
+    },
+    {
+      "severity": "P3",
+      "title": "SSRF block not surfaced as explicit error to CLI caller",
+      "detail": "When a2a-call targets a private/loopback address, SSRF is silently absorbed and surfaces as status=failed with 'connection error' artifact text. Fail-closed behavior is correct but diagnostics could be improved with an explicit 'SSRF blocked' message."
+    },
+    {
+      "severity": "P3",
+      "title": "a2a-serve does not support --port 0 for OS auto-assignment",
+      "detail": "--port is INTEGER with default 8421. Port 0 for ephemeral assignment is not implemented. Testing requires explicit high port selection (used 54321)."
+    }
+  ],
+  "commands_run": [
+    {"cmd": "autodev a2a-serve --help", "exit": 0, "stdout_head": "Usage: autodev a2a-serve [OPTIONS]", "duration_ms": 850},
+    {"cmd": "autodev a2a-register --help", "exit": 0, "stdout_head": "Usage: autodev a2a-register [OPTIONS]", "duration_ms": 820},
+    {"cmd": "autodev a2a-call --help", "exit": 0, "stdout_head": "Usage: autodev a2a-call [OPTIONS]", "duration_ms": 800},
+    {"cmd": "autodev mcp-serve --help", "exit": 0, "stdout_head": "Usage: autodev mcp-serve [OPTIONS]", "duration_ms": 820},
+    {"cmd": "python3.11 -c from autodev.adapters.a2a.server import A2AHttpServer...", "exit": 0, "stdout_head": "server imports ok", "duration_ms": 400},
+    {"cmd": "python3.11 -c from autodev.adapters.a2a.client import A2AClient", "exit": 0, "stdout_head": "client imports ok", "duration_ms": 380},
+    {"cmd": "python3.11 -c from autodev.adapters.a2a.roster import AgentRoster", "exit": 0, "stdout_head": "roster imports ok", "duration_ms": 390},
+    {"cmd": "python3.11 (roster round-trip)", "exit": 0, "stdout_head": "ROSTER ROUND-TRIP: PASS", "duration_ms": 450},
+    {"cmd": "autodev a2a-serve --port 54321 --bind 127.0.0.1 (with AUTODEV_A2A_TOKEN)", "exit": "background", "stdout_head": "A2A server on http://127.0.0.1:54321", "duration_ms": 1500},
+    {"cmd": "curl no-token", "exit": 0, "stdout_head": "HTTP 401", "duration_ms": 30},
+    {"cmd": "curl wrong-token", "exit": 0, "stdout_head": "HTTP 401", "duration_ms": 25},
+    {"cmd": "curl right-token", "exit": 0, "stdout_head": "HTTP 200, valid JSON AgentCard", "duration_ms": 30},
+    {"cmd": "python3.11 (SSRF tests via _validate_url)", "exit": 0, "stdout_head": "SSRF DENIED 127.0.0.1, 10.0.0.1, 169.254.169.254", "duration_ms": 200},
+    {"cmd": "python3.11 (path_safety 14 cases)", "exit": 0, "stdout_head": "All path safety tests: PASS", "duration_ms": 200},
+    {"cmd": "python3.11 (apply-mode gate 4 scenarios)", "exit": 0, "stdout_head": "All apply-mode gate tests: PASS", "duration_ms": 200},
+    {"cmd": "python3.11 (tools schema enumeration)", "exit": 0, "stdout_head": "Total tools discovered: 9", "duration_ms": 350},
+    {"cmd": "pkill -f autodev a2a-serve", "exit": 0, "stdout_head": "", "duration_ms": 100}
+  ],
+  "evidence_files": [
+    "/Users/macworkers/autodev/src/autodev/adapters/a2a/server.py",
+    "/Users/macworkers/autodev/src/autodev/adapters/a2a/client.py",
+    "/Users/macworkers/autodev/src/autodev/adapters/a2a/roster.py",
+    "/Users/macworkers/autodev/src/autodev/adapters/a2a/transports/http.py",
+    "/Users/macworkers/autodev/src/autodev/mcp_server/server.py",
+    "/Users/macworkers/autodev/src/autodev/mcp_server/tools.py",
+    "/Users/macworkers/autodev/src/autodev/mcp_server/path_safety.py",
+    "/Users/macworkers/autodev/docs/validation/round7_a2a_mcp_protocol_report.md",
+    "/Users/macworkers/autodev/docs/validation/round7_a2a_mcp_protocol_report.json"
+  ],
+  "summary_one_line": "All A2A+MCP protocol checks pass: bearer auth 401/401/200, SSRF blocked for 127.0.0.1/10.x/169.254.x, roster round-trip OK, 9/9 MCP tools with valid schemas, path_safety 14/14, apply-mode double gate 4/4; P0=0."
+}

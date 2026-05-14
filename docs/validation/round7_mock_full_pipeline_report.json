@@ -1,0 +1,228 @@
+{
+  "round": "round7",
+  "agent_n": 4,
+  "agent_name": "mock_full_pipeline",
+  "status": "completed",
+  "overall_result": "pass",
+  "p0_count": 0,
+  "p1_count": 0,
+  "p2_count": 1,
+  "p3_count": 2,
+  "p4_count": 1,
+  "sandbox_path": "/tmp/r7-mock-sandbox",
+  "env": {
+    "FACTORY_FORCE_MOCK": "1",
+    "secrets_unset": ["OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GITHUB_TOKEN"]
+  },
+  "scenarios": [
+    {
+      "id": "A",
+      "name": "brief_to_prd",
+      "cmd": "autodev create-prd --project-brief brief.txt --output .dev-factory/prd.md",
+      "exit": 0,
+      "duration_ms": 432,
+      "artifacts_created": [".dev-factory/prd.md", ".dev-factory/prd.json"],
+      "stdout_head": "wrote .dev-factory/prd.md",
+      "result": "pass",
+      "notes": "--project-brief expects file path, not inline string; first attempt failed with FileNotFoundError"
+    },
+    {
+      "id": "B",
+      "name": "prd_to_project_plan",
+      "cmd": "autodev plan-project --repo-path . --prd .dev-factory/prd.md --languages python",
+      "exit": 0,
+      "duration_ms": 430,
+      "artifacts_created": ["stdout:architecture JSON"],
+      "stdout_head": "{\"title\": \"Architecture: Build a hello-world REST API...\", \"overview\": \"...\", \"modules\": [{\"name\": \"core_python\", ...}]}",
+      "result": "pass",
+      "notes": "Standalone helper — outputs to stdout only, no run-state audit tree created"
+    },
+    {
+      "id": "C",
+      "name": "prd_to_milestones",
+      "cmd": "autodev plan-milestones --repo-path . --prd .dev-factory/prd.md --max-milestones 3",
+      "exit": 0,
+      "duration_ms": 419,
+      "artifacts_created": ["stdout:milestones list"],
+      "stdout_head": "[{'milestone_id': 'M0', 'title': 'Product & Architecture', ...}, {'milestone_id': 'M1', ...}, {'milestone_id': 'M2', ...}]",
+      "result": "pass",
+      "notes": "Standalone helper — outputs to stdout only, no run-state audit tree created"
+    },
+    {
+      "id": "D",
+      "name": "milestone_to_tasks",
+      "cmd": "autodev plan-tasks --repo-path . --milestone-id M1",
+      "exit": 0,
+      "duration_ms": 430,
+      "artifacts_created": ["stdout:tasks list"],
+      "stdout_head": "[{'task_id': 'M1-T1', 'milestone_id': 'M1', 'title': 'Scaffold python skeleton', ...}]",
+      "result": "pass",
+      "notes": "Requires RunState.latest() with milestone_plan; must be run after deliver-project"
+    },
+    {
+      "id": "E",
+      "name": "run_issue",
+      "cmd": "autodev run-issue --repo-path . --issue-file issue.txt --languages python --mode dry-run --allow-mock-executor true --no-fail-fast",
+      "exit": 0,
+      "duration_ms": 800,
+      "artifacts_created": [
+        ".dev-factory/runs/run_20260514T093309_ecee3960/input/raw_input.md",
+        ".dev-factory/runs/run_20260514T093309_ecee3960/input/classification.json",
+        ".dev-factory/runs/run_20260514T093309_ecee3960/input/repo_scan.json",
+        ".dev-factory/runs/run_20260514T093309_ecee3960/architecture/architecture.json",
+        ".dev-factory/runs/run_20260514T093309_ecee3960/architecture/architecture.md",
+        ".dev-factory/runs/run_20260514T093309_ecee3960/planning/milestones.json",
+        ".dev-factory/runs/run_20260514T093309_ecee3960/planning/tasks.json",
+        ".dev-factory/runs/run_20260514T093309_ecee3960/execution/execution_calls.jsonl",
+        ".dev-factory/runs/run_20260514T093309_ecee3960/execution/codex_calls.jsonl",
+        ".dev-factory/runs/run_20260514T093309_ecee3960/quality/code_review.json",
+        ".dev-factory/runs/run_20260514T093309_ecee3960/quality/quality_gate.json",
+        ".dev-factory/runs/run_20260514T093309_ecee3960/verification/verification_report.json",
+        ".dev-factory/runs/run_20260514T093309_ecee3960/delivery/final_report.md",
+        ".dev-factory/runs/run_20260514T093309_ecee3960/run_state.json"
+      ],
+      "stdout_head": "run_id=run_20260514T093309_ecee3960 mode=dry-run mock=True",
+      "result": "pass",
+      "notes": "Issue pipeline flow; product/ dir empty by design for issue mode"
+    },
+    {
+      "id": "F",
+      "name": "deliver_project",
+      "cmd": "autodev deliver-project --repo-path . --project-brief brief.txt --languages python --mode dry-run --allow-mock-executor true --scale small --no-fail-fast",
+      "exit": 0,
+      "duration_ms": 476,
+      "artifacts_created": [
+        ".dev-factory/runs/run_20260514T093218_e5f8c91d/input/raw_input.md",
+        ".dev-factory/runs/run_20260514T093218_e5f8c91d/input/classification.json",
+        ".dev-factory/runs/run_20260514T093218_e5f8c91d/input/repo_scan.json",
+        ".dev-factory/runs/run_20260514T093218_e5f8c91d/product/prd.json",
+        ".dev-factory/runs/run_20260514T093218_e5f8c91d/product/prd.md",
+        ".dev-factory/runs/run_20260514T093218_e5f8c91d/product/product_brief.json",
+        ".dev-factory/runs/run_20260514T093218_e5f8c91d/architecture/architecture.json",
+        ".dev-factory/runs/run_20260514T093218_e5f8c91d/architecture/architecture.md",
+        ".dev-factory/runs/run_20260514T093218_e5f8c91d/architecture/api_contract.json",
+        ".dev-factory/runs/run_20260514T093218_e5f8c91d/architecture/data_model.json",
+        ".dev-factory/runs/run_20260514T093218_e5f8c91d/architecture/dependency_graph.json",
+        ".dev-factory/runs/run_20260514T093218_e5f8c91d/architecture/module_map.json",
+        ".dev-factory/runs/run_20260514T093218_e5f8c91d/planning/milestones.json",
+        ".dev-factory/runs/run_20260514T093218_e5f8c91d/planning/tasks.json",
+        ".dev-factory/runs/run_20260514T093218_e5f8c91d/planning/scaffold_plan.json",
+        ".dev-factory/runs/run_20260514T093218_e5f8c91d/planning/delivery_plan.md",
+        ".dev-factory/runs/run_20260514T093218_e5f8c91d/execution/execution_calls.jsonl",
+        ".dev-factory/runs/run_20260514T093218_e5f8c91d/execution/codex_calls.jsonl",
+        ".dev-factory/runs/run_20260514T093218_e5f8c91d/execution/claude_code_calls.jsonl",
+        ".dev-factory/runs/run_20260514T093218_e5f8c91d/execution/crew_assembly.json",
+        ".dev-factory/runs/run_20260514T093218_e5f8c91d/quality/code_review.json",
+        ".dev-factory/runs/run_20260514T093218_e5f8c91d/quality/quality_gate.json",
+        ".dev-factory/runs/run_20260514T093218_e5f8c91d/quality/integration_review.json",
+        ".dev-factory/runs/run_20260514T093218_e5f8c91d/quality/scaffold_verification.json",
+        ".dev-factory/runs/run_20260514T093218_e5f8c91d/quality/security_review.json",
+        ".dev-factory/runs/run_20260514T093218_e5f8c91d/quality/test_plan.json",
+        ".dev-factory/runs/run_20260514T093218_e5f8c91d/verification/release_check.json",
+        ".dev-factory/runs/run_20260514T093218_e5f8c91d/verification/verification_report.json",
+        ".dev-factory/runs/run_20260514T093218_e5f8c91d/delivery/COMMIT_MSG.txt",
+        ".dev-factory/runs/run_20260514T093218_e5f8c91d/delivery/delivery_report.md",
+        ".dev-factory/runs/run_20260514T093218_e5f8c91d/delivery/final_report.md",
+        ".dev-factory/runs/run_20260514T093218_e5f8c91d/delivery/PR_BODY.md",
+        ".dev-factory/runs/run_20260514T093218_e5f8c91d/delivery/README.generated.md",
+        ".dev-factory/runs/run_20260514T093218_e5f8c91d/delivery/release_notes.md",
+        ".dev-factory/runs/run_20260514T093218_e5f8c91d/delivery/usage.generated.md",
+        ".dev-factory/runs/run_20260514T093218_e5f8c91d/run_state.json"
+      ],
+      "stdout_head": "run_id=run_20260514T093218_e5f8c91d mode=dry-run mock=True release=NotReleaseReady",
+      "result": "pass",
+      "notes": "Full deliver-project pipeline; 44 artifacts; 5 milestones M0-M5; backends: mock_codex + mock_claude"
+    },
+    {
+      "id": "G",
+      "name": "verify",
+      "cmd": "autodev verify --run-id run_20260514T093218_e5f8c91d --repo-path .",
+      "exit": 0,
+      "duration_ms": 474,
+      "artifacts_created": ["stdout:verification JSON"],
+      "stdout_head": "{\"rerun_tests\": [], \"milestone_acceptance\": {\"M0\": \"passed\", \"M1\": \"passed\", ...}, \"state_integrity_ok\": true, \"status\": \"passed\"}",
+      "result": "pass",
+      "notes": "Verification passed; correctly notes mock executor usage caveat"
+    },
+    {
+      "id": "H",
+      "name": "report",
+      "cmd": "autodev report --run-id run_20260514T093218_e5f8c91d --repo-path .",
+      "exit": 0,
+      "duration_ms": 426,
+      "artifacts_created": ["stdout: path to final_report.md"],
+      "stdout_head": "/private/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/delivery/final_report.md",
+      "result": "pass",
+      "notes": "Report generated with dry-run/mock warnings, milestone summary, release decision NotReleaseReady"
+    }
+  ],
+  "audit_tree": {
+    "runs_dir_exists": true,
+    "run_ids_found": [
+      "run_20260514T093218_e5f8c91d",
+      "run_20260514T093309_ecee3960",
+      "run_20260514T093354_ead6fe55"
+    ],
+    "subdirs_per_run": [
+      "input",
+      "product",
+      "architecture",
+      "planning",
+      "execution",
+      "quality",
+      "verification",
+      "delivery"
+    ],
+    "missing_subdirs": [],
+    "notes": "product/ is empty for run-issue flow (run_20260514T093309_ecee3960); all 8 dirs are always created by RunState.__init__"
+  },
+  "state_machine": {
+    "observed_states": ["running (started_at set)", "finished (finished_at set)"],
+    "final_state": "finished",
+    "mock_execution_used": true,
+    "release_decision": "NotReleaseReady",
+    "notes": "No explicit status enum in PipelineRunState; state inferred from started_at/finished_at presence"
+  },
+  "findings": [
+    {
+      "severity": "P2",
+      "title": "create-prd --project-brief accepts file path only, not inline strings",
+      "detail": "The --project-brief flag calls Path(p).read_text(). Passing an inline string raises FileNotFoundError. Help text shows TEXT type without clarifying file-path requirement.",
+      "evidence": "FileNotFoundError: [Errno 2] No such file or directory: 'Build a hello-world REST API in Python'"
+    },
+    {
+      "severity": "P3",
+      "title": "plan-project / plan-milestones produce stdout-only output without audit tree",
+      "detail": "These standalone helper commands output JSON to stdout but do not create .dev-factory/runs/<run_id>/ audit trees. Scenarios B and C therefore do not contribute to the audit tree.",
+      "evidence": "After running both commands, .dev-factory/ only contained prd.json and prd.md"
+    },
+    {
+      "severity": "P3",
+      "title": "plan-tasks requires prior deliver-project run with milestone_plan",
+      "detail": "plan-tasks calls RunState.latest() which requires an existing run with milestone_plan field populated. If called before deliver-project it silently returns 0 tasks (exit 0) or exits 2.",
+      "evidence": "First invocation before deliver-project returned empty task list; second invocation after deliver-project returned M1-T1 correctly"
+    },
+    {
+      "severity": "P4",
+      "title": "PipelineRunState has no explicit status enum (draft/running/done)",
+      "detail": "Run state is tracked via started_at/finished_at timestamps rather than a dedicated status field. The run_state.json shows status: null. State must be inferred from timestamps.",
+      "evidence": "run_state.json keys include started_at/finished_at but no explicit status enum field"
+    }
+  ],
+  "commands_run": [
+    {"cmd": "autodev create-prd --project-brief brief.txt --output .dev-factory/prd.md", "exit": 0, "stdout_head": "wrote .dev-factory/prd.md", "duration_ms": 432},
+    {"cmd": "autodev plan-project --repo-path . --prd .dev-factory/prd.md --languages python", "exit": 0, "stdout_head": "{\"title\": \"Architecture:...\"}", "duration_ms": 430},
+    {"cmd": "autodev plan-milestones --repo-path . --prd .dev-factory/prd.md --max-milestones 3", "exit": 0, "stdout_head": "[{'milestone_id': 'M0'...}]", "duration_ms": 419},
+    {"cmd": "autodev plan-tasks --repo-path . --milestone-id M1", "exit": 0, "stdout_head": "[{'task_id': 'M1-T1'...}]", "duration_ms": 430},
+    {"cmd": "autodev run-issue --repo-path . --issue-file issue.txt --languages python --mode dry-run --allow-mock-executor true --no-fail-fast", "exit": 0, "stdout_head": "run_id=run_20260514T093309_ecee3960 mode=dry-run mock=True", "duration_ms": 800},
+    {"cmd": "autodev deliver-project --repo-path . --project-brief brief.txt --languages python --mode dry-run --allow-mock-executor true --scale small --no-fail-fast", "exit": 0, "stdout_head": "run_id=run_20260514T093218_e5f8c91d mode=dry-run mock=True release=NotReleaseReady", "duration_ms": 476},
+    {"cmd": "autodev verify --run-id run_20260514T093218_e5f8c91d --repo-path .", "exit": 0, "stdout_head": "{\"status\": \"passed\"...}", "duration_ms": 474},
+    {"cmd": "autodev report --run-id run_20260514T093218_e5f8c91d --repo-path .", "exit": 0, "stdout_head": "/private/tmp/r7-mock-sandbox/.dev-factory/runs/run_20260514T093218_e5f8c91d/delivery/final_report.md", "duration_ms": 426}
+  ],
+  "evidence_files": [
+    "/Users/macworkers/autodev/docs/validation/round7_mock_full_pipeline_run_tree.txt",
+    "/Users/macworkers/autodev/docs/validation/round7_mock_full_pipeline_report.md",
+    "/Users/macworkers/autodev/docs/validation/round7_mock_full_pipeline_report.json"
+  ],
+  "summary_one_line": "8/8 mock pipeline scenarios passed (exit 0) under FACTORY_FORCE_MOCK=1 with no API keys; full audit tree (8 subdirs, 44 files) generated; release correctly NotReleaseReady in mock mode"
+}

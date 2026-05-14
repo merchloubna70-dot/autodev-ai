@@ -1,0 +1,168 @@
+{
+  "round": "round7",
+  "agent_n": 11,
+  "agent_name": "brownfield_e2e",
+  "status": "completed",
+  "overall_result": "pass",
+  "p0_count": 0,
+  "p1_count": 0,
+  "p2_count": 1,
+  "p3_count": 2,
+  "p4_count": 0,
+  "brownfield_setup": {
+    "path": "/tmp/r7-brownfield",
+    "git_commit": "1828ff7",
+    "modules": ["widgetlib.calculator", "widgetlib.parser", "widgetlib.formatter"],
+    "tests_count": 6,
+    "test_files": ["tests/test_calculator.py", "tests/test_parser.py", "tests/test_formatter.py"],
+    "bug_in": "calculator.divide",
+    "bug_type": "ZeroDivisionError no check",
+    "bug_description": "divide(a, b) returns a/b without checking b==0; raises ZeroDivisionError. Existing tests use negative inputs, not b==0, so the bug is latent."
+  },
+  "run_id": "run_20260514T093438_719d0190",
+  "scenarios": [
+    {
+      "id": "A",
+      "name": "scan",
+      "command": "autodev scan --repo-path /tmp/r7-brownfield",
+      "exit": 0,
+      "duration_ms": 1100,
+      "key_findings": "Detected python, pyproject.toml, src/ source dir, tests/ test dir, has_git=true, is_monorepo=false. No test_framework detected (pytest not auto-identified). Languages rust and typescript correctly reported as not detected.",
+      "result": "pass"
+    },
+    {
+      "id": "B",
+      "name": "investigate",
+      "command": "autodev investigate --input 'divide function in calculator.py raises ZeroDivisionError when b==0 due to missing zero-check guard' --repo-path /tmp/r7-brownfield",
+      "exit": 0,
+      "duration_ms": 1292,
+      "key_findings": "case_id=2140effe, slug=divide-function-in-calculator-py-raises, mode=defect-chasing, evidence_count=5. P2: grep scope leaked to main autodev repo CWD; found hits in autodev .venv and tests/unit/test_edge_case_hunter.py, not in brownfield src/widgetlib/calculator.py.",
+      "result": "pass"
+    },
+    {
+      "id": "C",
+      "name": "fix-bug",
+      "command": "autodev fix-bug --bug '...' --repo-path /tmp/r7-brownfield --languages python --mode dry-run --allow-mock-executor true",
+      "exit": 0,
+      "duration_ms": 426,
+      "key_findings": "run_id=run_20260514T093438_719d0190, success=True, mock=True. 4 tasks planned (BUG-T1-REPRODUCE through BUG-T4-VERIFY). All executed via mock_codex with fallback_used=true. Audit tree created under .dev-factory/runs/. P3: mock changed_files paths (.dev-factory/mock/*.txt) declared but directory not written to disk.",
+      "result": "pass"
+    },
+    {
+      "id": "D",
+      "name": "review",
+      "command": "autodev review --run-id run_20260514T093438_719d0190 --decision approve --repo-path /tmp/r7-brownfield",
+      "exit": 0,
+      "duration_ms": 407,
+      "key_findings": "Sentinel file created at .dev-factory/runs/run_20260514T093438_719d0190/approved. decision=approved. This is a HumanReviewGate sentinel writer, not an automated LLM code review.",
+      "result": "pass"
+    },
+    {
+      "id": "E",
+      "name": "verify",
+      "command": "autodev verify --run-id run_20260514T093438_719d0190 --repo-path /tmp/r7-brownfield",
+      "exit": 0,
+      "duration_ms": 426,
+      "key_findings": "status=passed, state_integrity_ok=true, milestone_acceptance={MBUG-1: passed}. Note: 'verification observed mock executor usage - cannot claim production-passed'. Verification report written to .dev-factory/runs/.../verification/verification_report.json.",
+      "result": "pass"
+    },
+    {
+      "id": "F",
+      "name": "report",
+      "command": "autodev report --run-id run_20260514T093438_719d0190 --repo-path /tmp/r7-brownfield",
+      "exit": 0,
+      "duration_ms": 408,
+      "key_findings": "Report at .dev-factory/runs/.../delivery/final_report.md. References repo=/private/tmp/r7-brownfield, bug=divide ZeroDivisionError, fix=MBUG-1 success=True. Includes NOT_PRODUCTION warning banner with DryRun=True and MockExecutionUsed=True.",
+      "result": "pass"
+    }
+  ],
+  "source_file_mutations_outside_dev_factory": [],
+  "audit_tree_complete": true,
+  "audit_tree_contents": [
+    ".dev-factory/investigations/divide-function-in-calculator-py-raises.md",
+    ".dev-factory/runs/run_20260514T093438_719d0190/approved",
+    ".dev-factory/runs/run_20260514T093438_719d0190/delivery/final_report.md",
+    ".dev-factory/runs/run_20260514T093438_719d0190/execution/codex_calls.jsonl",
+    ".dev-factory/runs/run_20260514T093438_719d0190/execution/execution_calls.jsonl",
+    ".dev-factory/runs/run_20260514T093438_719d0190/execution/executor_selection_BUG-T1-REPRODUCE.json",
+    ".dev-factory/runs/run_20260514T093438_719d0190/execution/executor_selection_BUG-T2-LOCATE.json",
+    ".dev-factory/runs/run_20260514T093438_719d0190/execution/executor_selection_BUG-T3-PATCH.json",
+    ".dev-factory/runs/run_20260514T093438_719d0190/execution/executor_selection_BUG-T4-VERIFY.json",
+    ".dev-factory/runs/run_20260514T093438_719d0190/execution/milestone_MBUG-1_results.json",
+    ".dev-factory/runs/run_20260514T093438_719d0190/planning/tasks.json",
+    ".dev-factory/runs/run_20260514T093438_719d0190/run_state.json",
+    ".dev-factory/runs/run_20260514T093438_719d0190/verification/verification_report.json"
+  ],
+  "report_quality": {
+    "references_repo": true,
+    "references_bug": true,
+    "references_fix": true,
+    "readable": true,
+    "not_production_banner": true,
+    "mock_caveat_in_verify": true
+  },
+  "findings": [
+    {
+      "severity": "P2",
+      "title": "Investigation grep scope leak: CWD vs repo-path",
+      "detail": "autodev investigate runs its grep from process CWD (the main autodev repo at /Users/macworkers/autodev) rather than from --repo-path. Evidence in the case file shows hits from autodev's own .venv/lib/python3.12/site-packages/mypyc/ and tests/unit/test_edge_case_hunter.py — none from the brownfield target file src/widgetlib/calculator.py. This means investigation evidence is polluted with irrelevant files when the CLI is invoked from a different directory."
+    },
+    {
+      "severity": "P3",
+      "title": "Mock executor declares ghost changed_files that don't exist on disk",
+      "detail": "Each BUG-T* task's mock execution records changed_files=['.dev-factory/mock/codex_BUG-T*-*.txt'] but .dev-factory/mock/ directory is never created. The paths are phantom entries in the milestone_MBUG-1_results.json. Any downstream process that reads changed_files and tries to access them would get FileNotFoundError."
+    },
+    {
+      "severity": "P3",
+      "title": "Investigation produces no project-file code evidence",
+      "detail": "With evidence_count=5, all hits are from the wrong repository (CWD leak). The case file's Hypotheses section contains only the user-supplied description, not code-derived evidence. For a real brownfield scenario, this means investigate does not currently provide actionable code-level evidence; it's essentially a hypothesis recorder rather than a code explorer."
+    }
+  ],
+  "commands_run": [
+    {
+      "cmd": "autodev scan --repo-path /tmp/r7-brownfield",
+      "exit": 0,
+      "stdout_head": "{\"repo_path\": \"/private/tmp/r7-brownfield\", \"is_empty\": false, \"detected_languages\": [\"python\"], ...}",
+      "duration_ms": 1100
+    },
+    {
+      "cmd": "autodev investigate --input 'divide function in calculator.py raises ZeroDivisionError when b==0 due to missing zero-check guard' --repo-path /tmp/r7-brownfield",
+      "exit": 0,
+      "stdout_head": "case_id=2140effe slug=divide-function-in-calculator-py-raises mode=defect-chasing file=.../divide-function-in-calculator-py-raises.md evidence_count=5",
+      "duration_ms": 1292
+    },
+    {
+      "cmd": "autodev fix-bug --bug '...' --repo-path /tmp/r7-brownfield --languages python --mode dry-run --allow-mock-executor true",
+      "exit": 0,
+      "stdout_head": "run_id=run_20260514T093438_719d0190 success=True mock=True",
+      "duration_ms": 426
+    },
+    {
+      "cmd": "autodev review --run-id run_20260514T093438_719d0190 --decision approve --repo-path /tmp/r7-brownfield",
+      "exit": 0,
+      "stdout_head": "{\"success\": true, \"run_id\": \"run_20260514T093438_719d0190\", \"decision\": \"approved\", \"sentinel\": \".../approved\"}",
+      "duration_ms": 407
+    },
+    {
+      "cmd": "autodev verify --run-id run_20260514T093438_719d0190 --repo-path /tmp/r7-brownfield",
+      "exit": 0,
+      "stdout_head": "{\"rerun_tests\": [], \"milestone_acceptance\": {\"MBUG-1\": \"passed\"}, \"state_integrity_ok\": true, \"status\": \"passed\", ...}",
+      "duration_ms": 426
+    },
+    {
+      "cmd": "autodev report --run-id run_20260514T093438_719d0190 --repo-path /tmp/r7-brownfield",
+      "exit": 0,
+      "stdout_head": "/private/tmp/r7-brownfield/.dev-factory/runs/run_20260514T093438_719d0190/delivery/final_report.md",
+      "duration_ms": 408
+    }
+  ],
+  "evidence_files": [
+    "/tmp/r7-brownfield/.dev-factory/investigations/divide-function-in-calculator-py-raises.md",
+    "/tmp/r7-brownfield/.dev-factory/runs/run_20260514T093438_719d0190/run_state.json",
+    "/tmp/r7-brownfield/.dev-factory/runs/run_20260514T093438_719d0190/execution/milestone_MBUG-1_results.json",
+    "/tmp/r7-brownfield/.dev-factory/runs/run_20260514T093438_719d0190/verification/verification_report.json",
+    "/tmp/r7-brownfield/.dev-factory/runs/run_20260514T093438_719d0190/delivery/final_report.md",
+    "/tmp/r7-brownfield/.dev-factory/runs/run_20260514T093438_719d0190/approved"
+  ],
+  "summary_one_line": "6/6 brownfield scenarios passed (exit 0), 0 source mutations, full audit tree present; 1 P2 (investigate grep scope leak to CWD instead of repo-path) + 2 P3 cosmetic issues found."
+}

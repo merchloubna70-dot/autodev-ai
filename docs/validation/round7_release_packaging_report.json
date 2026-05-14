@@ -1,0 +1,116 @@
+{
+  "round": "round7",
+  "agent_n": 9,
+  "agent_name": "release_packaging",
+  "status": "completed",
+  "overall_result": "partial",
+  "p0_count": 0,
+  "p1_count": 0,
+  "p2_count": 3,
+  "p3_count": 1,
+  "p4_count": 0,
+  "build": {
+    "wheel": {
+      "name": "autodev_ai-0.1.0a3-py3-none-any.whl",
+      "size_bytes": 327340,
+      "built": true
+    },
+    "sdist": {
+      "name": "autodev_ai-0.1.0a3.tar.gz",
+      "size_bytes": 858884,
+      "built": true
+    },
+    "twine_check": "PASSED"
+  },
+  "wheel_install_smoke": {
+    "version_output": "autodev-ai 0.1.0a3",
+    "help_exit": 0
+  },
+  "sdist_install_smoke": {
+    "version_output": "autodev-ai 0.1.0a3",
+    "help_exit": 0
+  },
+  "release_readiness_gate": {
+    "strict": {
+      "exit": 1,
+      "tail": "  ✗ [fail] r2_wheel_version_works (0ms): wheel version '0.1.0a2' does not match pyproject '0.1.0a3'\n  ✗ [fail] r2_macos_info_plist_version_match (1ms): Failed to parse Info.plist: dlopen pyexpat.cpython-312-darwin.so Symbol not found _XML_SetAllocTrackerActivationThreshold\n  overall: fail, pass: 34, fail: 2, skip: 0"
+    },
+    "strict_r2": {
+      "exit": 1,
+      "tail": "  ✗ [fail] r2_wheel_version_works (0ms)\n  ✗ [fail] r2_macos_info_plist_version_match (1ms)\n  overall: fail, pass: 34, fail: 2, skip: 0"
+    },
+    "strict_r3": {
+      "exit": 0,
+      "tail": "  ✓ [pass] r3_docker_base_digest_pinned (0ms)\n  ✓ [pass] r3_homebrew_publish_time_blocker_clean (0ms)\n  ✓ [pass] r3_pypi_rc_not_blocked_by_homebrew (0ms)\n  overall: fail (but r3_ checks all pass), pass: 34, fail: 2, skip: 0"
+    },
+    "strict_rc": {
+      "exit": 1,
+      "tail": "  ✗ [fail] r2_wheel_version_works - pyproject 0.1.0a3 vs dist/ 0.1.0a2\n  ✗ [fail] r2_macos_info_plist_version_match - plistlib import crash (libexpat)\n  overall: fail, pass: 34, fail: 2, skip: 0"
+    },
+    "module_form": {
+      "exit": 0,
+      "no_traceback": true,
+      "note": "module form runs without --strict; exit 0 per design even with 2 fail checks (design documented: exit 0 when no --strict flag)"
+    }
+  },
+  "release_check_cli": {
+    "exit": 0,
+    "details": "release-check --help: exit 0, shows --run-id (required) --repo-path options. Invoked with existing run_id=run_20260514T053102_7a5b306f: returned JSON with decision=Blocked (mock executor + security review failed). CLI itself functional."
+  },
+  "docker_build": {
+    "status": "pass",
+    "reason": "colima docker driver; built successfully without --target (final stage unnamed). autodev-ai 0.1.0a3 installed inside. Note: --target final fails (stage not named 'final'); use bare build command."
+  },
+  "brew_audit": {
+    "status": "pass",
+    "warnings": 1,
+    "extra_warnings_vs_baseline": [],
+    "details": "1 warning: 'version 0.1.0a3 is redundant with version scanned from URL' — expected, known acceptable (PEP 440 alpha defense). Matches baseline."
+  },
+  "findings": [
+    {
+      "severity": "P2",
+      "title": "r2_wheel_version_works FAIL — stale 0.1.0a2 wheel in main repo dist/",
+      "detail": "Gate checks dist/*.whl in the main repo root; dist/ contains autodev_ai-0.1.0a2-py3-none-any.whl and autodev_ai-0.1.0a2.tar.gz (old artifacts). The sandbox build correctly produces 0.1.0a3. Fix: rebuild dist/ in main repo (python -m build from repo root) or delete stale 0.1.0a2 artifacts. Gate blocks --strict and --strict-r2. Not a packaging regression."
+    },
+    {
+      "severity": "P2",
+      "title": "r2_macos_info_plist_version_match FAIL — Info.plist at 0.1.0a1, plistlib crashes on libexpat mismatch",
+      "detail": "packaging/desktop/autodev-ai.app/Contents/Info.plist has CFBundleShortVersionString=0.1.0a1. Gate also crashes on plistlib import due to pyexpat.cpython-312-darwin.so symbol not found (_XML_SetAllocTrackerActivationThreshold) in libexpat. Two separate issues: (1) Info.plist version stale (should be 0.1.0a3), (2) macOS system libexpat version mismatch with Homebrew python@3.12. The plist version stale is actionable; the libexpat is local env."
+    },
+    {
+      "severity": "P2",
+      "title": "Docker Dockerfile has unnamed final stage — --target final fails",
+      "detail": "packaging/docker/Dockerfile has two FROM stages: builder (named) and the final runtime stage (unnamed). Task spec used --target final which fails with 'stage final could not be found'. Build succeeds without --target flag. Naming the final stage (AS final) would follow Docker best practice and match the task spec."
+    },
+    {
+      "severity": "P3",
+      "title": "python@3.12 libexpat symbol mismatch on dev machine",
+      "detail": "Homebrew python@3.12.13 has pyexpat.cpython-312-darwin.so expecting _XML_SetAllocTrackerActivationThreshold from /usr/lib/libexpat.1.dylib but system libexpat does not export it. This is a local brew/system version mismatch that affects venv creation and plistlib. Not a project defect. Workaround: uv venv bypasses ensurepip."
+    }
+  ],
+  "commands_run": [
+    {"cmd": "rsync -a --exclude=.git ... /Users/macworkers/autodev/ /tmp/r7-build-sandbox/", "exit": 0, "stdout_head": "rsync done", "duration_ms": 1200},
+    {"cmd": "uv venv /tmp/r7-build-venv --python 3.12 && uv pip install build twine", "exit": 0, "stdout_head": "build 1.5.0 installed", "duration_ms": 8000},
+    {"cmd": "/tmp/r7-build-venv/bin/python -m build (from /tmp/r7-build-sandbox/)", "exit": 0, "stdout_head": "Successfully built autodev_ai-0.1.0a3.tar.gz and autodev_ai-0.1.0a3-py3-none-any.whl", "duration_ms": 45000},
+    {"cmd": "twine check /tmp/r7-build-sandbox/dist/*", "exit": 0, "stdout_head": "PASSED PASSED", "duration_ms": 1200},
+    {"cmd": "uv venv /tmp/r7-wheel-smoke-venv + pip install wheel + autodev --version", "exit": 0, "stdout_head": "autodev-ai 0.1.0a3", "duration_ms": 12000},
+    {"cmd": "uv venv /tmp/r7-sdist-smoke-venv + pip install sdist + autodev --version", "exit": 0, "stdout_head": "autodev-ai 0.1.0a3", "duration_ms": 18000},
+    {"cmd": "autodev --help (from wheel venv)", "exit": 0, "stdout_head": "Usage: autodev [OPTIONS] COMMAND [ARGS]...", "duration_ms": 427},
+    {"cmd": "python scripts/release_readiness_gate.py --strict", "exit": 1, "stdout_head": "overall: fail, pass: 34, fail: 2", "duration_ms": 3200},
+    {"cmd": "python scripts/release_readiness_gate.py --strict-r2", "exit": 1, "stdout_head": "overall: fail, pass: 34, fail: 2", "duration_ms": 3100},
+    {"cmd": "python scripts/release_readiness_gate.py --strict-r3", "exit": 0, "stdout_head": "overall: fail (r3_ all pass), pass: 34, fail: 2", "duration_ms": 3100},
+    {"cmd": "python scripts/release_readiness_gate.py --strict-rc", "exit": 1, "stdout_head": "overall: fail, pass: 34, fail: 2", "duration_ms": 3000},
+    {"cmd": "python -m autodev.release_readiness_gate", "exit": 0, "stdout_head": "overall: fail (no --strict flag => exit 0 by design)", "duration_ms": 3100},
+    {"cmd": "autodev release-check --help", "exit": 0, "stdout_head": "Usage: autodev release-check [OPTIONS]", "duration_ms": 400},
+    {"cmd": "autodev release-check --run-id run_20260514T053102_7a5b306f", "exit": 0, "stdout_head": "{\"decision\": \"Blocked\", ...}", "duration_ms": 600},
+    {"cmd": "docker build -t r7-smoke -f packaging/docker/Dockerfile /tmp/r7-build-sandbox/", "exit": 0, "stdout_head": "Successfully installed autodev-ai-0.1.0a3", "duration_ms": 55000},
+    {"cmd": "brew audit --strict autodev-ai", "exit": 0, "stdout_head": "1 problem: version 0.1.0a3 redundant with URL", "duration_ms": 8000}
+  ],
+  "evidence_files": [
+    "/Users/macworkers/autodev/docs/validation/round7_release_packaging_report.md",
+    "/Users/macworkers/autodev/docs/validation/round7_release_packaging_report.json",
+    "/Users/macworkers/autodev/docs/validation/release_readiness_gate_run.json"
+  ],
+  "summary_one_line": "Build/twine/wheel/sdist/docker all PASS; 2 pre-existing gate failures (stale 0.1.0a2 wheel in main dist/ + Info.plist at 0.1.0a1 + libexpat crash); --strict-r3 exits 0; module form exits 0; brew 1 expected warning (baseline match)."
+}
