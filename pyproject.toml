@@ -69,6 +69,15 @@ addopts = "-q"
 testpaths = ["tests"]
 pythonpath = ["src"]
 asyncio_mode = "auto"
+markers = [
+    "integration: end-to-end integration tests (slower)",
+    "skip_if_no_dist: skip if dist/*.whl is not present",
+]
+filterwarnings = [
+    # pydantic_ai's AgentSpec uses model_ prefixed fields; suppress the UserWarning
+    # that originates from the pydantic_ai system package's internal AgentSpec class.
+    "ignore:Field \"model_settings\" in AgentSpec has conflict with protected namespace:UserWarning",
+]
 
 [tool.ruff]
 target-version = "py310"

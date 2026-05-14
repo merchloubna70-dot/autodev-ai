@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 # ---------------------------------------------------------------------------
 # Enums
@@ -994,6 +994,8 @@ class A2ATask(BaseModel):
 
 
 class AgentCard(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
+
     name: str
     description: str = ""
     version: str = "0.1.0"
