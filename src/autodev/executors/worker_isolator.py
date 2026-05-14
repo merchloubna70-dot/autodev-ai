@@ -16,13 +16,49 @@ The class is standalone: ``prepare_codex_home`` works purely with
 ``prepare_worktree`` is optional and wraps ``git worktree add`` via subprocess.
 Failures in ``prepare_worktree`` are returned as structured errors rather than
 raised exceptions, so callers can decide how to surface them.
+
+Security hardening (R3-H)
+--------------------------
+* Symlink targets are resolved with ``strict=True`` before creation; any target
+  that resolves outside ``parent_home`` raises ``WorkerIsolatorPathEscapeError``.
+* Branch names are validated — ``..``, ``/``, and NUL bytes are rejected.
+* Cleanup (``rmtree``) asserts the resolved path is inside the configured
+  worktree root; out-of-root paths raise ``WorkerIsolatorPathEscapeError``.
+* CODEX_HOME env-var overrides pointing outside the allowed root are rejected.
+
+Residual TOCTOU note
+---------------------
+The symlink ``os.symlink(src, dst)`` syscall is atomic on POSIX, so there is no
+race between our resolve check and the link creation (F-03 attack surface
+closed).  However, ``shutil.rmtree`` on the cleanup path is *not* atomic: an
+adversary with write access to the parent directory could race a rename between
+our ``is_relative_to`` check and the actual ``rmtree`` call (TOCTOU on cleanup).
+This risk is accepted and documented; mitigations (e.g. ``AT_REMOVEDIR`` via
+low-level fd tricks) are out of scope for this iteration.
 """
 from __future__ import annotations
 
 import os
+import shutil
 import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
+
+# ---------------------------------------------------------------------------
+# Exceptions
+# ---------------------------------------------------------------------------
+
+
+class WorkerIsolatorPathEscapeError(Exception):
+    """Raised when a resolved path would escape the allowed root directory.
+
+    This covers:
+    * Symlink targets that resolve outside ``parent_home``.
+    * Branch names / path components containing traversal sequences.
+    * Cleanup targets that resolve outside the configured worktree root.
+    * CODEX_HOME env-var overrides pointing outside the allowed root.
+    """
+
 
 # ---------------------------------------------------------------------------
 # Constants (mirrors codex-fanout CODEX_HOME_SHARED / CODEX_HOME_PRIVATE_DIRS)
@@ -123,7 +159,72 @@ class WorkerIsolator:
         )
         if not wt.success:
             print(f"worktree failed: {wt.error}")
+
+    Parameters
+    ----------
+    worktree_root:
+        The filesystem root that all worktrees and worker homes must be
+        contained within.  Used by cleanup helpers to prevent rm-rf escapes.
+        Defaults to ``/tmp`` if not supplied.
     """
+
+    def __init__(self, worktree_root: Path | None = None) -> None:
+        # Default to /tmp so that accidental cleanup calls don't escape to /
+        self._worktree_root: Path = Path(worktree_root) if worktree_root else Path("/tmp")
+        # Track whether caller explicitly provided a root; only then do we
+        # enforce the CODEX_HOME env check (to preserve backwards compatibility
+        # with existing callers that construct WorkerIsolator() with no args).
+        self._root_explicitly_set: bool = worktree_root is not None
+
+    # ------------------------------------------------------------------
+    # Internal helpers
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _validate_branch_name(branch: str) -> None:
+        """Reject branch names that could cause path traversal.
+
+        Raises ``WorkerIsolatorPathEscapeError`` if the branch name contains
+        ``..``, a ``/`` component, or a NUL byte.
+        """
+        if "\x00" in branch:
+            raise WorkerIsolatorPathEscapeError(
+                f"Branch name contains NUL byte: {branch!r}"
+            )
+        # Reject embedded / (any component with slash — note: some valid git
+        # branch names use / as a namespace separator like "feat/foo", but we
+        # treat all / as unsafe to be conservative for security purposes)
+        if "/" in branch:
+            raise WorkerIsolatorPathEscapeError(
+                f"Branch name contains '/': {branch!r}"
+            )
+        # Reject any component that is or starts with ..
+        if ".." in branch.split(os.sep):
+            raise WorkerIsolatorPathEscapeError(
+                f"Branch name contains '..': {branch!r}"
+            )
+        # Also catch a raw ".." string without sep
+        if branch == ".." or branch.startswith("../") or branch.endswith("/.."):
+            raise WorkerIsolatorPathEscapeError(
+                f"Branch name is a traversal sequence: {branch!r}"
+            )
+        # Catch ".." appearing anywhere as a path segment substitute
+        parts = branch.replace("\\", "/").split("/")
+        for part in parts:
+            if part == "..":
+                raise WorkerIsolatorPathEscapeError(
+                    f"Branch name component is '..': {branch!r}"
+                )
+
+    @staticmethod
+    def _assert_inside(resolved: Path, root: Path, label: str) -> None:
+        """Assert ``resolved`` is inside ``root``; raise otherwise."""
+        try:
+            resolved.relative_to(root)
+        except ValueError:
+            raise WorkerIsolatorPathEscapeError(
+                f"{label}: resolved path {resolved} is outside root {root}"
+            )
 
     # ------------------------------------------------------------------
     # Codex home isolation
@@ -139,20 +240,55 @@ class WorkerIsolator:
         - Creates ``worker_home`` (and parents) if absent.
         - Symlinks each entry in ``CODEX_HOME_SHARED`` that exists in
           ``parent_home`` into ``worker_home`` (skips if already present).
+          Before creating each symlink, the source is resolved strictly and
+          verified to be inside ``parent_home``; a traversal attempt raises
+          ``WorkerIsolatorPathEscapeError``.
         - Creates each entry in ``CODEX_HOME_PRIVATE_DIRS`` as an empty
           directory inside ``worker_home``.
         - Does NOT create or symlink ``CODEX_HOME_PRIVATE_FILES`` — Codex
           will initialise them fresh.
+        - If the ``CODEX_HOME`` environment variable is set, its resolved
+          value must be inside ``parent_home`` or ``WorkerIsolatorPathEscapeError``
+          is raised.
 
         Returns a ``CodexHomeResult`` manifest.
+
+        Raises
+        ------
+        WorkerIsolatorPathEscapeError
+            If any symlink target resolves outside ``parent_home``, or if
+            the ``CODEX_HOME`` env override points outside ``worktree_root``.
         """
         worker_home = Path(worker_home)
         parent_home = Path(parent_home)
+
+        # Validate CODEX_HOME env override if present.
+        # Only enforced when worktree_root was explicitly set by the caller
+        # (i.e. a security boundary was declared).  Legacy callers that
+        # construct WorkerIsolator() without a worktree_root skip this check.
+        env_codex_home = os.environ.get("CODEX_HOME") if self._root_explicitly_set else None
+        if env_codex_home:
+            env_path = Path(env_codex_home)
+            if env_path.exists():
+                resolved_env = env_path.resolve(strict=True)
+            else:
+                resolved_env = env_path.resolve()
+            resolved_root = self._worktree_root.resolve()
+            try:
+                resolved_env.relative_to(resolved_root)
+            except ValueError:
+                raise WorkerIsolatorPathEscapeError(
+                    f"CODEX_HOME env override {env_codex_home!r} resolves to "
+                    f"{resolved_env} which is outside worktree_root {self._worktree_root}"
+                )
+
         worker_home.mkdir(parents=True, exist_ok=True)
 
         result = CodexHomeResult(worker_home=worker_home)
 
-        # Immutable symlinks
+        resolved_parent = parent_home.resolve()
+
+        # Immutable symlinks — validate each source before linking
         for name in CODEX_HOME_SHARED:
             src = parent_home / name
             dst = worker_home / name
@@ -160,6 +296,11 @@ class WorkerIsolator:
                 continue
             if dst.exists() or dst.is_symlink():
                 continue
+
+            # Security: resolve strictly and assert inside parent_home
+            resolved_src = src.resolve(strict=True)
+            self._assert_inside(resolved_src, resolved_parent, f"symlink src '{name}'")
+
             os.symlink(src, dst)
             result.symlinks_created.append(name)
 
@@ -192,6 +333,10 @@ class WorkerIsolator:
         Returns a ``WorktreeResult`` — never raises on git failure so callers
         can log / fall back without try/except.
 
+        Branch name validation is strict: ``..``, ``/``, and NUL bytes are
+        rejected with ``WorkerIsolatorPathEscapeError`` before any git
+        subprocess is spawned.
+
         Parameters
         ----------
         repo:
@@ -204,9 +349,17 @@ class WorkerIsolator:
             Commit / ref to branch from (default ``HEAD``).
         reuse:
             If True and the worktree directory already exists, return it as-is.
+
+        Raises
+        ------
+        WorkerIsolatorPathEscapeError
+            If ``branch`` contains ``..``, ``/``, or a NUL byte.
         """
         repo = Path(repo)
         worker_root = Path(worker_root)
+
+        # Security: validate branch name before any git invocation
+        self._validate_branch_name(branch)
 
         if worker_root.exists():
             if reuse:
@@ -258,3 +411,29 @@ class WorkerIsolator:
             )
 
         return WorktreeResult(path=worker_root, success=True, reused=False)
+
+    # ------------------------------------------------------------------
+    # Cleanup
+    # ------------------------------------------------------------------
+
+    def cleanup_worktree(self, path: Path) -> None:
+        """Safely remove a worktree directory.
+
+        Asserts that the resolved path is inside ``self._worktree_root``
+        before calling ``shutil.rmtree``.  If ``path`` does not exist, this
+        method is a no-op (idempotent).
+
+        Raises
+        ------
+        WorkerIsolatorPathEscapeError
+            If the resolved path is outside ``self._worktree_root``.
+        """
+        path = Path(path)
+        if not path.exists():
+            return
+
+        resolved = path.resolve()
+        resolved_root = self._worktree_root.resolve()
+        self._assert_inside(resolved, resolved_root, f"cleanup target '{path}'")
+
+        shutil.rmtree(path)

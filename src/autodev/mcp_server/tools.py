@@ -5,12 +5,96 @@ All handlers are synchronous for v1; long-running tools execute inline.
 """
 from __future__ import annotations
 
+import datetime
 import json
 import os
+import sys
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+
+# ---------------------------------------------------------------------------
+# Apply-mode guardrail helpers
+# ---------------------------------------------------------------------------
+
+_ENV_ALLOW_APPLY = "AUTODEV_MCP_ALLOW_APPLY"
+_ENV_AUDIT_LOG = "AUTODEV_MCP_AUDIT_LOG"
+_DEFAULT_AUDIT_LOG = "/tmp/autodev_mcp_audit.log"
+
+
+def _write_audit_log(
+    tool_name: str,
+    params: dict[str, Any],
+    repo_path: str,
+    decision: str,
+    reason: str | None = None,
+) -> None:
+    """Write a structured audit entry to stderr and the audit log file."""
+    # Sanitize params: redact any key containing 'secret', 'token', 'password', 'key'
+    _REDACT_KEYS = {"secret", "token", "password", "key"}
+    sanitized: dict[str, Any] = {
+        k: "***REDACTED***" if any(rk in k.lower() for rk in _REDACT_KEYS) else v
+        for k, v in params.items()
+    }
+    entry: dict[str, Any] = {
+        "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        "tool": tool_name,
+        "params": sanitized,
+        "repo_path": repo_path,
+        "decision": decision,
+    }
+    if reason:
+        entry["reason"] = reason
+
+    line = json.dumps(entry)
+    # Always emit to stderr
+    print(f"[autodev-mcp-audit] {line}", file=sys.stderr, flush=True)
+    # Also append to audit log file
+    log_path = os.environ.get(_ENV_AUDIT_LOG, _DEFAULT_AUDIT_LOG)
+    try:
+        with open(log_path, "a", encoding="utf-8") as fh:
+            fh.write(line + "\n")
+    except OSError:
+        # Non-fatal: log to stderr but do not abort the request
+        print(
+            f"[autodev-mcp-audit] WARNING: could not write audit log to {log_path}",
+            file=sys.stderr,
+            flush=True,
+        )
+
+
+def _check_apply_mode_allowed(
+    tool_name: str,
+    args: dict[str, Any],
+    repo_path: str,
+) -> dict[str, Any] | None:
+    """Return an isError dict if apply mode is disallowed, else None (allowed).
+
+    Checks:
+      1. allow_apply param must be True
+      2. AUTODEV_MCP_ALLOW_APPLY env var must be "1"
+
+    Writes an audit log entry regardless of outcome.
+    """
+    allow_apply_param = bool(args.get("allow_apply", False))
+    server_permit = os.environ.get(_ENV_ALLOW_APPLY, "0") == "1"
+
+    if not allow_apply_param:
+        reason = "Apply mode requires allow_apply=true explicit opt-in"
+        _write_audit_log(tool_name, args, repo_path, "denied", reason)
+        return {"isError": True, "content": [{"type": "text", "text": reason}]}
+
+    if not server_permit:
+        reason = (
+            f"Server is not configured to permit apply mode; "
+            f"set {_ENV_ALLOW_APPLY}=1 to enable"
+        )
+        _write_audit_log(tool_name, args, repo_path, "denied", reason)
+        return {"isError": True, "content": [{"type": "text", "text": reason}]}
+
+    _write_audit_log(tool_name, args, repo_path, "allowed")
+    return None
 
 
 @dataclass
@@ -133,6 +217,19 @@ def _handle_deliver_project(args: dict[str, Any]) -> dict[str, Any]:
     from_scratch = bool(args.get("from_scratch", False))
     mode_str = args.get("mode", "dry-run")
 
+    # Validate mode value early
+    if mode_str not in ("dry-run", "apply"):
+        return {
+            "isError": True,
+            "content": [{"type": "text", "text": f"Invalid mode {mode_str!r}; must be 'dry-run' or 'apply'"}],
+        }
+
+    # Apply-mode guardrail — must pass BOTH allow_apply param AND server env var
+    if mode_str == "apply":
+        denial = _check_apply_mode_allowed("autodev_deliver_project", args, repo_path)
+        if denial is not None:
+            return denial
+
     from ..config import FactoryConfig
     from ..flows.project_delivery_flow import ProjectDeliveryFlow, ProjectDeliveryInput
     from ..schemas import Language, PipelineMode
@@ -149,6 +246,11 @@ def _handle_deliver_project(args: dict[str, Any]) -> dict[str, Any]:
     cfg.default_mode = pmode
     cfg.allow_mock_executor = _force_mock() or pmode == PipelineMode.DRY_RUN
 
+    # Default commit/push/tag to False; caller must explicitly pass True
+    commit = bool(args.get("commit", False))
+    push = bool(args.get("push", False))
+    tag = bool(args.get("tag", False))
+
     flow = ProjectDeliveryFlow(cfg)
     run = flow.run(ProjectDeliveryInput(
         repo_path=repo_path,
@@ -162,14 +264,21 @@ def _handle_deliver_project(args: dict[str, Any]) -> dict[str, Any]:
     release_decision = (
         run.state.release_check.decision.value if run.state.release_check else "N/A"
     )
-    return {"run_id": run.run_id, "release_decision": release_decision}
+    return {
+        "run_id": run.run_id,
+        "release_decision": release_decision,
+        "commit": commit,
+        "push": push,
+        "tag": tag,
+    }
 
 
 _tool_deliver_project = Tool(
     name="autodev_deliver_project",
     description=(
         "Run the full Project Delivery flow: brief → PRD → architecture → milestones → implementation → release check. "
-        "NOTE: synchronous in v1; long-running. Use mode='dry-run' for safe offline planning."
+        "NOTE: synchronous in v1; long-running. Use mode='dry-run' for safe offline planning. "
+        "WARNING: mode='apply' requires allow_apply=true AND server env AUTODEV_MCP_ALLOW_APPLY=1."
     ),
     input_schema={
         "type": "object",
@@ -186,8 +295,31 @@ _tool_deliver_project = Tool(
             "mode": {
                 "type": "string",
                 "enum": ["dry-run", "apply"],
-                "description": "Execution mode.",
+                "description": "Execution mode. Defaults to 'dry-run'.",
                 "default": "dry-run",
+            },
+            "allow_apply": {
+                "type": "boolean",
+                "description": (
+                    "Explicit opt-in required when mode='apply'. "
+                    "Must be true AND server env AUTODEV_MCP_ALLOW_APPLY=1 must be set."
+                ),
+                "default": False,
+            },
+            "commit": {
+                "type": "boolean",
+                "description": "Whether to commit generated changes. Defaults to false.",
+                "default": False,
+            },
+            "push": {
+                "type": "boolean",
+                "description": "Whether to push to remote. Defaults to false.",
+                "default": False,
+            },
+            "tag": {
+                "type": "boolean",
+                "description": "Whether to create a release tag. Defaults to false.",
+                "default": False,
             },
         },
         "required": ["repo_path", "brief_text"],
@@ -207,6 +339,19 @@ def _handle_run_issue(args: dict[str, Any]) -> dict[str, Any]:
     languages_raw = args.get("languages", ["python"])
     mode_str = args.get("mode", "dry-run")
 
+    # Validate mode value early
+    if mode_str not in ("dry-run", "apply"):
+        return {
+            "isError": True,
+            "content": [{"type": "text", "text": f"Invalid mode {mode_str!r}; must be 'dry-run' or 'apply'"}],
+        }
+
+    # Apply-mode guardrail — must pass BOTH allow_apply param AND server env var
+    if mode_str == "apply":
+        denial = _check_apply_mode_allowed("autodev_run_issue", args, repo_path)
+        if denial is not None:
+            return denial
+
     from ..config import FactoryConfig
     from ..flows.issue_pipeline_flow import IssuePipelineFlow, IssuePipelineInput
     from ..schemas import Language, PipelineMode
@@ -223,6 +368,11 @@ def _handle_run_issue(args: dict[str, Any]) -> dict[str, Any]:
     cfg.default_mode = pmode
     cfg.allow_mock_executor = _force_mock() or pmode == PipelineMode.DRY_RUN
 
+    # Default commit/push/tag to False; caller must explicitly pass True
+    commit = bool(args.get("commit", False))
+    push = bool(args.get("push", False))
+    tag = bool(args.get("tag", False))
+
     flow = IssuePipelineFlow(cfg)
     run = flow.run(IssuePipelineInput(
         repo_path=repo_path,
@@ -236,12 +386,18 @@ def _handle_run_issue(args: dict[str, Any]) -> dict[str, Any]:
         "run_id": run.run_id,
         "mock_used": run.state.mock_execution_used,
         "mode": pmode.value,
+        "commit": commit,
+        "push": push,
+        "tag": tag,
     }
 
 
 _tool_run_issue = Tool(
     name="autodev_run_issue",
-    description="Run the Issue Pipeline flow against an existing repo. Classifies, plans, and implements a fix for the given issue text.",
+    description=(
+        "Run the Issue Pipeline flow against an existing repo. Classifies, plans, and implements a fix for the given issue text. "
+        "WARNING: mode='apply' requires allow_apply=true AND server env AUTODEV_MCP_ALLOW_APPLY=1."
+    ),
     input_schema={
         "type": "object",
         "properties": {
@@ -256,7 +412,31 @@ _tool_run_issue = Tool(
             "mode": {
                 "type": "string",
                 "enum": ["dry-run", "apply"],
+                "description": "Execution mode. Defaults to 'dry-run'.",
                 "default": "dry-run",
+            },
+            "allow_apply": {
+                "type": "boolean",
+                "description": (
+                    "Explicit opt-in required when mode='apply'. "
+                    "Must be true AND server env AUTODEV_MCP_ALLOW_APPLY=1 must be set."
+                ),
+                "default": False,
+            },
+            "commit": {
+                "type": "boolean",
+                "description": "Whether to commit generated changes. Defaults to false.",
+                "default": False,
+            },
+            "push": {
+                "type": "boolean",
+                "description": "Whether to push to remote. Defaults to false.",
+                "default": False,
+            },
+            "tag": {
+                "type": "boolean",
+                "description": "Whether to create a release tag. Defaults to false.",
+                "default": False,
             },
         },
         "required": ["repo_path", "issue_text"],

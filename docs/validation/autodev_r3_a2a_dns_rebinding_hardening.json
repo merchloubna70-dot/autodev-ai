@@ -1,0 +1,116 @@
+{
+  "finding_id": "HIGH-SEC-02",
+  "title": "A2A HTTP Transport DNS-Rebinding TOCTOU Hardening",
+  "verdict": "hardened_with_documented_residual_risk",
+  "date": "2026-05-14",
+  "round": "R3-E",
+  "test_pass_count": 10,
+  "test_total_count": 10,
+  "full_suite_pass_count": 1045,
+  "full_suite_xfailed": 4,
+  "threat_model": {
+    "attack": "DNS rebinding TOCTOU",
+    "description": "Attacker controls authoritative DNS for their domain with TTL=0. Returns a public IP at validation time (passes blocklist check), then flips the record to a private IP by connect time. The urllib OS resolver calls getaddrinfo again at TCP connect, receiving the private IP and establishing a connection to the internal target.",
+    "prerequisite": "Attacker controls an authoritative DNS server for a domain they own",
+    "window": "Milliseconds between _validate_url DNS call and urllib OS resolver call at connect()"
+  },
+  "mitigation": {
+    "approach": "IP-pinning via custom urllib handlers",
+    "mechanism": "Resolve hostname once via _resolve_and_pin_host, validate the IP, then build a custom urllib opener (_PinnedHTTPHandler / _PinnedHTTPSHandler) whose do_open creates http.client.HTTPConnection/HTTPSConnection targeting the pinned IP. OS resolver is never called again for that hop.",
+    "host_header": "Injected as original hostname so virtual-hosting and CDN routing work correctly",
+    "tls_sni": "_PinnedHTTPSConnection.connect() passes server_hostname=original_host to ssl.wrap_socket so TLS SNI and certificate validation use the correct name",
+    "redirect_handling": "Every redirect hop independently re-resolves and re-pins the Location hostname; pinned IP from hop N never reused for hop N+1",
+    "escape_hatch": "allow_private_networks=True or AUTODEV_A2A_ALLOW_PRIVATE_NETWORKS env var bypasses IP-pinning for integration tests"
+  },
+  "new_symbols": [
+    "_resolve_and_pin_host",
+    "_PinnedHTTPSConnection",
+    "_PinnedHTTPHandler",
+    "_PinnedHTTPSHandler",
+    "_build_pinned_opener"
+  ],
+  "tests": [
+    {
+      "id": 1,
+      "name": "test_dns_rebinding_connect_to_pinned_public_ip",
+      "scenario": "DNS returns public IP at validate time; hypothetical third call would return private IP; pinned connection uses public IP only",
+      "result": "PASS"
+    },
+    {
+      "id": 2,
+      "name": "test_different_public_ip_at_connect_time_succeeds",
+      "scenario": "Two different public IPs at validate vs. pin time; both safe; request succeeds",
+      "result": "PASS"
+    },
+    {
+      "id": 3,
+      "name": "test_redirect_to_private_hostname_rejected",
+      "scenario": "302 redirect to hostname resolving to 10.0.0.1",
+      "result": "PASS (blocked)"
+    },
+    {
+      "id": 4,
+      "name": "test_redirect_to_public_hostname_allowed",
+      "scenario": "302 redirect to hostname resolving to public IP",
+      "result": "PASS (allowed)"
+    },
+    {
+      "id": 5,
+      "name": "test_max_redirects_5_enforced",
+      "scenario": "6 sequential 302 responses exhaust redirect budget; returns (0, b'')",
+      "result": "PASS"
+    },
+    {
+      "id": 6,
+      "name": "test_https_server_hostname_set_correctly",
+      "scenario": "_PinnedHTTPSConnection stores server_hostname=original_host for SNI/cert",
+      "result": "PASS"
+    },
+    {
+      "id": 7,
+      "name": "test_allow_private_networks_bypasses_ip_pinning",
+      "scenario": "allow_private_networks=True never invokes _build_pinned_opener",
+      "result": "PASS"
+    },
+    {
+      "id": 8,
+      "name": "test_ipv6_redirect_to_loopback_rejected",
+      "scenario": "302 redirect to http://[::1]/admin is blocked by _validate_url",
+      "result": "PASS"
+    },
+    {
+      "id": 9,
+      "name": "test_resolve_and_pin_host_returns_public_ip",
+      "scenario": "_resolve_and_pin_host returns public IP for valid hostname",
+      "result": "PASS"
+    },
+    {
+      "id": 10,
+      "name": "test_resolve_and_pin_host_rejects_private_ip",
+      "scenario": "_resolve_and_pin_host raises A2AHttpSSRFError for private-IP hostname",
+      "result": "PASS"
+    }
+  ],
+  "residual_risks": [
+    {
+      "id": "RR-1",
+      "title": "Egress-proxy SSRF",
+      "severity": "medium",
+      "description": "Attacker controls a public proxy that internally forwards requests to private hosts. The proxy's public IP passes all IP-range checks; the tunneling is invisible to this adapter.",
+      "mitigation_available": "Network-egress firewall or transparent proxy enforcing IP-range restrictions at kernel/routing layer",
+      "mitigated_here": false
+    },
+    {
+      "id": "RR-2",
+      "title": "Kernel-level network attacks",
+      "severity": "low",
+      "description": "Routing table manipulation, anycast hijacking, on-path BGP interception after connect() returns. Pure-Python code has no visibility into these.",
+      "mitigation_available": "RPKI, BGPsec, mutual TLS, certificate pinning at PKI level",
+      "mitigated_here": false
+    }
+  ],
+  "files_changed": [
+    "src/autodev/adapters/a2a/transports/http.py",
+    "tests/unit/test_a2a_dns_rebinding_hardening.py"
+  ]
+}

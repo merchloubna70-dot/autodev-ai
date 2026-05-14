@@ -1,0 +1,98 @@
+{
+  "agent": "R3-G",
+  "date": "2026-05-14",
+  "round": "R3 PyPI RC Final Hardening",
+  "task": "Add 3 missing docs flagged by R1 Agent I + link from README",
+  "files_created": [
+    {
+      "path": "CHANGELOG.md",
+      "type": "new",
+      "word_count": 612,
+      "char_count": 4350,
+      "format": "Keep a Changelog",
+      "versions_covered": ["Unreleased", "0.1.0a1"]
+    },
+    {
+      "path": "docs/configuration.md",
+      "type": "new",
+      "word_count": 1249,
+      "char_count": 9136,
+      "sections": [
+        "ConfigStack 4-layer TOML deep-merge",
+        "Environment variables (FACTORY_FORCE_MOCK, FACTORY_LOG, AUTODEV_MCP_*, AUTODEV_A2A_*)",
+        "Codex CLI configuration (CODEX_HOME, auth.json)",
+        "Claude Code CLI configuration (ANTHROPIC_API_KEY, model selection)",
+        "Executor selection logic",
+        "Timeout configuration",
+        "MCP server config snippets",
+        "A2A roster and bearer auth",
+        "R3 hardening notes"
+      ]
+    },
+    {
+      "path": "docs/troubleshooting.md",
+      "type": "new",
+      "word_count": 1175,
+      "char_count": 8746,
+      "scenario_count": 12,
+      "scenarios": [
+        "Codex CLI missing",
+        "Claude CLI missing",
+        "Mock fallback not engaging",
+        "MCP stdio debugging",
+        "A2A HTTP blocked by SSRF guard",
+        "mypy type errors",
+        "ruff lint/format errors",
+        "Docker build wheel not found",
+        "Homebrew sha256 placeholder",
+        "PyInstaller distutils/difflib excluded",
+        "dashboard exits (textual optional dep)",
+        "pip install --pre for pre-releases"
+      ]
+    },
+    {
+      "path": "tests/unit/test_docs_minimum.py",
+      "type": "new",
+      "test_count": 6,
+      "tests": [
+        "test_changelog_exists",
+        "test_changelog_mentions_alpha_release",
+        "test_configuration_doc_exists_and_nonempty",
+        "test_troubleshooting_doc_exists_and_nonempty",
+        "test_configuration_doc_mentions_key_env_vars",
+        "test_readme_links_to_new_docs"
+      ]
+    }
+  ],
+  "files_modified": [
+    {
+      "path": "README.md",
+      "change": "Added 4 rows to Documentation table: Configuration, Troubleshooting, CHANGELOG, Contributing",
+      "lines_added": 4
+    }
+  ],
+  "test_results": {
+    "new_tests": {
+      "run": "pytest tests/unit/test_docs_minimum.py -v",
+      "passed": 6,
+      "failed": 0,
+      "result": "6 passed in 0.02s"
+    },
+    "full_suite": {
+      "run": "pytest tests/ --tb=no",
+      "passed": 1025,
+      "failed": 1,
+      "xfailed": 4,
+      "note": "1 pre-existing failure in test_a2a_http_ssrf_hardening.py::test_redirect_to_private_is_rejected; unrelated to R3-G changes. Baseline before R3-G was 1019 passed + 4 xfailed."
+    }
+  },
+  "constraints_respected": {
+    "no_src_changes": true,
+    "no_scripts_changes": true,
+    "no_packaging_changes": true,
+    "no_github_changes": true,
+    "no_other_docs_changes": true,
+    "no_commit_no_push": true
+  },
+  "verdict": "closed"
+}

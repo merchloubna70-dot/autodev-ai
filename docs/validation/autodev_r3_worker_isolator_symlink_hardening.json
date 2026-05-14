@@ -1,0 +1,90 @@
+{
+  "round": "R3",
+  "agent": "R3-H",
+  "finding": "F-03",
+  "date": "2026-05-14",
+  "verdict": "PASS",
+  "threat_model": {
+    "attack_vectors": [
+      {
+        "id": "A",
+        "name": "Symlink escape via pre-placed link",
+        "description": "Malicious symlink inside parent_home points outside it; worker inherits the escape",
+        "mitigated_by": "src.resolve(strict=True) + _assert_inside(resolved, resolved_parent) before os.symlink"
+      },
+      {
+        "id": "B",
+        "name": "Branch name path traversal",
+        "description": "branch='../../../etc/cron.d' passed to git worktree add",
+        "mitigated_by": "_validate_branch_name() rejects '..', '/', NUL before subprocess"
+      },
+      {
+        "id": "C",
+        "name": "rm-rf escape via cleanup",
+        "description": "cleanup_worktree called with path outside configured root",
+        "mitigated_by": "resolve + _assert_inside(resolved, worktree_root) before shutil.rmtree"
+      },
+      {
+        "id": "D",
+        "name": "CODEX_HOME env injection",
+        "description": "CODEX_HOME set to /etc or another sensitive path in environment",
+        "mitigated_by": "CODEX_HOME resolved and checked against worktree_root when root explicitly set"
+      }
+    ]
+  },
+  "resolved_path_strategy": {
+    "method": "path.resolve(strict=True) followed by relative_to(root)",
+    "symlink_atomicity": "os.symlink is atomic on POSIX — no TOCTOU between resolve and syscall",
+    "cleanup_toctou": "shutil.rmtree is non-atomic — TOCTOU window exists on cleanup path (accepted, see residual risks)"
+  },
+  "new_exception_class": "WorkerIsolatorPathEscapeError",
+  "backwards_compatible": true,
+  "tests": {
+    "file": "tests/unit/test_worker_isolator_symlink_hardening.py",
+    "count": 10,
+    "results": [
+      {"name": "test_symlink_target_outside_parent_home_raises", "vector": "A", "result": "PASS"},
+      {"name": "test_branch_name_with_dotdot_raises", "vector": "B", "result": "PASS"},
+      {"name": "test_branch_name_bare_dotdot_raises", "vector": "B", "result": "PASS"},
+      {"name": "test_branch_name_with_slash_raises", "vector": "B", "result": "PASS"},
+      {"name": "test_branch_name_with_nul_byte_raises", "vector": "B", "result": "PASS"},
+      {"name": "test_cleanup_outside_root_raises", "vector": "C", "result": "PASS"},
+      {"name": "test_valid_symlink_target_inside_root_succeeds", "vector": "happy-path", "result": "PASS"},
+      {"name": "test_codex_home_env_outside_worktree_root_raises", "vector": "D", "result": "PASS"},
+      {"name": "test_happy_path_full_lifecycle", "vector": "happy-path", "result": "PASS"},
+      {"name": "test_cleanup_nonexistent_path_is_idempotent", "vector": "idempotency", "result": "PASS"}
+    ]
+  },
+  "full_suite": {
+    "passed": 1045,
+    "xfailed": 4,
+    "failed": 0
+  },
+  "mypy": {
+    "errors": 0,
+    "config": "strict=false, python_version=3.10"
+  },
+  "residual_risks": [
+    {
+      "id": "TOCTOU-cleanup",
+      "severity": "LOW",
+      "description": "Race window between is_relative_to check and shutil.rmtree; adversary with parent-dir write access could rename a sensitive directory into the rmtree path",
+      "mitigation": "Accepted — requires higher-privilege attacker than threat model; fd-pinning mitigation out of scope",
+      "status": "accepted"
+    },
+    {
+      "id": "branch-slash-restriction",
+      "severity": "INFO",
+      "description": "All '/' in branch names rejected; callers needing git namespace branches (feat/x) must use alternate separator",
+      "mitigation": "Conservative design choice to eliminate full traversal class",
+      "status": "accepted"
+    },
+    {
+      "id": "codex-home-check-opt-in",
+      "severity": "LOW",
+      "description": "CODEX_HOME env check only active when worktree_root explicitly set; legacy WorkerIsolator() callers lack D-vector protection",
+      "mitigation": "Backwards-compatibility trade-off; callers should migrate to WorkerIsolator(worktree_root=...) to activate all guards",
+      "status": "accepted"
+    }
+  ]
+}

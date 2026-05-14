@@ -1,0 +1,51 @@
+{
+  "report_id": "autodev_r3_mcp_apply_guardrail",
+  "round": "R3",
+  "date": "2026-05-14",
+  "scope": [
+    "src/autodev/mcp_server/tools.py",
+    "tests/integration/test_mcp_apply_guardrail.py"
+  ],
+  "threat_model": {
+    "primary_vector": "MCP caller triggers mode=apply without any server-side check, causing arbitrary code execution via codex/claude subprocess",
+    "mitigations": [
+      "allow_apply=true caller param required",
+      "AUTODEV_MCP_ALLOW_APPLY=1 server env required",
+      "structured audit log on every apply attempt",
+      "commit/push/tag default to false"
+    ]
+  },
+  "env_vars": {
+    "AUTODEV_MCP_ALLOW_APPLY": "Server-side permit gate; must be '1' to allow apply mode",
+    "AUTODEV_MCP_AUDIT_LOG": "Override audit log path (default /tmp/autodev_mcp_audit.log)"
+  },
+  "new_schema_params": {
+    "allow_apply": {"type": "boolean", "default": false, "tools": ["autodev_deliver_project", "autodev_run_issue"]},
+    "commit": {"type": "boolean", "default": false, "tools": ["autodev_deliver_project", "autodev_run_issue"]},
+    "push": {"type": "boolean", "default": false, "tools": ["autodev_deliver_project", "autodev_run_issue"]},
+    "tag": {"type": "boolean", "default": false, "tools": ["autodev_deliver_project", "autodev_run_issue"]}
+  },
+  "audit_log": {
+    "default_path": "/tmp/autodev_mcp_audit.log",
+    "env_override": "AUTODEV_MCP_AUDIT_LOG",
+    "format": "JSONL",
+    "fields": ["timestamp", "tool", "params", "repo_path", "decision", "reason"],
+    "also_emits_to": "stderr"
+  },
+  "test_results": {
+    "file": "tests/integration/test_mcp_apply_guardrail.py",
+    "total": 19,
+    "passed": 19,
+    "failed": 0,
+    "full_suite_passed": 1019,
+    "full_suite_xfailed": 4,
+    "mypy_errors": 0
+  },
+  "caveats": [
+    "Audit log not authenticated — writable by any local process at default path",
+    "Env var is process-level — no caller identity verification",
+    "No rate-limiting on repeated denied attempts",
+    "commit/push/tag defaults are advisory — plumbing to flow config not yet complete"
+  ],
+  "verdict": "PASS — primary RCE vector closed; dual-gate (param + env) enforced; audit trail present; full suite green"
+}

@@ -279,7 +279,11 @@ autodev review             — Approve/reject a paused human-review gate
 | [Tutorial 06 — MCP server](docs/tutorials/06-mcp-server.md) | Claude Desktop integration |
 | [Tutorial 07 — A2A server](docs/tutorials/07-a2a-server.md) | HTTP agent-to-agent |
 | [Architecture reference](docs/architecture.md) | Layers, flows, audit trail, failure policy |
+| [Configuration](docs/configuration.md) | ConfigStack 4-layer TOML, env vars, Codex/Claude CLI auth, MCP, A2A |
+| [Troubleshooting](docs/troubleshooting.md) | 12 common problems and fixes |
 | [FAQ](docs/faq.md) | Top 15 questions |
+| [CHANGELOG](CHANGELOG.md) | Release history |
+| [Contributing](docs/contributing.md) | How to contribute |
 
 ---
 
