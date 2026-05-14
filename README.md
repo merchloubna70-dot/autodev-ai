@@ -18,16 +18,28 @@ audit trail, A2A agent networking, MCP server support, and sprint-mode planning.
 
 ## Install
 
+> **Status**: alpha — [`v0.1.0-alpha`](https://github.com/merchloubna70-dot/autodev-ai/releases/tag/v0.1.0-alpha) on GitHub Releases.
+> PyPI publish gated on user feedback; install from wheel or source for now.
+
+From the GitHub Release wheel:
+
 ```bash
-pip install autodev-ai
+pip install https://github.com/merchloubna70-dot/autodev-ai/releases/download/v0.1.0-alpha/autodev_ai-0.1.0-py3-none-any.whl
 ```
 
-Or from source:
+From source:
 
 ```bash
-git clone https://github.com/your-org/autodev-ai.git
+git clone https://github.com/merchloubna70-dot/autodev-ai.git
 cd autodev-ai
 pip install -e ".[dev]"
+```
+
+Docker (codex + claude pre-installed, ~2 GB):
+
+```bash
+docker pull ghcr.io/merchloubna70-dot/autodev-ai:0.1.0-alpha
+docker run --rm ghcr.io/merchloubna70-dot/autodev-ai:0.1.0-alpha --help
 ```
 
 Optional — real CrewAI runtime:
