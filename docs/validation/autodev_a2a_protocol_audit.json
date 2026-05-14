@@ -1,0 +1,39 @@
+{
+  "round": "a2a_protocol_audit",
+  "a2a_schemas_count": 11,
+  "transports": ["local_shell", "mock", "http"],
+  "party_mode_independent": true,
+  "card_task_mapping_safe": true,
+  "synthesizer_deterministic": true,
+  "http_transport": {
+    "localhost_default": true,
+    "bearer_auth": true,
+    "ssrf_safe": false
+  },
+  "invalid_msg_handling": "silently_ignored",
+  "a2a_tests_total": 81,
+  "a2a_tests_pass": 81,
+  "findings": [
+    {
+      "severity": "HIGH",
+      "detail": "A2AHttpTransport (client-side) performs no URL scheme or host validation. Any endpoint string — including file://, ftp://, internal RFC-1918 ranges, or cloud IMDS (169.254.169.254) — is accepted and fetched without restriction. This is a full SSRF vector when the endpoint value originates from user-controlled input (e.g. discovered agent cards or API payloads). Fix: validate that the endpoint URL uses http/https and, where applicable, reject private IP ranges before issuing the urllib.request call."
+    },
+    {
+      "severity": "MEDIUM",
+      "detail": "Server-side A2ATask validation silently falls back to a minimal task skeleton when Pydantic's model_validate() raises (server.py lines 236-249). A completely malformed payload — missing required id, context_id, or containing structurally invalid history — is accepted and forwarded to the skill handler without any 400 response. Partial silent acceptance makes protocol conformance impossible to enforce and can mask upstream bugs. Fix: return HTTP 400 with the Pydantic validation error detail rather than silently constructing a stand-in task."
+    },
+    {
+      "severity": "MEDIUM",
+      "detail": "AgentCard has no Pydantic validator enforcing that endpoint is non-None / non-empty when transport == 'a2a-http'. A card registered with transport='a2a-http' and endpoint=None will cause A2AClient to instantiate an A2AHttpTransport with an empty endpoint string, and all requests will silently fail (status 0, FAILED task) rather than being caught at registration time. Fix: add a model_validator that raises ValueError when transport=='a2a-http' and endpoint is falsy."
+    },
+    {
+      "severity": "LOW",
+      "detail": "Synthesizer message ordering in roundtable.synthesize() is deterministic only because discuss() already assembles messages in original card order (iterating cards list, not the futures dict). However, synthesize() does not re-sort agent_msgs before building the prompt — it relies on message insertion order from discuss(). This is currently safe but fragile: any future refactor that changes how messages are appended to A2AConversation.messages could silently break synthesis determinism. Fix: sort agent_msgs by a stable key (e.g., card name prefix from tagged parts) inside synthesize() as a defensive guard."
+    },
+    {
+      "severity": "LOW",
+      "detail": "A2ATask.id and A2ATask.context_id are required str fields with no default, but A2ATask() can be constructed without them only if the caller explicitly passes them. The Pydantic model correctly enforces them. However, A2ATask has no UUID-format validator — any arbitrary string (empty string, SQL injection payload, path-traversal fragment) is accepted. Since task.id is interpolated into SSE event JSON and log messages, a malicious task_id could inject newline characters into SSE streams. Fix: add a field_validator that strips/rejects task IDs containing newlines or non-UUID characters."
+    }
+  ],
+  "verdict": "minor_gaps"
+}

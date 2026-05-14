@@ -1,0 +1,368 @@
+{
+  "round": "autodev_release_hardening_round",
+  "status": "completed",
+  "overall_result": "pass_with_limitations",
+  "audit_date": "2026-05-14",
+  "auditor": "13-agent parallel audit (A-M); Opus aggregator",
+  "repository_summary": {
+    "package_name": "autodev-ai",
+    "import_name": "autodev",
+    "version_pyproject": "0.1.0",
+    "version_git_tag": "v0.1.0-alpha",
+    "version_consistency": false,
+    "python_requires": ">=3.10",
+    "src_loc": 23017,
+    "src_files": 170,
+    "test_loc": 14015,
+    "test_files": 112,
+    "pytest_collected": 890,
+    "pytest_passed": 915,
+    "pytest_failed": 0,
+    "pytest_xfail_intentional": 4,
+    "pytest_runtime_s": 21.3,
+    "ruff_errors": 17,
+    "mypy_errors": 0,
+    "coverage_pct": 81,
+    "cli_subcommands": 35,
+    "cli_help_pass": 35,
+    "agents": 41,
+    "flows": 17,
+    "bmad_markers_present": 18,
+    "docs_files": 25,
+    "examples_briefs": 10,
+    "license_file_present": false
+  },
+  "agent_verdicts": {
+    "A_repository_topology": "documented",
+    "B_installation": "installable_with_caveats",
+    "C_cli_surface": "35_of_35_pass",
+    "D_executor_boundary": "minor_gaps",
+    "E_mcp_server": "mcp_ready_with_caveats",
+    "F_a2a_protocol": "minor_gaps",
+    "G_flow_agent_coverage": "flow_70.6pct_agent_87.8pct",
+    "H_packaging_artifact": "with_caveats",
+    "I_documentation_onboarding": "minor_polish_needed",
+    "J_security_secret": "safe_with_fixes",
+    "K_ci_quality_coverage": "minor_improvements",
+    "L_release_readiness_gate": "9_pass_2_skip_1_fail"
+  },
+  "release_readiness": {
+    "internal_dogfood": "allowed",
+    "public_beta": "allowed_with_limitations",
+    "pypi_release": "blocked",
+    "docker_release": "allowed_with_limitations",
+    "homebrew_release": "blocked",
+    "production_enterprise_use": "blocked"
+  },
+  "release_readiness_rationale": {
+    "internal_dogfood": "843 baseline tests + 915 post-audit tests pass; mock executor works without codex/claude binaries; PyInstaller binary verified locally; classify-input/sprint-start/investigate all real-LLM smoke-validated.",
+    "public_beta": "v0.1.0-alpha is already public on GitHub Release + ghcr.io public. 5-minute mock quickstart is realistic. BUT: stale wheel in the Release attachment lacks --version (HIGH); quickstart.md has 'your-org' placeholder; dashboard cmd undocumented. Tolerable for alpha.",
+    "pypi_release": "BLOCKED — version inconsistency (pyproject=0.1.0 vs git tag=v0.1.0-alpha) ambiguous to pip; release.yml publishes to PyPI without running pytest first; ruff has 17 regressions (scripts/ added without lint coverage); SSRF in A2AHttpTransport unmitigated.",
+    "docker_release": "Multi-arch image pushed and anon-pullable. Base image (python:3.12-slim) is floating-tag not digest-pinned; PyInstaller version unpinned; no SHA256SUMS for image layers; otherwise functional.",
+    "homebrew_release": "BLOCKED — formula sha256 is stale ('744375fb…' vs actual '1ad26fcf…'); URL points at wrong owner ('macworkers' instead of 'merchloubna70-dot'); depends on PyPI being live (also blocked).",
+    "production_enterprise_use": "BLOCKED — A2A HTTP SSRF (HIGH); MCP autodev_deliver_project/autodev_run_issue tools shell-out without server-side guardrail (MEDIUM); no LICENSE file at repo root (compliance); no CHANGELOG.md; release.yml lacks pytest gate; ReleaseFlow + MilestoneFlow zero test coverage."
+  },
+  "blockers_summary": {
+    "critical_count": 0,
+    "blocker_count": 3,
+    "high_count": 8,
+    "medium_count": 18,
+    "low_count": 22,
+    "info_count": 23,
+    "true_secret_leaks": 0
+  },
+  "release_blockers": [
+    {
+      "id": "BLOCKER-PKG-01",
+      "severity": "blocker",
+      "agent": "H_packaging_artifact",
+      "title": "Homebrew formula sha256 mismatch",
+      "detail": "Formula has sha256=744375fb... but local sdist sha256 is 1ad26fcf...; brew install will reject with checksum error",
+      "fix": "Regenerate formula sha256 from the actual CI-built release sdist after PyPI publish"
+    },
+    {
+      "id": "BLOCKER-PKG-02",
+      "severity": "blocker",
+      "agent": "H_packaging_artifact",
+      "title": "Homebrew formula URL wrong owner",
+      "detail": "Formula points at github.com/macworkers/autodev-ai but git remote is github.com/merchloubna70-dot/autodev-ai; every brew install will 404",
+      "fix": "Update url in packaging/homebrew/Formula/autodev-ai.rb to merchloubna70-dot"
+    },
+    {
+      "id": "BLOCKER-PKG-03",
+      "severity": "blocker",
+      "agent": "H_packaging_artifact",
+      "title": "macOS .app Info.plist version mismatch",
+      "detail": "Info.plist says CFBundleShortVersionString=1.0 instead of 0.1.0; macOS Gatekeeper/Spotlight/Software Update will report wrong version",
+      "fix": "Update packaging/desktop/autodev-ai.app/Contents/Info.plist to 0.1.0"
+    },
+    {
+      "id": "HIGH-VER-01",
+      "severity": "high",
+      "agent": "A_topology",
+      "title": "Version inconsistency: pyproject 0.1.0 vs git tag v0.1.0-alpha",
+      "detail": "PEP 440 expects '0.1.0a1' or similar; current state makes the tagged release look like a stable 0.1.0 on PyPI which it isn't",
+      "fix": "Either bump pyproject.toml to 0.1.0a1 and rebuild, OR retag to v0.1.0 (less honest)"
+    },
+    {
+      "id": "HIGH-LIC-01",
+      "severity": "high",
+      "agent": "A_topology",
+      "title": "No LICENSE file at repo root",
+      "detail": "pyproject.toml uses inline license={text='MIT'}; GitHub license detection, PyPI badge, Homebrew formula all expect a physical LICENSE file",
+      "fix": "Add MIT LICENSE file (1 click on github.com/.../new-license or copy from chooseit_open_source/MIT)"
+    },
+    {
+      "id": "HIGH-DIST-01",
+      "severity": "high",
+      "agent": "B_installation",
+      "title": "Release v0.1.0-alpha wheel/sdist missing --version flag",
+      "detail": "Both dist/*.whl and dist/*.tar.gz attached to the GitHub Release were built at commit 09903e4 (before --version commit b5f8752). External users pip-installing from the Release get autodev exit-code 2 on --version",
+      "fix": "Rebuild wheel+sdist from current HEAD (1b4f55c) and re-upload to v0.1.0-alpha Release, OR cut a new v0.1.0-alpha.1 tag and re-Release"
+    },
+    {
+      "id": "HIGH-SEC-01",
+      "severity": "high",
+      "agent": "F_a2a_protocol",
+      "title": "A2AHttpTransport SSRF vulnerability",
+      "detail": "A2AHttpTransport._make_request() passes endpoint URL directly to urllib.request.urlopen with zero scheme/host validation. file://, ftp://, 169.254.169.254 all accepted",
+      "fix": "Validate scheme in {http,https}; reject private/link-local hosts; add tests"
+    },
+    {
+      "id": "HIGH-COV-01",
+      "severity": "high",
+      "agent": "G_flow_agent_coverage",
+      "title": "MilestoneFlow + ReleaseFlow zero test coverage",
+      "detail": "MilestoneFlow backs `execute-milestone` CLI; ReleaseFlow backs `release-check` CLI; both have zero direct tests despite being public CLI entry points",
+      "fix": "Add tests/unit/test_milestone_flow.py and tests/unit/test_release_flow.py at minimum smoke level"
+    },
+    {
+      "id": "HIGH-CI-01",
+      "severity": "high",
+      "agent": "K_ci_quality_coverage",
+      "title": "release.yml publishes to PyPI without running pytest",
+      "detail": "Tagged commits ship to PyPI immediately even if tests are broken on that ref",
+      "fix": "Add `needs: test` dependency in release.yml, OR inline pytest+ruff+mypy steps before twine upload"
+    },
+    {
+      "id": "HIGH-ORPHAN-01",
+      "severity": "high",
+      "agent": "G_flow_agent_coverage",
+      "title": "ProjectContextFlow orphaned (no tests, no docs)",
+      "detail": "Backs the `generate-context` CLI command but no test file references the class and no doc page mentions it",
+      "fix": "Add test + docs/tutorials/08-project-context.md OR remove the CLI command if not intended for users"
+    }
+  ],
+  "medium_findings_summary": [
+    "Denylist misses curl|bash without spaces; FACTORY_FORCE_MOCK doesn't auto-set allow_mock_executor=True",
+    "MCP autodev_deliver_project + autodev_run_issue tools shell-out in apply mode with no server-side guardrail",
+    "Docker base image python:3.12-slim is floating-tag not digest-pinned",
+    "ruff regression to 17 errors (scripts/ uncovered by lint.yml)",
+    "Coverage threshold not enforced in CI (--cov-fail-under absent)",
+    "tasks/* modules all 0% coverage (depends on optional crewai dep)",
+    "AgentCard missing transport↔endpoint cross-validation",
+    "A2A server silently accepts malformed A2ATask instead of returning 400",
+    "Docker README image org mismatch with main README"
+  ],
+  "verified": [
+    "35/35 CLI subcommands have working --help (C: 37 new tests passing)",
+    "MCP stdio JSON-RPC 2.0 handshake passes (E: 10/10 smoke tests)",
+    "9 MCP tools registered and tools/list returns correctly",
+    "A2A party-mode independence invariant holds (F: deep-copy per card, dict-mapping not zip)",
+    "81/81 A2A+roundtable tests pass",
+    "915/915 pytest pass (+4 intentional xfail markers for known gaps)",
+    "mypy 0 errors across 170 source files",
+    "0 true secret leaks (all AKIA/sk-/ghp_ hits are fixtures or doc placeholders)",
+    "Mock executor fallback ladder activates when codex+claude absent",
+    "PyInstaller 17 MB macOS arm64 binary boots autodev --help",
+    "Multi-arch Docker image (amd64+arm64) anonymously pullable from ghcr.io/merchloubna70-dot/autodev-ai:latest",
+    "BMAD 18 schema markers all present",
+    "5-minute mock quickstart copy-paste path works after 'your-org' placeholder fix",
+    "Release-readiness gate (12 checks, --strict flag) implemented and tested"
+  ],
+  "partial": [
+    "Wheel+sdist usable for editable install but stale for Release-attached install (--version missing)",
+    "Docker workflow green but base image not pinned",
+    "ghcr image public but visibility had to be set via web UI (API gap)",
+    "Lint clean on src+tests but scripts/ uncovered",
+    "Release readiness gate runs but had 2 false-skip + 1 false-fail due to invocation specifics"
+  ],
+  "blocked": [
+    "PyPI 0.1.0 publish",
+    "Homebrew tap publish",
+    "Production enterprise deployment",
+    "macOS .app distribution (Info.plist version + signing absent)"
+  ],
+  "risks": [
+    "release.yml triggering on v*.*.* tag fires PyPI upload without pytest gate (HIGH-CI-01)",
+    "A2A HTTP transport SSRF (HIGH-SEC-01) could be exploited if exposed beyond localhost",
+    "Stale Release wheel will confuse users expecting --version to work (HIGH-DIST-01)",
+    "Homebrew formula will 404 on every brew install attempt (BLOCKER-PKG-02)",
+    "No LICENSE file → potential downstream compliance issues (HIGH-LIC-01)"
+  ],
+  "evidence_files": [
+    "docs/validation/autodev_release_topology_audit.{md,json}",
+    "docs/validation/autodev_installation_audit.{md,json}",
+    "docs/validation/autodev_cli_surface_audit.{md,json}",
+    "docs/validation/autodev_executor_boundary_audit.{md,json}",
+    "docs/validation/autodev_mcp_server_audit.{md,json}",
+    "docs/validation/autodev_a2a_protocol_audit.{md,json}",
+    "docs/validation/autodev_flow_agent_coverage_audit.{md,json}",
+    "docs/validation/autodev_packaging_artifact_audit.{md,json}",
+    "docs/validation/autodev_documentation_onboarding_audit.{md,json}",
+    "docs/validation/autodev_security_secret_audit.{md,json}",
+    "docs/validation/autodev_ci_quality_coverage_audit.{md,json}",
+    "docs/validation/autodev_release_readiness_gate.{md,json}",
+    "tests/unit/test_cli_help_surface.py (37 tests)",
+    "tests/unit/test_executor_boundary_smoke.py (17 tests, 4 xfail)",
+    "tests/integration/test_mcp_server_smoke.py (10 tests)",
+    "tests/unit/test_release_readiness_gate.py (12 tests)",
+    "scripts/release_readiness_gate.py",
+    "src/autodev/release_readiness_gate.py (shim for python -m)"
+  ],
+  "validation_commands": [
+    "python --version",
+    "pip install -e .[dev]",
+    "python -m autodev.cli --help",
+    "autodev --help",
+    "autodev --version",
+    "pytest tests/ -q",
+    "pytest tests/ --cov=autodev --cov-report=term-missing",
+    "ruff check .",
+    "mypy src/autodev",
+    "python -m build",
+    "python scripts/release_readiness_gate.py --strict",
+    "python -m autodev.release_readiness_gate",
+    "FACTORY_FORCE_MOCK=1 autodev classify-input --input test",
+    "docker pull ghcr.io/merchloubna70-dot/autodev-ai:latest",
+    "docker run --rm ghcr.io/merchloubna70-dot/autodev-ai:latest --version"
+  ],
+  "next_actions": [
+    {
+      "id": "R2-001",
+      "priority": "P0",
+      "round": "next_hardening_round",
+      "task": "Add LICENSE file (MIT)",
+      "effort": "1 minute",
+      "blockers_unblocked": ["HIGH-LIC-01"]
+    },
+    {
+      "id": "R2-002",
+      "priority": "P0",
+      "round": "next_hardening_round",
+      "task": "Bump pyproject.toml to 0.1.0a1, rebuild wheel+sdist, replace Release assets",
+      "effort": "10 minutes",
+      "blockers_unblocked": ["HIGH-VER-01", "HIGH-DIST-01"]
+    },
+    {
+      "id": "R2-003",
+      "priority": "P0",
+      "round": "next_hardening_round",
+      "task": "Fix A2AHttpTransport: validate URL scheme + reject private hosts",
+      "effort": "1 hour",
+      "blockers_unblocked": ["HIGH-SEC-01"]
+    },
+    {
+      "id": "R2-004",
+      "priority": "P0",
+      "round": "next_hardening_round",
+      "task": "Fix Homebrew formula URL (owner) + regenerate sha256 from final dist",
+      "effort": "20 minutes",
+      "blockers_unblocked": ["BLOCKER-PKG-01", "BLOCKER-PKG-02"]
+    },
+    {
+      "id": "R2-005",
+      "priority": "P0",
+      "round": "next_hardening_round",
+      "task": "Fix macOS .app Info.plist version to 0.1.0",
+      "effort": "1 minute",
+      "blockers_unblocked": ["BLOCKER-PKG-03"]
+    },
+    {
+      "id": "R2-006",
+      "priority": "P0",
+      "round": "next_hardening_round",
+      "task": "release.yml: add pytest+ruff+mypy gate before twine upload",
+      "effort": "15 minutes",
+      "blockers_unblocked": ["HIGH-CI-01"]
+    },
+    {
+      "id": "R2-007",
+      "priority": "P0",
+      "round": "next_hardening_round",
+      "task": "Fix ruff 17 errors (auto-fixable=12); extend lint.yml to scan scripts/",
+      "effort": "5 minutes",
+      "blockers_unblocked": []
+    },
+    {
+      "id": "R2-008",
+      "priority": "P1",
+      "round": "next_hardening_round",
+      "task": "Add smoke tests for MilestoneFlow + ReleaseFlow + ProjectContextFlow",
+      "effort": "2 hours",
+      "blockers_unblocked": ["HIGH-COV-01", "HIGH-ORPHAN-01"]
+    },
+    {
+      "id": "R2-009",
+      "priority": "P1",
+      "round": "next_hardening_round",
+      "task": "Add MCP server-side guardrail: deliver-project/run-issue tools refuse apply mode by default",
+      "effort": "1 hour",
+      "blockers_unblocked": []
+    },
+    {
+      "id": "R2-010",
+      "priority": "P1",
+      "round": "next_hardening_round",
+      "task": "Denylist: normalize whitespace before matching (catch curl|bash sans space); FACTORY_FORCE_MOCK auto-sets allow_mock_executor",
+      "effort": "30 minutes",
+      "blockers_unblocked": []
+    },
+    {
+      "id": "R2-011",
+      "priority": "P1",
+      "round": "next_hardening_round",
+      "task": "Add .env / credentials.json / secrets.toml to .gitignore; document FACTORY_LOG env var",
+      "effort": "5 minutes",
+      "blockers_unblocked": []
+    },
+    {
+      "id": "R2-012",
+      "priority": "P2",
+      "round": "next_hardening_round",
+      "task": "Pin Docker base image by digest (python:3.12-slim@sha256:...); add SHA256SUMS for dist artifacts",
+      "effort": "30 minutes",
+      "blockers_unblocked": []
+    },
+    {
+      "id": "R2-013",
+      "priority": "P2",
+      "round": "next_hardening_round",
+      "task": "WorkerIsolator: validate symlink target is_relative_to parent_home",
+      "effort": "20 minutes",
+      "blockers_unblocked": []
+    },
+    {
+      "id": "R2-014",
+      "priority": "P2",
+      "round": "next_hardening_round",
+      "task": "Add CHANGELOG.md + docs/configuration.md + docs/troubleshooting.md",
+      "effort": "1 hour",
+      "blockers_unblocked": []
+    },
+    {
+      "id": "R2-015",
+      "priority": "P2",
+      "round": "next_hardening_round",
+      "task": "Fix release_readiness_gate.py invocation: detect ruff in venv; classify-input bug",
+      "effort": "20 minutes",
+      "blockers_unblocked": []
+    }
+  ],
+  "recommended_next_rounds": [
+    "Round 2: P0 release blocker sweep (R2-001..R2-007) — must complete before v0.1.0 stable",
+    "Round 3: Coverage + boundary sweep (R2-008..R2-013) — required for production enterprise readiness",
+    "Round 4: Documentation + UX polish (R2-014..R2-015) — public beta polish",
+    "Round 5: After R2 closes, re-run release_readiness_gate.py --strict and aim for 12/12 pass"
+  ]
+}

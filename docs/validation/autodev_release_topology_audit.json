@@ -1,0 +1,171 @@
+{
+  "round": "release_topology",
+  "audit_date": "2026-05-14",
+  "python_requires": ">=3.10",
+  "version": "0.1.0",
+  "package_name": "autodev-ai",
+  "import_name": "autodev",
+  "entry_points": {
+    "autodev": "autodev.cli:app"
+  },
+  "entry_point_verified": true,
+  "dependencies": {
+    "runtime": [
+      "pydantic>=2.5,<3.0",
+      "typer[all]>=0.9",
+      "rich>=13.7",
+      "PyYAML>=6.0",
+      "jinja2>=3.1"
+    ],
+    "dev": [
+      "pytest>=8.0",
+      "pytest-asyncio>=0.23",
+      "pytest-cov>=4.1",
+      "ruff>=0.4"
+    ],
+    "optional": {
+      "crewai": ["crewai>=0.30"],
+      "tui": ["textual>=0.60"]
+    }
+  },
+  "src_packages": [
+    {"path": "src/autodev/__init__.py",        "loc": 5,    "file_count": 1},
+    {"path": "src/autodev/adapters",           "loc": 2453, "file_count": 20},
+    {"path": "src/autodev/agents",             "loc": 7465, "file_count": 44},
+    {"path": "src/autodev/cli.py",             "loc": 1042, "file_count": 1},
+    {"path": "src/autodev/config.py",          "loc": 98,   "file_count": 1},
+    {"path": "src/autodev/context_providers",  "loc": 262,  "file_count": 6},
+    {"path": "src/autodev/data",               "loc": 0,    "file_count": 0},
+    {"path": "src/autodev/executors",          "loc": 1903, "file_count": 14},
+    {"path": "src/autodev/flows",              "loc": 3080, "file_count": 19},
+    {"path": "src/autodev/gates",              "loc": 911,  "file_count": 9},
+    {"path": "src/autodev/mcp_server",         "loc": 580,  "file_count": 3},
+    {"path": "src/autodev/planners",           "loc": 1120, "file_count": 8},
+    {"path": "src/autodev/reports",            "loc": 399,  "file_count": 5},
+    {"path": "src/autodev/scanners",           "loc": 469,  "file_count": 7},
+    {"path": "src/autodev/schemas.py",         "loc": 1587, "file_count": 1},
+    {"path": "src/autodev/state.py",           "loc": 134,  "file_count": 1},
+    {"path": "src/autodev/tasks",              "loc": 214,  "file_count": 16},
+    {"path": "src/autodev/templates",          "loc": 0,    "file_count": 0},
+    {"path": "src/autodev/tui",                "loc": 634,  "file_count": 4},
+    {"path": "src/autodev/utils",              "loc": 661,  "file_count": 10}
+  ],
+  "src_totals": {
+    "total_loc": 23017,
+    "total_py_files": 170
+  },
+  "test_layout": {
+    "unit_files": 85,
+    "unit_loc": 11004,
+    "integration_files": 27,
+    "integration_loc": 2992,
+    "total_test_loc": 13996,
+    "fixtures": [
+      "empty_project",
+      "issue_project",
+      "mixed_project",
+      "mock_patches",
+      "monorepo_project",
+      "openapi",
+      "prd_project",
+      "python_project",
+      "rust_project",
+      "typescript_project"
+    ],
+    "fixture_count": 10
+  },
+  "docs_files": 25,
+  "examples_briefs": 10,
+  "packaging": {
+    "docker": true,
+    "docker_path": "packaging/docker/Dockerfile",
+    "root_dockerfile": false,
+    "pyinstaller": true,
+    "homebrew": true,
+    "macos_app": true
+  },
+  "workflows": [
+    {
+      "name": "test.yml",
+      "display_name": "Test",
+      "triggers": ["push", "pull_request"],
+      "branches": ["**"],
+      "matrix_python": ["3.10", "3.11", "3.12"]
+    },
+    {
+      "name": "lint.yml",
+      "display_name": "Lint",
+      "triggers": ["push", "pull_request"],
+      "branches": ["**"]
+    },
+    {
+      "name": "release.yml",
+      "display_name": "Release",
+      "triggers": ["push"],
+      "tags": ["v*.*.*"],
+      "publishes_to_pypi": true
+    },
+    {
+      "name": "docker-publish.yml",
+      "display_name": "Docker — Build & Publish to GHCR",
+      "triggers": ["push", "workflow_dispatch"],
+      "tags": ["v*.*.*"],
+      "platforms": ["linux/amd64", "linux/arm64"]
+    }
+  ],
+  "git_tags": ["v0.1.0-alpha"],
+  "dist_artifacts": [
+    "dist/autodev_ai-0.1.0-py3-none-any.whl",
+    "dist/autodev_ai-0.1.0.tar.gz"
+  ],
+  "license": "MIT (inline text in pyproject.toml, no LICENSE file)",
+  "readme_present": true,
+  "changelog_present": false,
+  "license_file_present": false,
+  "scripts_dir_empty": true,
+  "build_system": {
+    "backend": "hatchling.build",
+    "requires": ["hatchling>=1.21"]
+  },
+  "tool_ruff": {
+    "target_version": "py310",
+    "line_length": 110
+  },
+  "tool_mypy": {
+    "python_version": "3.10",
+    "strict": false,
+    "ignore_missing_imports": true
+  },
+  "findings": [
+    {
+      "kind": "inconsistent",
+      "severity": "HIGH",
+      "detail": "Git tag is 'v0.1.0-alpha' but pyproject.toml version is '0.1.0' (no alpha suffix). The release.yml and docker-publish.yml workflows trigger on 'v*.*.*' tags — the existing tag 'v0.1.0-alpha' matches that glob and would have triggered a PyPI publish of 0.1.0 without the alpha label. The Homebrew formula also hardcodes a 'v0.1.0' release URL (no alpha), which does not yet exist on GitHub Releases."
+    },
+    {
+      "kind": "missing",
+      "severity": "HIGH",
+      "detail": "No LICENSE file at repository root. pyproject.toml uses `license = { text = \"MIT\" }` (inline text), which is valid for PEP 639 but tooling like PyPI badge generators, GitHub license detection, and the Homebrew formula's 'license \"MIT\"' clause all expect a top-level LICENSE file. Release gate should fail without it."
+    },
+    {
+      "kind": "missing",
+      "severity": "MEDIUM",
+      "detail": "No CHANGELOG file present. Release workflow uses 'generate_release_notes: true' via softprops/action-gh-release, which auto-generates notes from commits — but there is no CHANGELOG.md or CHANGES.rst for users consuming the sdist or reading the docs."
+    },
+    {
+      "kind": "inconsistent",
+      "severity": "MEDIUM",
+      "detail": "Homebrew formula (packaging/homebrew/Formula/autodev-ai.rb) references release URL 'v0.1.0/autodev_ai-0.1.0.tar.gz' and SHA256 '744375fb...'. This v0.1.0 GitHub Release does not exist yet (only v0.1.0-alpha tag exists). The formula will be broken until a v0.1.0 non-alpha tag is pushed and the release created."
+    },
+    {
+      "kind": "inconsistent",
+      "severity": "LOW",
+      "detail": "CI test matrix includes Python 3.10, 3.11, 3.12, but Dockerfile (docker-publish.yml) and lint.yml both pin python-version to '3.12' only. The PyInstaller spec header also states 'autodev-ai v0.1.0', consistent with pyproject.toml but inconsistent with the v0.1.0-alpha git tag."
+    },
+    {
+      "kind": "missing",
+      "severity": "LOW",
+      "detail": "src/autodev/data/ and src/autodev/templates/ subdirectories exist but contain zero Python files and zero LoC. Contents (if any non-Python assets) are not tracked in this audit. Verify these directories are either intentionally empty or have their assets included in the wheel via hatch build config."
+    }
+  ]
+}

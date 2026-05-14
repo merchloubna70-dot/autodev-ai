@@ -1,0 +1,166 @@
+{
+  "round": "mcp_server_audit",
+  "audit_date": "2026-05-14",
+  "transport": "stdio JSON-RPC 2.0",
+  "tools_count": 9,
+  "tools": [
+    {
+      "name": "autodev_scan",
+      "summary": "Scan a repository; returns RepoScanResult with language detection, directory structure, and git status.",
+      "inputs": {"repo_path": "string (required)"},
+      "requires": ["RepoExplorerAgent"],
+      "reads_fs": true,
+      "reads_secrets": false,
+      "shells_out": false,
+      "notes": "Reads directory tree under repo_path. No LLM call needed for directory walk; agent may call git for status."
+    },
+    {
+      "name": "autodev_classify_input",
+      "summary": "Classify free-form text as GitHub issue, PRD, brief, etc., and suggest the appropriate autodev flow.",
+      "inputs": {"text": "string (required)", "source_path": "string (optional)", "source_url": "string (optional)"},
+      "requires": ["InputClassifierAgent"],
+      "reads_fs": false,
+      "reads_secrets": false,
+      "shells_out": false,
+      "notes": "May invoke LLM via InputClassifierAgent in apply mode; mock-safe."
+    },
+    {
+      "name": "autodev_create_prd",
+      "summary": "Convert a project brief into a full PRD in Markdown format.",
+      "inputs": {"brief_text": "string (required)", "project_name": "string (optional)"},
+      "requires": ["ProductManagerAgent", "RequirementAnalystAgent", "PRDWriterAgent"],
+      "reads_fs": false,
+      "reads_secrets": false,
+      "shells_out": false,
+      "notes": "Synchronous multi-agent chain; returns Markdown string. Long-running with real LLMs."
+    },
+    {
+      "name": "autodev_deliver_project",
+      "summary": "Run full Project Delivery flow: brief -> PRD -> architecture -> milestones -> implementation -> release check.",
+      "inputs": {
+        "repo_path": "string (required)",
+        "brief_text": "string (required)",
+        "project_name": "string (optional)",
+        "languages": "array[string] (optional)",
+        "from_scratch": "boolean (default false)",
+        "mode": "enum[dry-run|apply] (default dry-run)"
+      },
+      "requires": ["FactoryConfig", "ProjectDeliveryFlow", "Codex/Claude in apply mode"],
+      "reads_fs": true,
+      "reads_secrets": false,
+      "shells_out": true,
+      "notes": "Shells out to Codex CLI or Claude Code CLI when mode=apply. In dry-run, uses mock executor. This is the highest-risk tool for unintended filesystem writes."
+    },
+    {
+      "name": "autodev_run_issue",
+      "summary": "Run Issue Pipeline flow against an existing repo: classify, plan, and implement a fix.",
+      "inputs": {
+        "repo_path": "string (required)",
+        "issue_text": "string (required)",
+        "issue_id": "string (optional, default ISSUE-0)",
+        "languages": "array[string] (optional)",
+        "mode": "enum[dry-run|apply] (default dry-run)"
+      },
+      "requires": ["FactoryConfig", "IssuePipelineFlow", "Codex/Claude in apply mode"],
+      "reads_fs": true,
+      "reads_secrets": false,
+      "shells_out": true,
+      "notes": "Same shell-out risk as autodev_deliver_project. Dry-run is safe."
+    },
+    {
+      "name": "autodev_report",
+      "summary": "Generate and return the final delivery report for a completed run.",
+      "inputs": {"repo_path": "string (required)", "run_id": "string (required)"},
+      "requires": ["Reporter", "RunState"],
+      "reads_fs": true,
+      "reads_secrets": false,
+      "shells_out": false,
+      "notes": "Reads run state JSON from .dev-factory/runs/<run_id>/. Returns Markdown text."
+    },
+    {
+      "name": "autodev_roundtable",
+      "summary": "Run a BMAD party-mode roundtable: N independent agents discuss a topic and synthesize a verdict.",
+      "inputs": {
+        "topic": "string (required)",
+        "skills": "array[string] (required)",
+        "max_participants": "integer (default 4)"
+      },
+      "requires": ["RoundtableAgent", "Claude CLI subprocesses or FACTORY_FORCE_MOCK"],
+      "reads_fs": false,
+      "reads_secrets": false,
+      "shells_out": true,
+      "notes": "Invokes real `claude` CLI subprocesses per AgentCard unless FACTORY_FORCE_MOCK=1. Can be expensive."
+    },
+    {
+      "name": "autodev_release_check",
+      "summary": "Run a release readiness check on a completed run and return a ReleaseCheckReport.",
+      "inputs": {"repo_path": "string (required)", "run_id": "string (required)"},
+      "requires": ["ReleaseFlow", "RunState"],
+      "reads_fs": true,
+      "reads_secrets": false,
+      "shells_out": false,
+      "notes": "Reads .dev-factory/runs/<run_id>/run_state.json. Deterministic check, no LLM call."
+    },
+    {
+      "name": "autodev_list_runs",
+      "summary": "List recent run IDs (up to 20) for a repository with summary metadata.",
+      "inputs": {"repo_path": "string (required)"},
+      "requires": [],
+      "reads_fs": true,
+      "reads_secrets": false,
+      "shells_out": false,
+      "notes": "Safest tool: pure filesystem directory listing under .dev-factory/runs/. Used as primary smoke target."
+    }
+  ],
+  "handshake_works": true,
+  "tools_list_works": true,
+  "tools_call_smoke": "ok",
+  "tools_call_smoke_target": "autodev_list_runs",
+  "error_semantics_correct": true,
+  "error_cases_verified": {
+    "invalid_json": {"expected_code": -32700, "observed_code": -32700, "pass": true},
+    "unknown_method": {"expected_code": -32601, "observed_code": -32601, "pass": true},
+    "unknown_tool": {"expected_code": -32601, "observed_code": -32601, "pass": true},
+    "notification_no_response": {"pass": true}
+  },
+  "deep_nested_json": "handled gracefully, no crash",
+  "secret_leakage_risk": "none",
+  "secret_leakage_detail": "tools.py only accesses os.environ.get('FACTORY_FORCE_MOCK', '0') — a non-secret feature flag. No dotenv, no API key reads, no .env path access.",
+  "shell_exec_in_mcp_files": "none — server.py and tools.py contain zero subprocess/shell calls. Shell-out happens inside agents called by tools.",
+  "findings": [
+    {
+      "id": "F-001",
+      "severity": "medium",
+      "title": "autodev_deliver_project and autodev_run_issue shell out when mode=apply",
+      "detail": "These tools call FactoryConfig.from_env() then dispatch to Codex CLI / Claude CLI subprocesses. In dry-run (default) mode, a mock executor is used and no shell-out occurs. However, any MCP client that passes mode='apply' will trigger real code execution on the server host. The MCP layer has no mode guardrail — the caller controls this entirely.",
+      "recommendation": "Document explicitly that mode=apply is a privileged operation. Consider enforcing a server-level env-var override (e.g. AUTODEV_MCP_MAX_MODE=dry-run) that caps the effective mode regardless of caller input."
+    },
+    {
+      "id": "F-002",
+      "severity": "low",
+      "title": "autodev_roundtable shells out to real claude CLI by default",
+      "detail": "RoundtableAgent invokes real claude CLI subprocesses per AgentCard unless FACTORY_FORCE_MOCK=1. An unauthenticated MCP caller can trigger arbitrary Claude API spending by calling autodev_roundtable without setting the mock flag.",
+      "recommendation": "Add AUTODEV_MCP_FORCE_MOCK server-level flag or require explicit opt-in for LLM-backed tools via a capabilities negotiation field."
+    },
+    {
+      "id": "F-003",
+      "severity": "low",
+      "title": "tools/call exception responses use isError=True inside result, not JSON-RPC error",
+      "detail": "When a tool handler raises an exception, the server returns a JSON-RPC success response (no 'error' field) with 'isError: true' in the result content. This follows MCP spec convention for tool-level errors but differs from JSON-RPC 2.0 error semantics. Clients that check only for the 'error' key at the top level will not detect handler failures.",
+      "recommendation": "Document this clearly in the MCP server doc. Optionally add an option to surface handler exceptions as JSON-RPC errors (code -32603) for stricter clients."
+    },
+    {
+      "id": "F-004",
+      "severity": "info",
+      "title": "No request size limit or timeout on the stdio loop",
+      "detail": "The main loop in server.py reads stdin line by line with no per-line size cap and no handler timeout. A long-running tools/call (e.g. autodev_deliver_project in apply mode) will block the entire server. Malformed oversized lines are handled safely by json.JSONDecodeError but the server has no RLIMIT guard.",
+      "recommendation": "Add per-handler timeout via concurrent.futures.ThreadPoolExecutor + Future.result(timeout=N) for production hardening."
+    }
+  ],
+  "smoke_test_file": "tests/integration/test_mcp_server_smoke.py",
+  "smoke_test_count": 10,
+  "smoke_test_pass": true,
+  "smoke_test_runner": ".venv/bin/python -m pytest tests/integration/test_mcp_server_smoke.py -q",
+  "verdict": "mcp_ready_with_caveats",
+  "verdict_rationale": "All 9 tools registered and listed correctly. JSON-RPC 2.0 handshake, tools/list, tools/call, and all error paths verified and passing. No secret leakage. Caveats: mode=apply tools shell out without server-level guardrail (F-001), roundtable triggers real LLM spend by default (F-002), and there is no per-handler timeout (F-004)."
+}

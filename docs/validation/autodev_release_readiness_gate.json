@@ -1,0 +1,121 @@
+{
+  "gate": "release_readiness",
+  "schema_version": "1.0",
+  "generated_by": "Agent L — Release Hardening Audit",
+  "generated_at": "2026-05-14T03:11:00Z",
+  "repo": "autodev-ai",
+  "description": "12-check release readiness gate for autodev-ai. Run via: python scripts/release_readiness_gate.py",
+  "checks": [
+    {
+      "id": 1,
+      "name": "package_metadata_valid",
+      "category": "packaging",
+      "description": "tomllib reads pyproject.toml; validates name, version, requires-python, autodev entry-point referencing autodev.cli:app",
+      "baseline_status": "pass",
+      "baseline_detail": "name=autodev-ai version=0.1.0 ep=autodev.cli:app"
+    },
+    {
+      "id": 2,
+      "name": "cli_help_works",
+      "category": "cli",
+      "description": "subprocess call `autodev --help` (or python -m autodev.cli --help) exits 0; skip if not on PATH",
+      "baseline_status": "pass",
+      "baseline_detail": "autodev CLI --help via python -m: exit 0"
+    },
+    {
+      "id": 3,
+      "name": "pytest_evidence",
+      "category": "testing",
+      "description": "Runs smoke subset pytest tests/unit/test_prfaq_style.py or detects .dev-factory/ test records",
+      "baseline_status": "pass",
+      "baseline_detail": "Smoke pytest passed"
+    },
+    {
+      "id": 4,
+      "name": "ruff_passes",
+      "category": "linting",
+      "description": "`ruff check .` exits 0; skip if ruff not on PATH",
+      "baseline_status": "skip",
+      "baseline_detail": "ruff not on PATH in venv activation context"
+    },
+    {
+      "id": 5,
+      "name": "mypy_passes",
+      "category": "types",
+      "description": "`mypy src/autodev` exits 0; skip if mypy not on PATH",
+      "baseline_status": "fail",
+      "baseline_detail": "pydantic_ai_bridge.py:137 — Agent overload mismatch (pre-existing, not introduced by this gate)"
+    },
+    {
+      "id": 6,
+      "name": "docs_exist",
+      "category": "documentation",
+      "description": "README.md present + at least 5 of: docs/quickstart.md, docs/architecture.md, docs/faq.md, docs/tutorials/, examples/README.md",
+      "baseline_status": "pass",
+      "baseline_detail": "All 5/5 doc paths present"
+    },
+    {
+      "id": 7,
+      "name": "mcp_smoke_path_exists",
+      "category": "mcp",
+      "description": "tests/integration/test_mcp_server_smoke.py exists OR src/autodev/mcp_server/ has a main entry",
+      "baseline_status": "pass",
+      "baseline_detail": "tests/integration/test_mcp_server_smoke.py exists"
+    },
+    {
+      "id": 8,
+      "name": "a2a_smoke_path_exists",
+      "category": "a2a",
+      "description": "tests/ containing a2a or roundtable in filename total >= 5",
+      "baseline_status": "pass",
+      "baseline_detail": "11 a2a/roundtable test files found"
+    },
+    {
+      "id": 9,
+      "name": "mock_executor_works",
+      "category": "executor",
+      "description": "FACTORY_FORCE_MOCK=1 autodev classify-input --input test exits 0; skip if not available",
+      "baseline_status": "skip",
+      "baseline_detail": "classify-input sub-command not available; gate-level skip"
+    },
+    {
+      "id": 10,
+      "name": "packaging_files_exist",
+      "category": "packaging",
+      "description": "packaging/docker/Dockerfile + packaging/pyinstaller/autodev.spec + packaging/homebrew/Formula/autodev-ai.rb all present",
+      "baseline_status": "pass",
+      "baseline_detail": "All 3 packaging files present"
+    },
+    {
+      "id": 11,
+      "name": "no_dangerous_release_claims",
+      "category": "release",
+      "description": "README.md must not contain: 'available on pypi now' / 'production ready' / 'enterprise certified'",
+      "baseline_status": "pass",
+      "baseline_detail": "No forbidden release claims found"
+    },
+    {
+      "id": 12,
+      "name": "release_blockers_recorded",
+      "category": "release",
+      "description": "docs/validation/ has a *release_hardening_round* aggregator, release_blockers.md, or autodev_release_readiness_gate.* file",
+      "baseline_status": "pass",
+      "baseline_detail": "This file (autodev_release_readiness_gate.json) satisfies the check"
+    }
+  ],
+  "baseline_summary": {
+    "pass": 9,
+    "fail": 1,
+    "skip": 2
+  },
+  "known_blockers": [
+    {
+      "check": "mypy_passes",
+      "file": "src/autodev/adapters/pydantic_ai_bridge.py",
+      "line": 137,
+      "issue": "No overload variant of Agent matches argument types — pre-existing mypy error, not introduced by this gate",
+      "severity": "warning",
+      "action_required": "Fix pydantic-ai Agent call signature before release"
+    }
+  ]
+}

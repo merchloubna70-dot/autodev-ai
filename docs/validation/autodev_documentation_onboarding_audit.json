@@ -1,0 +1,225 @@
+{
+  "round": "documentation_onboarding",
+  "audited_at": "2026-05-14",
+  "auditor": "Agent-I",
+  "doc_files": 23,
+  "doc_total_words": 10625,
+  "readme": {
+    "install_paths_valid": true,
+    "pypi_claim_truthful": true,
+    "docker_cmd_correct": false,
+    "notes": {
+      "install_from_wheel": "pip install https://github.com/merchloubna70-dot/autodev-ai/releases/download/v0.1.0-alpha/autodev_ai-0.1.0-py3-none-any.whl — cannot verify release exists without network, but URL structure is correct and README correctly notes PyPI not yet published",
+      "install_from_source": "git clone + pip install -e is correct",
+      "docker_issue": "README uses ghcr.io/merchloubna70-dot/autodev-ai:0.1.0-alpha but packaging/docker/README.md uses ghcr.io/macworkers/autodev-ai:latest — org name mismatch; also README docker run command missing -e flags for API keys and volume mounts, making it non-functional for real usage",
+      "pypi_badge": "Badge links to https://pypi.org/project/autodev-ai/ but README text correctly warns PyPI is not yet released — badge will render broken until published",
+      "quickstart_clone_url": "docs/quickstart.md uses placeholder https://github.com/your-org/autodev-ai.git instead of real org"
+    }
+  },
+  "tutorials": [
+    {
+      "file": "docs/tutorials/01-bug-fix.md",
+      "words": 545,
+      "covers_cli_cmd": "fix-bug",
+      "has_code_blocks": true,
+      "has_expected_output": true
+    },
+    {
+      "file": "docs/tutorials/02-rust-project.md",
+      "words": 521,
+      "covers_cli_cmd": "deliver-project (Rust)",
+      "has_code_blocks": true,
+      "has_expected_output": true
+    },
+    {
+      "file": "docs/tutorials/03-multi-cli-routing.md",
+      "words": 622,
+      "covers_cli_cmd": "deliver-project (executor routing)",
+      "has_code_blocks": true,
+      "has_expected_output": true
+    },
+    {
+      "file": "docs/tutorials/04-sprint-mode.md",
+      "words": 519,
+      "covers_cli_cmd": "sprint-start, sprint-status, sprint-retro, sprint-correct",
+      "has_code_blocks": true,
+      "has_expected_output": true
+    },
+    {
+      "file": "docs/tutorials/05-roundtable.md",
+      "words": 569,
+      "covers_cli_cmd": "roundtable",
+      "has_code_blocks": true,
+      "has_expected_output": true
+    },
+    {
+      "file": "docs/tutorials/06-mcp-server.md",
+      "words": 467,
+      "covers_cli_cmd": "mcp-serve",
+      "has_code_blocks": true,
+      "has_expected_output": true
+    },
+    {
+      "file": "docs/tutorials/07-a2a-server.md",
+      "words": 587,
+      "covers_cli_cmd": "a2a-serve, a2a-call, a2a-register",
+      "has_code_blocks": true,
+      "has_expected_output": true
+    }
+  ],
+  "cli_doc_coverage": {
+    "documented": 34,
+    "total": 35,
+    "pct": 97,
+    "undocumented": ["dashboard"],
+    "notes": "dashboard exists in cli.py (line 1025) but does not appear in README All CLI Commands table or any tutorial. Confirmed by prior audit (autodev_cli_surface_audit.md) that it requires optional 'textual' dep and exits with code 1 if missing — a documentation gap AND a UX trap."
+  },
+  "env_var_doc_coverage": {
+    "documented": 7,
+    "discovered": 8,
+    "documented_vars": [
+      "ANTHROPIC_API_KEY",
+      "FACTORY_CLAUDE_BIN",
+      "FACTORY_CLAUDE_CMD",
+      "FACTORY_CODEX_BIN",
+      "FACTORY_CODEX_CMD",
+      "FACTORY_FORCE_MOCK",
+      "OPENAI_API_KEY"
+    ],
+    "undocumented_vars": ["FACTORY_LOG"],
+    "notes": "FACTORY_LOG is referenced in src/autodev/ via os.environ but does not appear in any docs/ file or README. FACTORY_CLAUDE_CMD and FACTORY_CODEX_CMD are documented only in docs/multi_cli_executor.md and docs/claude_code_adapter.md — not in quickstart or README env var table."
+  },
+  "missing_docs": [
+    "CHANGELOG.md",
+    "docs/configuration.md",
+    "docs/troubleshooting.md",
+    "docs/assets/demo.gif (placeholder comment in README, file absent)"
+  ],
+  "outdated_or_incorrect": [
+    {
+      "file": "README.md",
+      "issue": "Docker pull command uses org 'merchloubna70-dot' but packaging/docker/README.md uses 'macworkers' — one is wrong; image may not be published under either name without network verification"
+    },
+    {
+      "file": "README.md",
+      "issue": "PyPI badge links to pypi.org/project/autodev-ai/ which does not yet exist; badge will render as 'unknown' breaking visual trust for new visitors"
+    },
+    {
+      "file": "docs/quickstart.md",
+      "issue": "Step 1 git clone URL is a placeholder: 'https://github.com/your-org/autodev-ai.git' — should be 'https://github.com/merchloubna70-dot/autodev-ai.git'"
+    },
+    {
+      "file": "docs/contributing.md",
+      "issue": "git clone uses '<org>' placeholder: 'https://github.com/<org>/autodev-ai.git' — not resolved to real org"
+    },
+    {
+      "file": "examples/README.md",
+      "issue": "References 'bash examples/scripts/run_example.sh' — script exists (examples/scripts/run_example.sh) but is not shown to be executable or documented"
+    },
+    {
+      "file": "README.md",
+      "issue": "'dashboard' command missing from README 'All CLI Commands' table despite being implemented in cli.py"
+    }
+  ],
+  "broken_relative_links": [
+    {
+      "source": "README.md",
+      "link": "docs/assets/demo.gif",
+      "status": "file_absent",
+      "note": "Comment-guarded (<!-- ... -->) so not rendered, but still a broken placeholder"
+    }
+  ],
+  "doc_files_checked": {
+    "README.md": {"exists": true, "line_count_approx": 290, "words": 1228},
+    "docs/quickstart.md": {"exists": true, "words": 671},
+    "docs/architecture.md": {"exists": true, "words": 1166},
+    "docs/faq.md": {"exists": true, "words": 1054},
+    "docs/contributing.md": {"exists": true, "words": 195},
+    "docs/tutorials/01-bug-fix.md": {"exists": true, "words": 545},
+    "docs/tutorials/02-rust-project.md": {"exists": true, "words": 521},
+    "docs/tutorials/03-multi-cli-routing.md": {"exists": true, "words": 622},
+    "docs/tutorials/04-sprint-mode.md": {"exists": true, "words": 519},
+    "docs/tutorials/05-roundtable.md": {"exists": true, "words": 569},
+    "docs/tutorials/06-mcp-server.md": {"exists": true, "words": 467},
+    "docs/tutorials/07-a2a-server.md": {"exists": true, "words": 587},
+    "examples/README.md": {"exists": true, "words": 277},
+    "examples/01-mdlines/brief.md": {"exists": true, "words": 181},
+    "examples/02-slug-rs/brief.md": {"exists": true, "words": 190},
+    "examples/03-hello-ts/brief.md": {"exists": true, "words": 198},
+    "examples/04-tinyurl/brief.md": {"exists": true, "words": 203},
+    "examples/05-kanban-board/brief.md": {"exists": true, "words": 224},
+    "examples/06-log-analyzer/brief.md": {"exists": true, "words": 231},
+    "examples/07-feed-aggregator/brief.md": {"exists": true, "words": 228},
+    "examples/08-pdf-extractor/brief.md": {"exists": true, "words": 217},
+    "examples/09-cli-wrapper/brief.md": {"exists": true, "words": 236},
+    "examples/10-prfaq-product/brief.md": {"exists": true, "words": 296},
+    "CHANGELOG.md": {"exists": false},
+    "docs/configuration.md": {"exists": false},
+    "docs/troubleshooting.md": {"exists": false}
+  },
+  "five_min_quickstart_realistic": true,
+  "five_min_quickstart_notes": "The 5-minute path (clone → pip install -e → autodev deliver-project --allow-mock-executor true) is complete, has expected-output blocks, and requires no API key. Only issue: the clone URL in quickstart.md uses 'your-org' placeholder. Fixing that makes the path fully copy-pasteable.",
+  "findings": [
+    {
+      "id": "D-001",
+      "severity": "medium",
+      "file": "docs/quickstart.md",
+      "issue": "git clone URL is placeholder 'your-org' instead of 'merchloubna70-dot'; copy-paste fails for new users"
+    },
+    {
+      "id": "D-002",
+      "severity": "medium",
+      "file": "README.md",
+      "issue": "Docker org mismatch: README shows 'ghcr.io/merchloubna70-dot/autodev-ai:0.1.0-alpha' but packaging/docker/README.md shows 'ghcr.io/macworkers/autodev-ai:latest' — one will produce 'image not found'"
+    },
+    {
+      "id": "D-003",
+      "severity": "low",
+      "file": "README.md",
+      "issue": "PyPI badge points to not-yet-published package; renders as broken shield, undermining first impressions"
+    },
+    {
+      "id": "D-004",
+      "severity": "low",
+      "file": "README.md",
+      "issue": "'dashboard' CLI command absent from 'All CLI Commands' table; undocumented optional-dep behaviour (exits code 1 without textual installed)"
+    },
+    {
+      "id": "D-005",
+      "severity": "low",
+      "file": "docs/contributing.md",
+      "issue": "git clone uses unreplaced '<org>' placeholder"
+    },
+    {
+      "id": "D-006",
+      "severity": "low",
+      "file": "docs/ (all)",
+      "issue": "FACTORY_LOG env var used in source but not documented anywhere"
+    },
+    {
+      "id": "D-007",
+      "severity": "low",
+      "file": "none",
+      "issue": "CHANGELOG.md is absent; contributing.md describes a release workflow with tags but no changelog format"
+    },
+    {
+      "id": "D-008",
+      "severity": "low",
+      "file": "none",
+      "issue": "docs/configuration.md and docs/troubleshooting.md are absent; FAQ covers some troubleshooting but there is no canonical configuration reference beyond the quickstart env var table"
+    },
+    {
+      "id": "D-009",
+      "severity": "info",
+      "file": "README.md",
+      "issue": "demo GIF placeholder is comment-guarded and the file docs/assets/demo.gif does not exist; no visual onboarding aid"
+    },
+    {
+      "id": "D-010",
+      "severity": "info",
+      "file": "examples/README.md",
+      "issue": "examples/scripts/run_example.sh exists but is not shown to have execute permission; README instructs 'bash examples/scripts/run_example.sh' without checking"
+    }
+  ],
+  "verdict": "minor_polish_needed"
+}

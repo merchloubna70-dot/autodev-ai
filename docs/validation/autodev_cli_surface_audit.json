@@ -1,0 +1,392 @@
+{
+  "round": "cli_surface_audit",
+  "total_commands": 35,
+  "help_works": 35,
+  "help_fails": 0,
+  "commands": [
+    {
+      "cmd": "run-issue",
+      "exit_code": 0,
+      "has_help": true,
+      "requires_args": false,
+      "requires_external_cli": ["codex", "claude"],
+      "supports_mock": true,
+      "doc_path": "docs/usage.md,docs/quickstart.md,docs/architecture.md",
+      "smoke_status": "requires_repo"
+    },
+    {
+      "cmd": "deliver-project",
+      "exit_code": 0,
+      "has_help": true,
+      "requires_args": false,
+      "requires_external_cli": ["codex", "claude"],
+      "supports_mock": true,
+      "doc_path": "docs/quickstart.md,docs/usage.md,docs/faq.md",
+      "smoke_status": "requires_repo"
+    },
+    {
+      "cmd": "classify-input",
+      "exit_code": 0,
+      "has_help": true,
+      "requires_args": true,
+      "requires_external_cli": [],
+      "supports_mock": false,
+      "doc_path": "docs/usage.md",
+      "smoke_status": "smoke_runnable"
+    },
+    {
+      "cmd": "create-prd",
+      "exit_code": 0,
+      "has_help": true,
+      "requires_args": true,
+      "requires_external_cli": [],
+      "supports_mock": false,
+      "doc_path": "docs/usage.md",
+      "smoke_status": "smoke_runnable"
+    },
+    {
+      "cmd": "plan-project",
+      "exit_code": 0,
+      "has_help": true,
+      "requires_args": true,
+      "requires_external_cli": [],
+      "supports_mock": false,
+      "doc_path": "docs/usage.md",
+      "smoke_status": "requires_repo"
+    },
+    {
+      "cmd": "plan-milestones",
+      "exit_code": 0,
+      "has_help": true,
+      "requires_args": true,
+      "requires_external_cli": [],
+      "supports_mock": false,
+      "doc_path": "docs/usage.md",
+      "smoke_status": "requires_repo"
+    },
+    {
+      "cmd": "plan-tasks",
+      "exit_code": 0,
+      "has_help": true,
+      "requires_args": true,
+      "requires_external_cli": [],
+      "supports_mock": false,
+      "doc_path": "docs/usage.md",
+      "smoke_status": "requires_repo"
+    },
+    {
+      "cmd": "execute-milestone",
+      "exit_code": 0,
+      "has_help": true,
+      "requires_args": true,
+      "requires_external_cli": ["codex", "claude"],
+      "supports_mock": true,
+      "doc_path": "docs/usage.md,docs/architecture.md",
+      "smoke_status": "requires_repo"
+    },
+    {
+      "cmd": "continue-run",
+      "exit_code": 0,
+      "has_help": true,
+      "requires_args": true,
+      "requires_external_cli": ["codex", "claude"],
+      "supports_mock": false,
+      "doc_path": "docs/usage.md,docs/quickstart.md,docs/faq.md",
+      "smoke_status": "requires_repo"
+    },
+    {
+      "cmd": "replay",
+      "exit_code": 0,
+      "has_help": true,
+      "requires_args": true,
+      "requires_external_cli": ["codex", "claude"],
+      "supports_mock": false,
+      "doc_path": "docs/usage.md,docs/architecture.md",
+      "smoke_status": "requires_repo"
+    },
+    {
+      "cmd": "scan",
+      "exit_code": 0,
+      "has_help": true,
+      "requires_args": false,
+      "requires_external_cli": [],
+      "supports_mock": false,
+      "doc_path": "docs/usage.md,docs/architecture.md",
+      "smoke_status": "requires_repo"
+    },
+    {
+      "cmd": "verify",
+      "exit_code": 0,
+      "has_help": true,
+      "requires_args": true,
+      "requires_external_cli": [],
+      "supports_mock": false,
+      "doc_path": "docs/usage.md,docs/quickstart.md",
+      "smoke_status": "requires_repo"
+    },
+    {
+      "cmd": "release-check",
+      "exit_code": 0,
+      "has_help": true,
+      "requires_args": true,
+      "requires_external_cli": [],
+      "supports_mock": false,
+      "doc_path": "docs/usage.md,docs/architecture.md",
+      "smoke_status": "requires_repo"
+    },
+    {
+      "cmd": "report",
+      "exit_code": 0,
+      "has_help": true,
+      "requires_args": true,
+      "requires_external_cli": [],
+      "supports_mock": false,
+      "doc_path": "docs/usage.md,docs/quickstart.md,docs/architecture.md",
+      "smoke_status": "requires_repo"
+    },
+    {
+      "cmd": "export-delivery",
+      "exit_code": 0,
+      "has_help": true,
+      "requires_args": true,
+      "requires_external_cli": [],
+      "supports_mock": false,
+      "doc_path": "docs/usage.md",
+      "smoke_status": "requires_repo"
+    },
+    {
+      "cmd": "push",
+      "exit_code": 0,
+      "has_help": true,
+      "requires_args": true,
+      "requires_external_cli": ["git"],
+      "supports_mock": false,
+      "doc_path": "docs/usage.md,docs/faq.md",
+      "smoke_status": "requires_repo"
+    },
+    {
+      "cmd": "create-pr",
+      "exit_code": 0,
+      "has_help": true,
+      "requires_args": true,
+      "requires_external_cli": ["gh", "git"],
+      "supports_mock": false,
+      "doc_path": "docs/usage.md,docs/faq.md",
+      "smoke_status": "external_only"
+    },
+    {
+      "cmd": "fix-bug",
+      "exit_code": 0,
+      "has_help": true,
+      "requires_args": true,
+      "requires_external_cli": ["codex", "claude"],
+      "supports_mock": true,
+      "doc_path": "docs/quickstart.md,docs/architecture.md,docs/tutorials/01-bug-fix.md",
+      "smoke_status": "requires_repo"
+    },
+    {
+      "cmd": "multi-patch-fix-bug",
+      "exit_code": 0,
+      "has_help": true,
+      "requires_args": true,
+      "requires_external_cli": ["codex", "claude"],
+      "supports_mock": true,
+      "doc_path": "docs/architecture.md",
+      "smoke_status": "requires_repo"
+    },
+    {
+      "cmd": "review",
+      "exit_code": 0,
+      "has_help": true,
+      "requires_args": true,
+      "requires_external_cli": [],
+      "supports_mock": false,
+      "doc_path": "docs/quickstart.md,docs/faq.md,docs/architecture.md",
+      "smoke_status": "requires_repo"
+    },
+    {
+      "cmd": "roundtable",
+      "exit_code": 0,
+      "has_help": true,
+      "requires_args": true,
+      "requires_external_cli": ["claude"],
+      "supports_mock": true,
+      "doc_path": "docs/quickstart.md,docs/faq.md,docs/tutorials/05-roundtable.md",
+      "smoke_status": "smoke_runnable"
+    },
+    {
+      "cmd": "mcp-serve",
+      "exit_code": 0,
+      "has_help": true,
+      "requires_args": false,
+      "requires_external_cli": [],
+      "supports_mock": false,
+      "doc_path": "docs/quickstart.md,docs/mcp_server.md,docs/tutorials/06-mcp-server.md",
+      "smoke_status": "help_only"
+    },
+    {
+      "cmd": "a2a-serve",
+      "exit_code": 0,
+      "has_help": true,
+      "requires_args": false,
+      "requires_external_cli": [],
+      "supports_mock": false,
+      "doc_path": "docs/quickstart.md,docs/a2a_server.md,docs/tutorials/07-a2a-server.md",
+      "smoke_status": "help_only"
+    },
+    {
+      "cmd": "a2a-register",
+      "exit_code": 0,
+      "has_help": true,
+      "requires_args": true,
+      "requires_external_cli": [],
+      "supports_mock": false,
+      "doc_path": "docs/a2a_http_client.md,docs/tutorials/07-a2a-server.md",
+      "smoke_status": "external_only"
+    },
+    {
+      "cmd": "a2a-call",
+      "exit_code": 0,
+      "has_help": true,
+      "requires_args": true,
+      "requires_external_cli": [],
+      "supports_mock": false,
+      "doc_path": "docs/faq.md,docs/a2a_http_client.md,docs/tutorials/07-a2a-server.md",
+      "smoke_status": "external_only"
+    },
+    {
+      "cmd": "next",
+      "exit_code": 0,
+      "has_help": true,
+      "requires_args": true,
+      "requires_external_cli": [],
+      "supports_mock": false,
+      "doc_path": "docs/architecture.md,docs/tutorials/02-rust-project.md",
+      "smoke_status": "requires_repo"
+    },
+    {
+      "cmd": "design-ux",
+      "exit_code": 0,
+      "has_help": true,
+      "requires_args": false,
+      "requires_external_cli": [],
+      "supports_mock": false,
+      "doc_path": "docs/architecture.md",
+      "smoke_status": "smoke_runnable"
+    },
+    {
+      "cmd": "investigate",
+      "exit_code": 0,
+      "has_help": true,
+      "requires_args": true,
+      "requires_external_cli": [],
+      "supports_mock": false,
+      "doc_path": "docs/architecture.md",
+      "smoke_status": "smoke_runnable"
+    },
+    {
+      "cmd": "generate-context",
+      "exit_code": 0,
+      "has_help": true,
+      "requires_args": false,
+      "requires_external_cli": [],
+      "supports_mock": false,
+      "doc_path": "",
+      "smoke_status": "requires_repo"
+    },
+    {
+      "cmd": "document-project",
+      "exit_code": 0,
+      "has_help": true,
+      "requires_args": false,
+      "requires_external_cli": [],
+      "supports_mock": false,
+      "doc_path": "docs/architecture.md",
+      "smoke_status": "requires_repo"
+    },
+    {
+      "cmd": "sprint-start",
+      "exit_code": 0,
+      "has_help": true,
+      "requires_args": false,
+      "requires_external_cli": [],
+      "supports_mock": false,
+      "doc_path": "docs/architecture.md,docs/tutorials/04-sprint-mode.md",
+      "smoke_status": "smoke_runnable"
+    },
+    {
+      "cmd": "sprint-status",
+      "exit_code": 0,
+      "has_help": true,
+      "requires_args": false,
+      "requires_external_cli": [],
+      "supports_mock": false,
+      "doc_path": "docs/tutorials/04-sprint-mode.md",
+      "smoke_status": "requires_repo"
+    },
+    {
+      "cmd": "sprint-retro",
+      "exit_code": 0,
+      "has_help": true,
+      "requires_args": true,
+      "requires_external_cli": [],
+      "supports_mock": false,
+      "doc_path": "docs/tutorials/04-sprint-mode.md",
+      "smoke_status": "requires_repo"
+    },
+    {
+      "cmd": "sprint-correct",
+      "exit_code": 0,
+      "has_help": true,
+      "requires_args": true,
+      "requires_external_cli": [],
+      "supports_mock": false,
+      "doc_path": "docs/tutorials/04-sprint-mode.md",
+      "smoke_status": "requires_repo"
+    },
+    {
+      "cmd": "dashboard",
+      "exit_code": 0,
+      "has_help": true,
+      "requires_args": false,
+      "requires_external_cli": [],
+      "supports_mock": false,
+      "doc_path": "",
+      "smoke_status": "external_only"
+    }
+  ],
+  "findings": [
+    {
+      "id": "F-001",
+      "severity": "low",
+      "cmd": "generate-context",
+      "finding": "No tutorial or quickstart doc references this command — undiscoverable to new users."
+    },
+    {
+      "id": "F-002",
+      "severity": "low",
+      "cmd": "dashboard",
+      "finding": "No tutorial doc references this command. Runtime will exit code 1 if textual extra is not installed."
+    },
+    {
+      "id": "F-003",
+      "severity": "info",
+      "cmd": "mcp-serve",
+      "finding": "Blocking server; help_only smoke_status because invocation blocks stdin. Cannot smoke-test without input."
+    },
+    {
+      "id": "F-004",
+      "severity": "info",
+      "cmd": "a2a-serve",
+      "finding": "Blocking server; help_only smoke_status because invocation blocks forever on serve_forever()."
+    },
+    {
+      "id": "F-005",
+      "severity": "info",
+      "cmd": "create-pr",
+      "finding": "Requires gh CLI present and authenticated; guarded by GitHubAdapter().gh_available() check — graceful failure if absent."
+    }
+  ],
+  "new_test_file": "tests/unit/test_cli_help_surface.py",
+  "test_pass_count": 37
+}

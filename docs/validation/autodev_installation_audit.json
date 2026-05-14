@@ -1,0 +1,135 @@
+{
+  "round": "installation_audit",
+  "audit_date": "2026-05-14",
+  "auditor": "Agent B — autodev Release Hardening",
+  "paths": [
+    {
+      "name": "editable_local",
+      "description": "Existing editable install in repo .venv (Python 3.14.4)",
+      "cmd": "source /Users/macworkers/autodev/.venv/bin/activate && autodev --help && autodev --version",
+      "python_version": "3.14.4",
+      "exit_code_help": 0,
+      "exit_code_version": 0,
+      "output_excerpt": "Usage: autodev [OPTIONS] COMMAND [ARGS]...\n CrewAI + Codex CLI + Claude Code CLI multi-CLI software factory\nautodev-ai 0.1.0",
+      "duration_s": 0.24,
+      "pip_list_count": 58,
+      "console_script_path": "/Users/macworkers/autodev/.venv/bin/autodev",
+      "warnings": [],
+      "pass": true
+    },
+    {
+      "name": "wheel_clean_venv",
+      "description": "Fresh venv (Python 3.12.13) + pip install dist/autodev_ai-0.1.0-py3-none-any.whl",
+      "cmd": "python3.12 -m venv /tmp/autodev-install-audit-2/venv && pip install /Users/macworkers/autodev/dist/autodev_ai-0.1.0-py3-none-any.whl",
+      "python_version": "3.12.13",
+      "exit_code_pip": 0,
+      "exit_code_help": 0,
+      "exit_code_version": 2,
+      "exit_code_import": 0,
+      "output_excerpt": "Usage: autodev [OPTIONS] COMMAND [ARGS]...\n CrewAI + Codex CLI + Claude Code CLI multi-CLI software factory",
+      "duration_s": 5.9,
+      "pip_list_count": 20,
+      "import_time_s": 0.016,
+      "console_script_path": "/tmp/autodev-install-audit-2/venv/bin/autodev",
+      "warnings": [
+        "--version flag missing (exit 2): 'No such option: --version'. Dist cli.py is 1019 lines vs source 1042 lines; _version_callback and @app.callback() block absent from wheel."
+      ],
+      "pass": false,
+      "blocker": "STALE_DIST: wheel built before --version callback was added to src/autodev/cli.py"
+    },
+    {
+      "name": "sdist_clean_venv",
+      "description": "Fresh venv (Python 3.12.13) + pip install dist/autodev_ai-0.1.0.tar.gz",
+      "cmd": "python3.12 -m venv /tmp/autodev-install-audit-3/venv && pip install /Users/macworkers/autodev/dist/autodev_ai-0.1.0.tar.gz",
+      "python_version": "3.12.13",
+      "exit_code_pip": 0,
+      "exit_code_help": 0,
+      "exit_code_version": 2,
+      "exit_code_import": 0,
+      "output_excerpt": "Usage: autodev [OPTIONS] COMMAND [ARGS]...\n CrewAI + Codex CLI + Claude Code CLI multi-CLI software factory",
+      "duration_s": 7.8,
+      "pip_list_count": 20,
+      "import_time_s": 0.030,
+      "console_script_path": "/tmp/autodev-install-audit-3/venv/bin/autodev",
+      "warnings": [
+        "--version flag missing (exit 2): same stale cli.py as wheel (1019 lines). sdist and wheel were built from the same pre-version-callback snapshot."
+      ],
+      "pass": false,
+      "blocker": "STALE_DIST: sdist contains same stale cli.py as wheel — both lack _version_callback and @app.callback()"
+    },
+    {
+      "name": "editable_fresh_venv_with_dev",
+      "description": "Fresh venv (Python 3.12.13) + pip install -e .[dev] from rsync'd source at /tmp/autodev-install-audit-4/repo/",
+      "cmd": "python3.12 -m venv /tmp/autodev-install-audit-4/venv && pip install -e '/tmp/autodev-install-audit-4/repo/[dev]'",
+      "python_version": "3.12.13",
+      "exit_code_pip": 0,
+      "exit_code_help": 0,
+      "exit_code_version": 0,
+      "output_excerpt": "autodev-ai 0.1.0\nUsage: autodev [OPTIONS] COMMAND [ARGS]...\n CrewAI + Codex CLI + Claude Code CLI multi-CLI software factory",
+      "duration_s": 11.8,
+      "pip_list_count": 28,
+      "console_script_path": "/tmp/autodev-install-audit-4/venv/bin/autodev",
+      "pytest_result": {
+        "cmd": "pytest tests/unit/test_prfaq_style.py tests/unit/test_report_banner.py -q",
+        "tests_collected": 13,
+        "passed": 13,
+        "failed": 0,
+        "exit_code": 0,
+        "duration_s": 1.2
+      },
+      "warnings": [],
+      "pass": true
+    },
+    {
+      "name": "python314_venv_creation",
+      "description": "Attempt python3.14 -m venv — documents environment issue",
+      "cmd": "python3.14 -m venv /tmp/test-3.14-venv",
+      "python_version": "3.14.4",
+      "exit_code": 1,
+      "output_excerpt": "Error: Command '.../python3.14 -m ensurepip --upgrade --default-pip' returned non-zero exit status 1.",
+      "warnings": [
+        "python3.14 (Homebrew) ensurepip is broken — pip 26.0.1 bundled whl fails to self-install under 3.14. All fresh-venv paths used python3.12 as fallback."
+      ],
+      "pass": false,
+      "blocker": "ENV: Python 3.14.4 Homebrew ensurepip broken; cannot create pip-enabled venvs with system default python3"
+    }
+  ],
+  "module_form_works": true,
+  "module_form_detail": "python -m autodev.cli --help exits 0 in all three venvs (editable, wheel, sdist). Output: 'Usage: python -m autodev.cli [OPTIONS] COMMAND [ARGS]...'",
+  "console_script_works": true,
+  "console_script_caveat": "console_script 'autodev' installs correctly in all paths; --help works everywhere. --version works ONLY in editable installs (source has it, dists do not).",
+  "missing_deps": [],
+  "warnings": [
+    {
+      "severity": "HIGH",
+      "detail": "dist/ artifacts (wheel + sdist) were built from a stale source snapshot. src/autodev/cli.py is 1042 lines (has _version_callback + @app.callback); installed cli.py from both dist artifacts is 1019 lines (missing those 23 lines). autodev --version returns exit 2 from wheel/sdist installs."
+    },
+    {
+      "severity": "MEDIUM",
+      "detail": "python3 (3.14.4 Homebrew) has broken ensurepip — venv creation fails. pyproject.toml requires-python >=3.10, so 3.12 is fine, but this will surprise users whose system python3 is 3.14."
+    },
+    {
+      "severity": "LOW",
+      "detail": "pip 26.0 installed; pip 26.1.1 available. Upgrade notice appears on all fresh installs but does not affect functionality."
+    }
+  ],
+  "summary": "installable_with_caveats",
+  "findings": [
+    {
+      "severity": "HIGH",
+      "detail": "Wheel and sdist in dist/ are stale: they were built before the --version CLI flag was added to src/autodev/cli.py. Rebuild dist artifacts with 'python -m build' (or hatch build) from current HEAD before release."
+    },
+    {
+      "severity": "MEDIUM",
+      "detail": "python3.14 (Homebrew) cannot create pip-enabled venvs due to broken ensurepip. All audit fresh-venv paths fell back to python3.12. Document python3.12 or python3.13 as the recommended interpreter for end-users on macOS until this Homebrew issue resolves."
+    },
+    {
+      "severity": "LOW",
+      "detail": "No missing runtime dependencies detected: pydantic, typer, rich, PyYAML, jinja2 all install cleanly. 19 packages pulled transitively from wheel (20 total including autodev-ai itself)."
+    },
+    {
+      "severity": "INFO",
+      "detail": "Module-form invocation (python -m autodev.cli) works in all install variants. Console script entry point registers correctly. 13/13 unit tests pass in fresh editable dev install (test_prfaq_style + test_report_banner)."
+    }
+  ]
+}

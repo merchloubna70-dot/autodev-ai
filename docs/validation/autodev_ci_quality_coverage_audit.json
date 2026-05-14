@@ -1,0 +1,180 @@
+{
+  "round": "ci_quality_coverage",
+  "audit_date": "2026-05-14",
+  "auditor": "Agent K — Release Hardening",
+  "pytest": {
+    "total": 890,
+    "passed": 915,
+    "failed": 0,
+    "xfailed": 4,
+    "skipped": 0,
+    "runtime_s": 21.34,
+    "note": "890 tests collected; coverage run reports 915 passed + 4 xfailed (25 extra fixtures run under --cov mode). All xfails are strict=True and document known security/robustness gaps (F-01 denylist bypass, F-02 FACTORY_FORCE_MOCK apply-mode fail-closed, F-03 symlink path traversal)."
+  },
+  "ruff_errors": 17,
+  "ruff_errors_detail": {
+    "src_errors": 2,
+    "scripts_errors": 9,
+    "test_errors": 6,
+    "error_types": ["F401 unused import", "I001 unsorted imports", "RUF059 unused unpacked var", "F541 f-string without placeholders"],
+    "fixable_automatically": 12
+  },
+  "mypy_errors": 0,
+  "coverage_pct": 81,
+  "coverage_files_0pct": [
+    "src/autodev/release_readiness_gate.py (14 lines — __main__ shim, tested indirectly via scripts/)",
+    "src/autodev/tasks/__init__.py (15 lines — CrewAI Task re-exports; crewai optional dep not installed in dev)",
+    "src/autodev/tasks/architecture_tasks.py (5 lines)",
+    "src/autodev/tasks/commit_tasks.py (5 lines)",
+    "src/autodev/tasks/documentation_tasks.py (5 lines)",
+    "src/autodev/tasks/implementation_tasks.py (5 lines)",
+    "src/autodev/tasks/input_tasks.py (5 lines)",
+    "src/autodev/tasks/issue_tasks.py (5 lines)",
+    "src/autodev/tasks/milestone_tasks.py (5 lines)",
+    "src/autodev/tasks/product_tasks.py (5 lines)",
+    "src/autodev/tasks/quality_tasks.py (5 lines)",
+    "src/autodev/tasks/release_tasks.py (5 lines)",
+    "src/autodev/tasks/requirement_tasks.py (5 lines)",
+    "src/autodev/tasks/review_tasks.py (8 lines)",
+    "src/autodev/tasks/security_tasks.py (5 lines)",
+    "src/autodev/tasks/test_tasks.py (5 lines)",
+    "src/autodev/tasks/verification_tasks.py (5 lines)",
+    "src/autodev/tui/dashboard.py (108 lines — Textual TUI; optional dep not in dev extras)",
+    "src/autodev/tui/widgets.py (47 lines — Textual TUI)"
+  ],
+  "coverage_low_pct": [
+    "src/autodev/adapters/a2a/handlers.py — 20% (99/123 lines uncovered)",
+    "src/autodev/mcp_server/tools.py — 39% (86/142 lines uncovered)",
+    "src/autodev/scanners/monorepo_scanner.py — 61%",
+    "src/autodev/utils/json_io.py — 63%",
+    "src/autodev/executors/_fs_observer.py — 60%",
+    "src/autodev/adapters/filesystem_adapter.py — 50%"
+  ],
+  "slow_tests_top10": [
+    {"test": "tests/unit/test_a2a_http_transport.py::test_send_task_unreachable_returns_failed", "duration_s": 3.68},
+    {"test": "tests/unit/test_human_review_gate.py::test_blocking_mode_timeout", "duration_s": 1.01},
+    {"test": "tests/unit/test_a2a_server.py::test_get_task_events_sse", "duration_s": 1.0},
+    {"test": "tests/integration/test_cli_investigate.py::test_investigate_prose_description", "duration_s": 1.0},
+    {"test": "tests/unit/test_a2a_server.py::test_get_task_after_post", "duration_s": 0.93},
+    {"test": "tests/integration/test_a2a_server_cli.py::test_a2a_serve_task_send_classify_input", "duration_s": 0.78},
+    {"test": "tests/integration/test_a2a_server_cli.py::test_a2a_serve_agent_card", "duration_s": 0.77},
+    {"test": "tests/unit/test_a2a_http_transport.py::test_send_task_polls_until_completed", "duration_s": 0.67},
+    {"test": "tests/integration/test_a2a_http_roundtrip.py::test_roundtrip_send_task_via_transport", "duration_s": 0.57},
+    {"test": "tests/unit/test_a2a_server.py::test_post_task_scan_returns_completed", "duration_s": 0.56}
+  ],
+  "ci_workflows": [
+    {
+      "name": "test.yml",
+      "trigger": "push + PR on all branches",
+      "python_versions": ["3.10", "3.11", "3.12"],
+      "runs_on": "ubuntu-latest",
+      "coverage": true,
+      "coverage_upload": "artifact (coverage.xml, 7 days retention)",
+      "notes": "No coverage threshold enforcement; fail-fast: false across matrix"
+    },
+    {
+      "name": "lint.yml",
+      "trigger": "push + PR on all branches",
+      "python_versions": ["3.12"],
+      "runs_on": "ubuntu-latest",
+      "runs_ruff": true,
+      "runs_mypy": true,
+      "notes": "ruff checks src/ + tests/. mypy uses --ignore-missing-imports --no-strict-optional (weaker than pyproject.toml strict=false config). Single Python version only."
+    },
+    {
+      "name": "release.yml",
+      "trigger": "push tags v*.*.*",
+      "python_versions": ["3.12"],
+      "runs_on": "ubuntu-latest",
+      "runs_tests": false,
+      "notes": "CRITICAL GAP: Release workflow does NOT run pytest before publishing to PyPI. A broken release can ship if tag is pushed without a passing test run."
+    },
+    {
+      "name": "docker-publish.yml",
+      "trigger": "push tags v*.*.* + workflow_dispatch",
+      "python_versions": ["3.12"],
+      "runs_on": "ubuntu-latest",
+      "smoke_test": true,
+      "smoke_test_commands": ["docker run --rm autodev-ai:test --help", "docker run --rm autodev-ai:test --version"],
+      "multi_arch": ["linux/amd64", "linux/arm64"],
+      "notes": "Docker workflow correctly smoke-tests before publishing. Multi-arch (amd64+arm64) via QEMU."
+    }
+  ],
+  "precommit_hooks": [
+    "trailing-whitespace (pre-commit-hooks v4.6.0)",
+    "end-of-file-fixer",
+    "check-toml",
+    "check-yaml --allow-multiple-documents",
+    "ruff --fix (astral-sh/ruff-pre-commit v0.4.10)",
+    "pytest-collected-count >= 1 (pre-push stage only)"
+  ],
+  "precommit_gaps": [
+    "No mypy hook in pre-commit (only in CI lint.yml)",
+    "ruff pre-commit version (v0.4.10) differs from pyproject.toml dev dep (>=0.4) — version pinning drift risk",
+    "pytest-collected-count only checks >=1 test collected, not run; full pytest not run on pre-commit"
+  ],
+  "flaky_risk": [
+    "time-dependent: 7 tests use time.sleep() (test_a2a_http_transport.py x3, test_human_review_gate.py x1, test_a2a_server.py x1, test_a2a_http_roundtrip.py x1, test_a2a_server_cli.py x1) — race conditions on loaded CI runners",
+    "network-dependent (localhost): A2A tests spin up real HTTP servers on ephemeral ports (socket.socket()); port allocation can fail if ports are busy",
+    "time-dependent: test_blocking_mode_timeout relies on 0.3s wall-clock timeout which may be unreliable under heavy load",
+    "test_send_task_unreachable_returns_failed (3.68s) waits for actual connection timeout — environment-dependent duration"
+  ],
+  "platform_gaps": [
+    "CI runs ubuntu-latest only; no macOS or Windows runners in test.yml",
+    "WorkerIsolator tests (symlink, worktree) use POSIX paths — Windows compatibility unverified",
+    "TUI (textual) tests entirely absent; textual not in dev extras so dashboard.py/widgets.py = 0% forever unless extras added",
+    "docker-publish.yml builds arm64 via QEMU emulation — no native arm64 test runner"
+  ],
+  "findings": [
+    {
+      "id": "F-A",
+      "severity": "HIGH",
+      "title": "Release workflow skips pytest",
+      "detail": "release.yml publishes to PyPI on git tag push without running tests. A broken commit tagged as vX.Y.Z ships immediately. Fix: add a 'test' job (or 'needs: test') before 'build-and-release'."
+    },
+    {
+      "id": "F-B",
+      "severity": "MEDIUM",
+      "title": "17 ruff errors in src/ + scripts/ + tests/",
+      "detail": "ruff check . reports 17 errors (12 auto-fixable). CI lint.yml runs 'ruff check src/ tests/' — it misses scripts/ (release_readiness_gate.py has 9 errors). The 5 non-auto-fixable errors include unused unpacked variables in production code (src/autodev/release_readiness_gate.py:F401 sys import, scripts/ RUF059 vars). Run 'ruff check --fix .' to clear the 12 fixable ones; address scripts/ coverage gap."
+    },
+    {
+      "id": "F-C",
+      "severity": "MEDIUM",
+      "title": "tasks/* entirely uncovered (15 files, 0%) — CrewAI optional dep absent",
+      "detail": "All 15 src/autodev/tasks/ files are at 0% because crewai is an optional dependency not installed in the dev extras. test.yml runs 'pip install -e .[dev]' which excludes [crewai]. Either add crewai to dev extras (and mock/stub tests), or mark these modules with # pragma: no cover and document them as crewai-only."
+    },
+    {
+      "id": "F-D",
+      "severity": "MEDIUM",
+      "title": "No coverage threshold enforced",
+      "detail": "test.yml uploads coverage.xml but sets no fail_under threshold. Coverage can silently drop from 81% without any CI failure. Add '--cov-fail-under=75' (or similar) to pytest invocation."
+    },
+    {
+      "id": "F-E",
+      "severity": "LOW",
+      "title": "A2A handlers.py at 20% — largest non-trivial uncovered block",
+      "detail": "src/autodev/adapters/a2a/handlers.py has 99/123 lines uncovered. This is the SSE + routing layer; test_a2a_server.py covers the happy path but error branches and most handler variants are untested."
+    },
+    {
+      "id": "F-F",
+      "severity": "LOW",
+      "title": "Flaky risk: time.sleep() in 7 tests + real HTTP servers in unit tests",
+      "detail": "Seven tests use bare time.sleep() waits (0.05–0.3s) and four of the top-10 slowest tests spin up real localhost HTTP servers. On a loaded CI runner these are race conditions. Consider asyncio.wait_for timeouts, pytest-asyncio event_loop fixtures, or mocking the transport layer in unit tests."
+    },
+    {
+      "id": "F-G",
+      "severity": "LOW",
+      "title": "TUI (dashboard.py, widgets.py) at 0% — textual not in dev extras",
+      "detail": "108+47 = 155 lines of TUI code have zero test coverage because 'textual' is in [tui] optional extras, not [dev]. Add smoke import tests or use pytest markers to skip when textual is absent."
+    },
+    {
+      "id": "F-H",
+      "severity": "INFO",
+      "title": "Security gaps documented via xfail (F-01/F-02/F-03)",
+      "detail": "Three known security/robustness gaps are correctly tracked as strict xfail tests: F-01 denylist bypass with no-space curl|bash, F-02 FACTORY_FORCE_MOCK fail-closed in apply mode, F-03 symlink path traversal in WorkerIsolator. These are visible but not yet fixed."
+    }
+  ],
+  "verdict": "minor_improvements",
+  "verdict_rationale": "Test suite is healthy (890 tests, 0 failures, 81% coverage, mypy clean). Critical gap is release.yml skipping pytest before PyPI publish. 17 ruff lint errors (12 auto-fixable) and no coverage threshold are the next priorities."
+}

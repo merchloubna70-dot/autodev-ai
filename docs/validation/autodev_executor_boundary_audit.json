@@ -1,0 +1,148 @@
+{
+  "round": "executor_boundary",
+  "audit_date": "2026-05-14",
+  "auditor": "Agent D — autodev Release Hardening",
+  "executors_present": ["codex", "claude", "mock_codex", "mock_claude"],
+  "actual_module_names": {
+    "codex": "codex_cli_executor.py / CodexCliExecutor",
+    "claude": "claude_code_executor.py / ClaudeCodeExecutor",
+    "mock_codex": "mock_codex_executor.py / MockCodexExecutor",
+    "mock_claude": "mock_claude_executor.py / MockClaudeExecutor"
+  },
+  "fallback_ladder": "AUTO -> route by task_type/risk -> (codex or claude) -> if CLI missing AND allow_mock=true -> MOCK_CODEX or MOCK_CLAUDE; if allow_mock=false -> fail-closed exit_code=127",
+  "fallback_conditions": {
+    "mock_automatic_when_binary_missing": false,
+    "mock_requires_allow_mock_flag": true,
+    "dry_run_mode_auto_sets_allow_mock": true,
+    "explicit_mock_backend_always_works": true,
+    "note": "mock fallback is NOT automatic. It requires allow_mock=True (set via --allow-mock-executor true, or auto-enabled when --mode dry-run). Without it, router returns preferred backend with fail-closed error_type='cli_missing_fail_closed' and exit_code=127."
+  },
+  "force_mock_env_honored": true,
+  "force_mock_env_details": {
+    "env_var": "FACTORY_FORCE_MOCK=1",
+    "honored_in": [
+      "CodexCliExecutor.is_available() -> returns False",
+      "ClaudeCodeExecutor.is_available() -> returns False",
+      "opus_adapter.py",
+      "mcp_client.py",
+      "clarification_gate.py",
+      "elicitation_methods.py",
+      "ux_designer.py",
+      "roundtable.py",
+      "a2a/transports/local_shell.py",
+      "mcp_server/tools.py"
+    ],
+    "gap": "FACTORY_FORCE_MOCK=1 is NOT read by FactoryConfig.from_env(); it does not auto-set allow_mock_executor=True in FactoryConfig. When FACTORY_FORCE_MOCK=1 causes is_available()=False, mock only kicks in if allow_mock is already True by other means (mode=dry-run or --allow-mock-executor). If allow_mock=False, router still fail-closes even with FACTORY_FORCE_MOCK=1."
+  },
+  "worker_isolation": {
+    "codex_home_per_worker": true,
+    "symlink_defense": false,
+    "worktree_used": true,
+    "symlink_defense_detail": "prepare_codex_home() creates symlinks from parent_home to worker_home for CODEX_HOME_SHARED entries. No path validation is performed: there is no check that (a) parent_home itself has not been replaced by a malicious symlink, (b) the symlink target resolves within an expected base directory, or (c) a CODEX_HOME_SHARED file in parent_home is not itself a dangling or escaped symlink. An attacker who controls parent_home (e.g. via CODEX_HOME env override or tmpdir race) can point worker_home/auth.json at any host path.",
+    "worker_home_path_escape_check": false,
+    "private_dirs_created": ["sessions", "log", "cache", "shell_snapshots", "tmp", ".tmp", "sqlite", "memories"],
+    "private_files_not_created": true
+  },
+  "denylist_patterns": 19,
+  "denylist_covers": [
+    "rm -rf",
+    "sudo",
+    "chmod 777",
+    "curl | bash",
+    "wget | bash",
+    "eval",
+    "exec ",
+    "source .env",
+    "cat .env",
+    "printenv",
+    " env ",
+    "> /etc/",
+    "; rm ",
+    "&& rm ",
+    "| rm ",
+    "mkfs",
+    "--force",
+    "git push --force",
+    "gh --force"
+  ],
+  "denylist_gaps": [
+    "curl|bash (no space) — NOT caught; denylist pattern is 'curl | bash' with spaces",
+    "wget|bash (no space) — NOT caught; denylist pattern is 'wget | bash' with spaces",
+    "base64 decode pipe chains (echo <b64> | base64 -d | bash) — not covered",
+    "python -c 'import os; os.system(...)' — not covered",
+    "dd if=... of=/dev/... — disk-overwrite not covered",
+    "shutdown / reboot / poweroff — not covered",
+    "Backtick command substitution (`rm -rf /`) — not covered"
+  ],
+  "config_stack_assessment": {
+    "layers": 4,
+    "order": "user-global TOML -> project-team TOML -> project-user TOML -> runtime dict",
+    "security_note": "config.user.toml is project-local and git-ignored; it can override allow_mock_executor=true or timeout_seconds to very low values, which could be used to cause premature timeout failures. No schema validation or value-range enforcement on materialized TOML values."
+  },
+  "sandboxed_executor_assessment": {
+    "real_sandbox_implemented": false,
+    "sandbox_provider_none_fallback": "audit-only annotation only; no actual network enforcement",
+    "non_none_provider_raises": "NotImplementedError — safe fail"
+  },
+  "smoke_results": [
+    {
+      "test": "classify-input with FACTORY_FORCE_MOCK=1",
+      "command": "FACTORY_FORCE_MOCK=1 autodev classify-input --input examples/01-mdlines/brief.md",
+      "outcome": "SUCCESS",
+      "exit_code": 0,
+      "output_summary": "{input_type: project_brief, confidence: 0.8, suggested_flow: project_delivery_flow}",
+      "note": "InputClassifierAgent is purely heuristic (no LLM call); FACTORY_FORCE_MOCK has no effect here but command succeeds cleanly."
+    },
+    {
+      "test": "deliver-project with PATH=/usr/bin (codex/claude absent) and --allow-mock-executor true",
+      "command": "PATH=/usr/bin autodev deliver-project --project-brief examples/01-mdlines/brief.md --from-scratch true --mode dry-run --allow-mock-executor true --repo-path /tmp/executor-d-1",
+      "outcome": "SUCCESS — mock kicked in automatically",
+      "exit_code": 0,
+      "output_summary": "run_id=run_20260514T030743_c27256a2 mode=dry-run mock=True release=NotReleaseReady",
+      "note": "Mock fallback activated correctly when both CLIs absent and allow_mock=True. Confirms ladder: real CLI missing -> MOCK_CODEX/MOCK_CLAUDE used."
+    }
+  ],
+  "findings": [
+    {
+      "id": "F-01",
+      "severity": "MEDIUM",
+      "title": "No-space pipe variants bypass denylist",
+      "detail": "Patterns 'curl|bash' and 'wget|bash' (no spaces around pipe) are not caught by scan_prompt_for_unsafe(). The denylist checks for 'curl | bash' (with spaces). A prompt containing 'curl|bash' passes the safety check silently. Similarly, base64-decode-pipe chains and backtick substitutions are uncovered.",
+      "affected_files": ["src/autodev/utils/command_safety.py"],
+      "recommendation": "Normalize whitespace around '|' before denylist matching, or add tokenizer-based pattern matching. Add 'curl|bash', 'wget|bash', base64-pipe variants, and backtick substitutions to DEFAULT_DENYLIST."
+    },
+    {
+      "id": "F-02",
+      "severity": "MEDIUM",
+      "title": "FACTORY_FORCE_MOCK=1 does not auto-set allow_mock_executor in FactoryConfig",
+      "detail": "FACTORY_FORCE_MOCK=1 causes both is_available() methods to return False, but FactoryConfig.from_env() does not read this env var to set allow_mock_executor=True. If the pipeline is invoked without --mode dry-run and without --allow-mock-executor true, the router will fail-closed (exit_code=127, error_type=cli_missing_fail_closed) even with FACTORY_FORCE_MOCK=1. This breaks the expected semantics of the env var in production test harnesses.",
+      "affected_files": ["src/autodev/config.py", "src/autodev/executors/executor_router.py"],
+      "recommendation": "In FactoryConfig.from_env(), add: if os.environ.get('FACTORY_FORCE_MOCK') == '1': cfg.allow_mock_executor = True"
+    },
+    {
+      "id": "F-03",
+      "severity": "LOW",
+      "title": "worker_isolator.prepare_codex_home() has no symlink-target path validation",
+      "detail": "prepare_codex_home() calls os.symlink(src, dst) for each entry in CODEX_HOME_SHARED without validating that src.resolve() stays within the expected parent_home directory. If parent_home is under attacker control (CODEX_HOME env var race, tmpdir attack), a malicious symlink in parent_home would be blindly re-symlinked into worker_home, granting worker processes access to arbitrary host paths via the shared auth.json, config.toml, etc.",
+      "affected_files": ["src/autodev/executors/worker_isolator.py"],
+      "recommendation": "Before os.symlink(src, dst), validate src.resolve().is_relative_to(parent_home.resolve()) and assert worker_home.resolve().is_relative_to(expected_workers_base). Raise ValueError if violated."
+    },
+    {
+      "id": "F-04",
+      "severity": "INFO",
+      "title": "SandboxedExecutor provides audit annotation only — no real network enforcement",
+      "detail": "SandboxedExecutor.execute() with sandbox_provider='none' (the default) adds a log annotation 'sandboxed/audit_only=True' to the result but does not block any actual network egress. The NetworkAllowlist evaluates domain verdicts but enforcement is deferred to a sandbox runtime that does not exist yet.",
+      "affected_files": ["src/autodev/executors/sandboxed_executor.py", "src/autodev/executors/network_allowlist.py"],
+      "recommendation": "This is documented behavior. Ensure callers are aware that SandboxedExecutor does not provide real isolation in the current release."
+    },
+    {
+      "id": "F-05",
+      "severity": "INFO",
+      "title": "config.user.toml can override allow_mock_executor without schema validation",
+      "detail": "ConfigStack.materialize_into() writes arbitrary TOML scalar values to FactoryConfig attributes including allow_mock_executor and timeout_seconds with no range or type enforcement beyond Python's runtime attribute assignment. A malicious or misconfigured project .autodev/config.user.toml could silently disable mock safeguards or set timeout to 0.",
+      "affected_files": ["src/autodev/utils/config_stack.py"],
+      "recommendation": "Add pydantic or dataclass validation in materialize_into() to enforce minimum timeout values and acceptable boolean types."
+    }
+  ],
+  "verdict": "minor_gaps"
+}
