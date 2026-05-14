@@ -13,7 +13,7 @@ RUN pip install --no-cache-dir --target /install /tmp/wheels/autodev_ai-*.whl \
 
 # Stage 2: runtime — lean final image
 # Base image pinned by digest for reproducibility. Update: see packaging/docker/UPDATE.md
-FROM python@sha256:401f6e1a67dad31a1bd78e9ad22d0ee0a3b52154e6bd30e90be696bb6a3d7461
+FROM python@sha256:401f6e1a67dad31a1bd78e9ad22d0ee0a3b52154e6bd30e90be696bb6a3d7461 AS final
 
 # Install Node.js (for claude/codex CLIs via npm) — best-effort; binaries
 # can also be volume-mounted from the host (see README.md for details).
