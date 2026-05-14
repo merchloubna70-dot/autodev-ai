@@ -6,7 +6,10 @@ Supported stages (in order):
 """
 from __future__ import annotations
 
+import hashlib
+import shutil
 from datetime import datetime, timezone
+from pathlib import Path
 
 from ..agents import (
     CodeReviewerAgent,
@@ -45,6 +48,46 @@ STAGES = [
     "verification",
     "release",
 ]
+
+# Subdirectories whose contents are snapshotted before a coarse-grained replay.
+# We snapshot all canonical stage dirs so any overwritten artifact is preserved.
+_SNAPSHOT_SUBDIRS = [
+    "input",
+    "product",
+    "architecture",
+    "planning",
+    "implementation",
+    "execution",
+    "quality",
+    "verification",
+    "delivery",
+]
+
+
+def _snapshot_run(run_root: Path, stage: str) -> str:
+    """Snapshot current run artifacts to a replay sub-directory.
+
+    Returns the ``replay_id`` string (used in the progress echo).
+    """
+    iso_ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S")
+    # Short deterministic hash from timestamp + stage to ensure uniqueness
+    short_hash = hashlib.sha1(f"{iso_ts}-{stage}".encode()).hexdigest()[:8]
+    replay_id = f"replay_{iso_ts}_{short_hash}"
+    snapshot_dir = run_root / "replays" / replay_id
+    snapshot_dir.mkdir(parents=True, exist_ok=True)
+
+    # Snapshot run_state.json
+    state_file = run_root / "run_state.json"
+    if state_file.exists():
+        shutil.copy2(state_file, snapshot_dir / "run_state.json")
+
+    # Snapshot each stage subdir that exists
+    for sub in _SNAPSHOT_SUBDIRS:
+        src = run_root / sub
+        if src.exists():
+            shutil.copytree(src, snapshot_dir / sub, dirs_exist_ok=True)
+
+    return replay_id
 
 
 class ReplayFlow:
@@ -120,6 +163,15 @@ class ReplayFlow:
             )
 
         run = RunState.load(repo_path, run_id)
+
+        # Snapshot current artifacts BEFORE overwriting anything so the
+        # original state is preserved even if replay is non-deterministic.
+        replay_id = _snapshot_run(run.root, from_stage)
+        print(  # noqa: T201
+            f"replay run_id={run_id} stage={from_stage} "
+            f"snapshot=.dev-factory/runs/{run_id}/replays/{replay_id}/"
+        )
+
         state = run.state
 
         # Determine languages from persisted state

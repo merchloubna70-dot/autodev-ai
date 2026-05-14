@@ -20,6 +20,7 @@ from .flows.release_flow import ReleaseFlow
 from .reports.reporter import Reporter
 from .schemas import AgentCard, ExecutionBackend, Language, PipelineMode, Scale
 from .state import RunState
+from .utils.cli_errors import friendly_errors
 from .utils.fs import write_text
 from .utils.json_io import write_json
 
@@ -303,6 +304,7 @@ def plan_tasks(
 
 
 @app.command("execute-milestone")
+@friendly_errors
 def execute_milestone(
     run_id: str = typer.Option(..., "--run-id"),
     milestone_id: str = typer.Option(..., "--milestone-id"),
@@ -330,7 +332,16 @@ def execute_milestone(
 
 
 @app.command("continue-run")
-def continue_run(run_id: str = typer.Option(..., "--run-id"), repo_path: str = typer.Option(".", "--repo-path")) -> None:
+@friendly_errors
+def continue_run(
+    run_id: str = typer.Option(..., "--run-id"),
+    repo_path: str = typer.Option(".", "--repo-path"),
+    executor: str = typer.Option("auto", "--executor"),
+    allow_mock_executor: str | None = typer.Option(None, "--allow-mock-executor"),
+    concurrency: int = typer.Option(3, "--concurrency"),
+    fail_fast: bool = typer.Option(True, "--fail-fast/--no-fail-fast"),
+) -> None:
+    """Resume a paused or interrupted pipeline run by executing remaining milestones."""
     run = RunState.load(repo_path, run_id)
     plan = run.state.milestone_plan
     if not plan:
@@ -338,10 +349,60 @@ def continue_run(run_id: str = typer.Option(..., "--run-id"), repo_path: str = t
         raise typer.Exit(code=2)
     done = {impl.milestone_id for impl in run.state.implementation_results if impl.success}
     remaining = [m for m in plan.milestones if m.milestone_id not in done]
-    typer.echo(f"remaining milestones: {[m.milestone_id for m in remaining]}")
+    if not remaining:
+        typer.echo("nothing to continue: all milestones already completed")
+        raise typer.Exit(code=2)
+
+    # Preserve the original run's mode and mock setting
+    pmode = run.state.mode or PipelineMode.DRY_RUN
+    allow_mock_parsed = _parse_tri_bool(allow_mock_executor)
+    if allow_mock_parsed is None:
+        # Default: honour original run's mock setting, or infer from mode
+        allow_mock_resolved: bool = run.state.mock_execution_used if run.state.mock_execution_used is not None else (pmode == PipelineMode.DRY_RUN)
+    else:
+        allow_mock_resolved = allow_mock_parsed
+
+    cfg = _build_config(
+        mode=pmode,
+        allow_mock=allow_mock_resolved,
+        fail_fast=fail_fast,
+        continue_and_report=True,
+        concurrency=concurrency,
+        codex_timeout=600,
+        claude_timeout=900,
+    )
+    backend = _parse_backend(executor)
+    flow = MilestoneFlow(cfg)
+
+    completed = 0
+    for milestone in remaining:
+        impl = flow.run(MilestoneFlowInput(
+            run_id=run_id,
+            milestone_id=milestone.milestone_id,
+            repo_path=repo_path,
+            mode=pmode,
+            backend=backend,
+            allow_mock=cfg.allow_mock_executor,
+            concurrency=concurrency,
+            fail_fast=fail_fast,
+        ))
+        typer.echo(
+            f"milestone={impl.milestone_id} success={impl.success} mock={impl.mock_used}"
+        )
+        completed += 1
+
+    # Mark the run as finished if all milestones now completed
+    run = RunState.load(repo_path, run_id)
+    done_after = {impl.milestone_id for impl in run.state.implementation_results if impl.success}
+    all_ids = {m.milestone_id for m in plan.milestones}
+    if all_ids.issubset(done_after):
+        run.finish()
+
+    typer.echo(f"continue-run done: completed {completed} milestones")
 
 
 @app.command("replay")
+@friendly_errors
 def replay(
     run_id: str = typer.Option(..., "--run-id"),
     repo_path: str = typer.Option(".", "--repo-path"),
@@ -373,6 +434,7 @@ def scan(repo_path: str = typer.Option(".", "--repo-path")) -> None:
 
 
 @app.command("verify")
+@friendly_errors
 def verify(run_id: str = typer.Option(..., "--run-id"), repo_path: str = typer.Option(".", "--repo-path")) -> None:
     from .agents.verifier import VerifierAgent
     run = RunState.load(repo_path, run_id)
@@ -384,6 +446,7 @@ def verify(run_id: str = typer.Option(..., "--run-id"), repo_path: str = typer.O
 
 
 @app.command("release-check")
+@friendly_errors
 def release_check(run_id: str = typer.Option(..., "--run-id"), repo_path: str = typer.Option(".", "--repo-path")) -> None:
     run = RunState.load(repo_path, run_id)
     rc = ReleaseFlow().check(run)
@@ -391,6 +454,7 @@ def release_check(run_id: str = typer.Option(..., "--run-id"), repo_path: str = 
 
 
 @app.command("report")
+@friendly_errors
 def report(run_id: str = typer.Option(..., "--run-id"), repo_path: str = typer.Option(".", "--repo-path")) -> None:
     run = RunState.load(repo_path, run_id)
     Reporter().write_final_report(run)
@@ -398,6 +462,7 @@ def report(run_id: str = typer.Option(..., "--run-id"), repo_path: str = typer.O
 
 
 @app.command("export-delivery")
+@friendly_errors
 def export_delivery(
     run_id: str = typer.Option(..., "--run-id"),
     repo_path: str = typer.Option(".", "--repo-path"),
