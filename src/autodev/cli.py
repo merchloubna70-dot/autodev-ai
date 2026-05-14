@@ -200,8 +200,58 @@ def deliver_project(
         "--run-id",
         help="Existing run ID to resume (required when --resume-from is given).",
     ),
+    skill_pack: str | None = typer.Option(
+        None,
+        "--skill-pack",
+        help=(
+            "Load a curated PRD + architecture + milestones template for common project shapes. "
+            "Valid values: rust-binary, fastapi-service, cli-tool, nextjs-app, python-package. "
+            "When --skill-pack is given without --project-brief, the brief is generated from "
+            "the pack's brief_template."
+        ),
+    ),
+    dry_cost: bool = typer.Option(
+        False,
+        "--dry-cost",
+        help="Estimate token cost only; do NOT run the pipeline. Outputs JSON estimate to stdout.",
+    ),
+    judges: int = typer.Option(
+        0,
+        "--judges",
+        min=0,
+        max=7,
+        help="When >0, run a TournamentGate of N fresh-subprocess judges after QualityGate (Borda-voting consensus). Default 0 = off.",
+    ),
 ) -> None:
     """Run the Project Delivery Mode flow (brief / PRD / empty repo)."""
+    # ------------------------------------------------------------------
+    # --skill-pack: validate up front
+    # ------------------------------------------------------------------
+    pack = None
+    if skill_pack is not None:
+        from .skill_packs import SKILL_PACKS, get_skill_pack
+
+        if skill_pack not in SKILL_PACKS:
+            valid = ", ".join(sorted(SKILL_PACKS))
+            typer.echo(f"[autodev] unknown skill pack {skill_pack!r}; valid: {valid}", err=True)
+            raise typer.Exit(1) from None
+        pack = get_skill_pack(skill_pack)
+        typer.echo(f"[autodev] skill-pack={skill_pack!r} ({pack.description})", err=True)
+
+    # ------------------------------------------------------------------
+    # --dry-cost: estimate and exit without running the pipeline
+    # ------------------------------------------------------------------
+    if dry_cost:
+        from .cost import CostEstimator
+        brief_for_estimate = ""
+        if project_brief:
+            brief_for_estimate = _read(project_brief)
+        elif pack is not None:
+            brief_for_estimate = pack.render_brief(project_name=project_name or "MyProject")
+        estimate = CostEstimator().estimate(brief_for_estimate)
+        typer.echo(estimate.to_json())
+        raise typer.Exit(0)
+
     # ------------------------------------------------------------------
     # --resume-from path: validate and delegate to resume_from_milestone
     # ------------------------------------------------------------------
@@ -258,7 +308,13 @@ def deliver_project(
         continue_and_report=continue_and_report, concurrency=concurrency,
         codex_timeout=codex_timeout, claude_timeout=claude_timeout,
     )
-    brief_text = _read(project_brief) if project_brief else None
+    if project_brief:
+        brief_text: str | None = _read(project_brief)
+    elif pack is not None:
+        brief_text = pack.render_brief(project_name=project_name or "MyProject")
+        typer.echo("[autodev] brief generated from skill-pack template", err=True)
+    else:
+        brief_text = None
     prd_text = _read(prd) if prd else None
     resolved_scale: Scale | None = None
     if scale is not None:
@@ -1205,8 +1261,18 @@ def sprint_correct_cmd(
 @app.command("dashboard")
 def dashboard_cmd(
     root: str = typer.Option(".dev-factory", "--root", help="dev-factory root directory"),
+    export_html: str | None = typer.Option(
+        None,
+        "--export-html",
+        help="Export latest run as self-contained HTML to <path>; does NOT launch the TUI.",
+    ),
 ) -> None:
     """Launch the Textual TUI dashboard (requires: pip install autodev-x[tui])."""
+    if export_html is not None:
+        from .tui.html_export import export_dashboard_html
+        out = export_dashboard_html(Path(root), Path(export_html))
+        typer.echo(f"[autodev] HTML exported to: {out}")
+        return
     try:
         from .tui.dashboard import run as _run  # lazy import — textual is optional
     except ImportError:
