@@ -21,8 +21,8 @@ jobs:
       - name: ruff check
         run: ruff check src tests scripts
 
-      - name: mypy
-        run: mypy src/autodev --ignore-missing-imports --no-strict-optional
+      - name: mypy (strict — matches release_readiness_gate)
+        run: mypy src/autodev
 
       - name: pytest with coverage
         run: pytest tests/ --cov=src/autodev --cov-report=json --cov-report=term -q
