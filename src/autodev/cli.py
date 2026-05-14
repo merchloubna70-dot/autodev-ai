@@ -26,6 +26,27 @@ from .utils.json_io import write_json
 app = typer.Typer(help="CrewAI + Codex CLI + Claude Code CLI multi-CLI software factory")
 
 
+def _version_callback(value: bool) -> None:
+    if value:
+        from importlib.metadata import PackageNotFoundError, version as _pkg_version
+        try:
+            v = _pkg_version("autodev-ai")
+        except PackageNotFoundError:
+            v = "unknown"
+        typer.echo(f"autodev-ai {v}")
+        raise typer.Exit()
+
+
+@app.callback()
+def _root(
+    version: bool = typer.Option(
+        False, "--version", help="Show version and exit.", callback=_version_callback, is_eager=True
+    ),
+) -> None:
+    """autodev — multi-CLI software factory."""
+    return None
+
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
