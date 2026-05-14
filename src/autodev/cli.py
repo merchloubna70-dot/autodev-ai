@@ -28,7 +28,9 @@ app = typer.Typer(help="CrewAI + Codex CLI + Claude Code CLI multi-CLI software 
 
 def _version_callback(value: bool) -> None:
     if value:
-        from importlib.metadata import PackageNotFoundError, version as _pkg_version
+        from importlib.metadata import PackageNotFoundError
+        from importlib.metadata import version as _pkg_version
+
         try:
             v = _pkg_version("autodev-ai")
         except PackageNotFoundError:
