@@ -18,7 +18,7 @@ audit trail, A2A agent networking, MCP server support, and sprint-mode planning.
 
 ## Install
 
-> **Status**: alpha — [`v0.1.0a4`](https://github.com/merchloubna70-dot/autodev-ai/releases/tag/v0.1.0a4) on GitHub Releases.
+> **Status**: alpha — [`v0.1.0a4`](https://github.com/merchloubna70-dot/autodev-ai/releases/tag/v0.1.0a4) on GitHub Releases. Where we're going: [v0.1.0 GA PRD](docs/prd/v0.1.0_GA.md).
 
 From PyPI (recommended):
 
