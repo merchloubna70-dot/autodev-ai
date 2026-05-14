@@ -63,6 +63,8 @@ corresponding `CodexCliExecutorConfig` / `ClaudeCodeExecutorConfig` dataclasses.
 |----------|--------|---------|--------|
 | `FACTORY_FORCE_MOCK` | `1` / `0` | `0` | When set to `1`, all executor calls and agent LLM calls fall back to deterministic mock implementations. Ideal for CI pipelines that have no API keys. |
 | `FACTORY_LOG` | `DEBUG` / `INFO` / `WARNING` / `ERROR` | `INFO` | Sets the autodev log level. For test runs the test suite sets this to `WARNING` via `tests/conftest.py`. |
+| `FACTORY_CODEX_CMD` | Shell command template string | _(unset)_ | Overrides the `command_template` used by the Codex CLI executor (see `config.py`). Useful for swapping in a wrapper script or custom binary path without modifying `config.toml`. |
+| `FACTORY_CLAUDE_CMD` | Shell command template string | _(unset)_ | Overrides the `command_template` used by the Claude Code CLI executor (see `config.py`). Same purpose as `FACTORY_CODEX_CMD` but for the Claude Code backend. |
 
 Quick usage:
 

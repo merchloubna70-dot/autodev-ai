@@ -268,6 +268,22 @@ See [Tutorial 06 — MCP server](tutorials/06-mcp-server.md).
 
 ---
 
+## Security boundaries
+
+The following security controls are enforced at the implementation layer.
+They are documented here as authoritative reference; the CHANGELOG (0.1.0a2)
+records the release they were introduced.
+
+| Boundary | Implementation | Description |
+|----------|---------------|-------------|
+| **SSRF defense (A2A)** | `adapters/a2a/server.py` — `_validate_url()` | Outgoing A2A HTTP calls block RFC-1918 and loopback addresses by default. Override only in test environments via `AUTODEV_A2A_ALLOW_PRIVATE_NETWORKS=1`. Never set in production. |
+| **Path safety (MCP)** | `mcp_server/path_safety.py` | MCP tool calls that specify `repo_path` are validated against an allowlist of safe path prefixes. Absolute paths pointing outside allowed roots are rejected before any flow executes. |
+| **Branch-name injection rejection** | `executors/worker_isolator.py` | Branch names used in executor invocations are validated against 11 rejection patterns (shell metacharacters, path traversal, Unicode overrides). Invalid names are rejected with a structured error before any subprocess is spawned. |
+| **Secret redaction in logs** | `utils/secret_redaction.py` | Log output from all executor invocations and agent runs passes through a redaction filter that replaces API keys, tokens, and password patterns with `[REDACTED]` before writing to disk or stderr. |
+| **Apply-mode double gate (MCP)** | `mcp_server/server.py` | MCP `mode=apply` requires **both** the request body `allow_apply=true` **and** the server environment variable `AUTODEV_MCP_ALLOW_APPLY=1`. Either condition alone is insufficient; both must be satisfied. |
+
+---
+
 ## Related docs
 
 - [Quickstart](quickstart.md)

@@ -72,6 +72,16 @@ Open **Settings → MCP → Add Server** and enter:
 | `autodev_release_check` | Release readiness check |
 | `autodev_list_runs` | List recent run IDs for a repo |
 
+## Security boundaries
+
+| Boundary | Detail |
+|----------|--------|
+| **Path safety** | Tool calls that specify `repo_path` are validated by `mcp_server/path_safety.py` before any flow executes. Paths outside allowed roots are rejected. |
+| **Apply-mode double gate** | `mode=apply` requires **both** `allow_apply=true` in the request body **and** `AUTODEV_MCP_ALLOW_APPLY=1` in the server's environment. Satisfying only one condition is not sufficient. |
+| **Secret redaction** | All executor output piped through the MCP server passes through `utils/secret_redaction.py`; API keys and tokens are redacted before appearing in tool responses or audit logs. |
+| **Per-caller authentication** | Per-caller auth tokens are **not implemented** in this alpha release. Any process that can connect to the stdio server has full tool access. Do not expose the server over a shared socket or network transport without an external auth proxy. |
+| **Audit logging** | Set `AUTODEV_MCP_AUDIT_LOG=/path/to/audit.jsonl` to record every tool invocation (tool name, args, repo_path, outcome, timestamp) as an append-only JSONL file. |
+
 ## Notes
 
 - **Long-running tools** (`autodev_deliver_project`, `autodev_run_issue`) execute
