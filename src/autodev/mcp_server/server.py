@@ -28,7 +28,7 @@ from .identity import (
 from .tools import TOOL_SCOPES, get_tools
 
 PROTOCOL_VERSION = "2024-11-05"
-SERVER_INFO = {"name": "autodev", "version": "1.0.0"}
+SERVER_INFO = {"name": "autodev-x", "version": "1.0.0"}
 
 # JSON Schema type → Python types mapping for basic type checking
 _SCHEMA_TYPE_MAP: dict[str, tuple[type, ...]] = {

@@ -36,7 +36,7 @@ def test_initialize_returns_protocol_version():
     result = resp["result"]
     assert result["protocolVersion"] == "2024-11-05"
     assert "serverInfo" in result
-    assert result["serverInfo"]["name"] == "autodev"
+    assert result["serverInfo"]["name"] == "autodev-x"
 
 
 # ---------------------------------------------------------------------------

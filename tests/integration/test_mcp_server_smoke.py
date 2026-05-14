@@ -25,14 +25,14 @@ import pytest
 # We check both the venv binary and the module invocation path.
 # ---------------------------------------------------------------------------
 
-_AUTODEV_BIN = shutil.which("autodev") or (
-    str(sys.executable).replace("python", "autodev") if "python" in str(sys.executable) else None
+_AUTODEV_BIN = shutil.which("autodev-x") or (
+    str(sys.executable).replace("python", "autodev-x") if "python" in str(sys.executable) else None
 )
 # Prefer venv binary discovered at test-collection time; fall back to -m invocation.
-_VENV_BIN = os.path.join(os.path.dirname(sys.executable), "autodev")
+_VENV_BIN = os.path.join(os.path.dirname(sys.executable), "autodev-x")
 _USE_BIN = _VENV_BIN if os.path.isfile(_VENV_BIN) else None
 
-_SKIP_REASON = "autodev mcp-serve binary not available on PATH or in venv"
+_SKIP_REASON = "autodev-x mcp-serve binary not available on PATH or in venv"
 _SKIP = _USE_BIN is None and _AUTODEV_BIN is None
 
 
@@ -128,7 +128,7 @@ def test_initialize_handshake():
     assert "result" in resp, f"Expected result, got: {resp}"
     result = resp["result"]
     assert result["protocolVersion"] == "2024-11-05"
-    assert result["serverInfo"]["name"] == "autodev"
+    assert result["serverInfo"]["name"] == "autodev-x"
     assert "tools" in result["capabilities"]
 
 
