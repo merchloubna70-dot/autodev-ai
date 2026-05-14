@@ -1,24 +1,24 @@
 {
   "gate": "coverage_threshold",
-  "ran_at": "2026-05-14T06:35:34Z",
+  "ran_at": "2026-05-14T10:31:08Z",
   "thresholds": {
     "overall": 80.0,
     "release": 85.0,
     "security": 90.0
   },
-  "overall_pct": 80.5,
+  "overall_pct": 84.6,
   "checks": [
     {
       "name": "overall",
       "status": "pass",
-      "actual": 80.5,
+      "actual": 84.6,
       "threshold": 80.0,
       "detail": "line+branch combined coverage from coverage.json totals"
     },
     {
       "name": "release::src/autodev/cli.py",
-      "status": "fail",
-      "actual": 46.2,
+      "status": "pass",
+      "actual": 100.0,
       "threshold": 85.0,
       "detail": ""
     },
@@ -32,42 +32,42 @@
     {
       "name": "release::src/autodev/mcp_server/server.py",
       "status": "fail",
-      "actual": 74.8,
+      "actual": 79.3,
       "threshold": 85.0,
       "detail": ""
     },
     {
       "name": "release::src/autodev/mcp_server/tools.py",
       "status": "fail",
-      "actual": 78.9,
+      "actual": 79.3,
       "threshold": 85.0,
       "detail": ""
     },
     {
       "name": "release::src/autodev/adapters/a2a/server.py",
       "status": "pass",
-      "actual": 85.4,
+      "actual": 87.1,
       "threshold": 85.0,
       "detail": ""
     },
     {
       "name": "release::src/autodev/adapters/a2a/client.py",
       "status": "pass",
-      "actual": 97.1,
+      "actual": 100.0,
       "threshold": 85.0,
       "detail": ""
     },
     {
       "name": "release::src/autodev/executors/executor_router.py",
       "status": "pass",
-      "actual": 88.3,
+      "actual": 92.6,
       "threshold": 85.0,
       "detail": ""
     },
     {
       "name": "release::src/autodev/executors/worker_isolator.py",
       "status": "pass",
-      "actual": 92.5,
+      "actual": 94.1,
       "threshold": 85.0,
       "detail": ""
     },
@@ -88,35 +88,35 @@
     {
       "name": "release::src/autodev/flows/replay_flow.py",
       "status": "fail",
-      "actual": 61.2,
+      "actual": 65.4,
       "threshold": 85.0,
       "detail": ""
     },
     {
       "name": "security::src/autodev/adapters/a2a/transports/http.py",
       "status": "fail",
-      "actual": 78.0,
+      "actual": 78.2,
       "threshold": 90.0,
       "detail": ""
     },
     {
       "name": "security::src/autodev/executors/worker_isolator.py",
       "status": "pass",
-      "actual": 92.5,
+      "actual": 94.1,
       "threshold": 90.0,
       "detail": ""
     },
     {
       "name": "security::src/autodev/utils/command_safety.py",
       "status": "pass",
-      "actual": 93.7,
+      "actual": 96.0,
       "threshold": 90.0,
       "detail": ""
     }
   ],
   "summary": {
-    "pass": 9,
-    "fail": 5,
+    "pass": 10,
+    "fail": 4,
     "exempt": 1,
     "missing": 0
   },
