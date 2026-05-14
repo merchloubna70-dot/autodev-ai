@@ -2,13 +2,13 @@
 from __future__ import annotations
 
 from ..schemas import (
+    PRD,
     ApiContract,
     ArchitectureSpec,
     DataModel,
     DependencyGraph,
     Language,
     ModuleSpec,
-    PRD,
     RepoScanResult,
 )
 
@@ -34,7 +34,7 @@ class ProjectPlanner:
                 public_interfaces=[],
             ))
         # Cross-language integration module if multi-language
-        if len([l for l in languages if l != Language.UNKNOWN]) >= 2:
+        if len([lang for lang in languages if lang != Language.UNKNOWN]) >= 2:
             modules.append(ModuleSpec(
                 name="integration",
                 purpose="Cross-language contracts, codegen, shared schemas",
@@ -51,7 +51,7 @@ class ProjectPlanner:
         )
         overview = (
             f"Architecture for {prd.product_name} targeting languages: "
-            f"{', '.join(l.value for l in languages)}."
+            f"{', '.join(lang.value for lang in languages)}."
         )
         return ArchitectureSpec(
             title=f"Architecture: {prd.product_name}",

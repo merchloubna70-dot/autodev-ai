@@ -1,8 +1,6 @@
 """Tests for scale-adaptive MilestonePlanner and TaskPlanner."""
 from __future__ import annotations
 
-import pytest
-
 from autodev.planners.milestone_planner import MilestonePlanner
 from autodev.planners.task_planner import TaskPlanner
 from autodev.schemas import (

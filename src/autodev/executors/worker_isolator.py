@@ -23,7 +23,6 @@ import os
 import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional
 
 # ---------------------------------------------------------------------------
 # Constants (mirrors codex-fanout CODEX_HOME_SHARED / CODEX_HOME_PRIVATE_DIRS)
@@ -83,9 +82,9 @@ CODEX_HOME_PRIVATE_FILES: tuple[str, ...] = (
 class WorktreeResult:
     """Result of ``prepare_worktree`` — success or structured error."""
 
-    path: Optional[Path] = None
+    path: Path | None = None
     success: bool = False
-    error: Optional[str] = None
+    error: str | None = None
     reused: bool = False
 
 

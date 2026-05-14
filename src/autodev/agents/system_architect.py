@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from ..planners.project_planner import ProjectPlanner
-from ..schemas import ArchitectureSpec, Language, PRD, RepoScanResult
+from ..schemas import PRD, ArchitectureSpec, Language, RepoScanResult
 from ._crewai_bridge import make_agent
 
 
@@ -37,8 +37,8 @@ class SystemArchitectAgent:
 
 
 # BMAD-17: register agent menu at module load time
-from ._menu import register_default_menu  # noqa: E402
 from ..schemas import AgentMenuEntry  # noqa: E402
+from ._menu import register_default_menu  # noqa: E402
 
 register_default_menu("system_architect", [
     AgentMenuEntry(code="DA", description="Design architecture from PRD", skill="system_architect"),

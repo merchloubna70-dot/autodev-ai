@@ -6,7 +6,6 @@ A2A) while preserving the original public `.review(...)` API exactly.
 """
 from __future__ import annotations
 
-import os
 import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path

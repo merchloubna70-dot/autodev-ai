@@ -1,8 +1,8 @@
 """Unit tests for MultiPatchVote voting logic (W7)."""
 from __future__ import annotations
 
-from autodev.schemas import MultiPatchVote, PatchCandidate
 from autodev.flows.multi_patch_flow import MultiPatchFlow
+from autodev.schemas import MultiPatchVote, PatchCandidate
 
 
 def _make_candidates() -> list[PatchCandidate]:

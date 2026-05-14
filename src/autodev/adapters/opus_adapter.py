@@ -11,14 +11,12 @@ the `claude` binary.  In tests FACTORY_FORCE_MOCK=1 always activates the mock pa
 from __future__ import annotations
 
 import os
-import shlex
 import shutil
 import subprocess
 import time
 
 from ..schemas import OpusConsultMode, OpusConsultResult
 from ..utils.hashing import sha256_hex, short_hash
-
 
 # System prompts (compact, non-interactive)
 _ARCHITECT_SYSTEM = (

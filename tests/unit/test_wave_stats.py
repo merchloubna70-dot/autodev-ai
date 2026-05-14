@@ -13,7 +13,7 @@ def test_max_width():
     assert stats["single_task_waves"] == 1
 
 
-def pytest_approx_close(value: float, *, abs: float = 1e-6) -> "_Approx":
+def pytest_approx_close(value: float, *, abs: float = 1e-6) -> _Approx:
     return _Approx(value, abs)
 
 

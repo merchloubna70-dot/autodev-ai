@@ -1,13 +1,9 @@
 """Integration tests for the `design-ux` CLI command."""
 from __future__ import annotations
 
-from pathlib import Path
-
-import pytest
 from typer.testing import CliRunner
 
 from autodev.cli import app
-
 
 runner = CliRunner()
 

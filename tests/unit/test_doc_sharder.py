@@ -3,10 +3,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pytest
-
 from autodev.utils.doc_sharder import DocSharder
-
 
 SMALL_DOC = "# Title\n\nShort content."
 

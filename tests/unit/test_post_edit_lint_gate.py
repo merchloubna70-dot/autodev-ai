@@ -1,9 +1,6 @@
 """Unit tests for PostEditLintGate."""
 from __future__ import annotations
 
-import textwrap
-from pathlib import Path
-
 import pytest
 
 from autodev.gates.post_edit_lint_gate import PostEditLintGate

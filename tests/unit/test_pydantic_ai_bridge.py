@@ -7,11 +7,8 @@ Verifies that:
 """
 from __future__ import annotations
 
-import pytest
-
 from autodev.adapters.pydantic_ai_bridge import PydanticAIAgentFactory
 from autodev.schemas import InputClassification, PydanticAIBridgeStatus
-
 
 # ---------------------------------------------------------------------------
 # Test 1: factory returns a valid stub when pydantic_ai is missing

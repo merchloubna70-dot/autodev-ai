@@ -5,7 +5,6 @@ it can be wired into a CrewAI-based pipeline the same way as other agents.
 """
 from __future__ import annotations
 
-from ..flows.sprint_flow import SprintFlow
 from ..schemas import (
     RetrospectiveReport,
     SprintChangeProposal,
@@ -23,6 +22,7 @@ class SprintManagerAgent:
     icon = "🏃"
 
     def __init__(self) -> None:
+        from ..flows.sprint_flow import SprintFlow
         self._flow = SprintFlow()
 
     # ------------------------------------------------------------------

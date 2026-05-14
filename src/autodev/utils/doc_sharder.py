@@ -98,7 +98,7 @@ class DocSharder:
         )
 
         # Write preamble sections into TOC directly
-        for lv, title, body in sections:
+        for lv, _title, body in sections:
             if lv == 0 and body.strip():
                 toc_lines.append(body.strip())
                 toc_lines.append("")

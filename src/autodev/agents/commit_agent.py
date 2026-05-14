@@ -109,7 +109,7 @@ class CommitAgent:
             f"Run `{state.run_id}` produced by {state.flow}.",
             "",
             "## Scope",
-            f"- languages: {[l.value for l in state.languages]}",
+            f"- languages: {[lang.value for lang in state.languages]}",
             f"- backends_used: {[b.value for b in state.backends_used]}",
             "",
             "## Milestones",

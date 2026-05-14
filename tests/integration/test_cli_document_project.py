@@ -9,7 +9,6 @@ from typer.testing import CliRunner
 
 from autodev.cli import app
 
-
 runner = CliRunner()
 
 

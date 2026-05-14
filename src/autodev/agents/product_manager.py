@@ -65,8 +65,8 @@ class ProductManagerAgent:
 
 
 # BMAD-17: register agent menu at module load time
-from ._menu import register_default_menu  # noqa: E402
 from ..schemas import AgentMenuEntry  # noqa: E402
+from ._menu import register_default_menu  # noqa: E402
 
 register_default_menu("product_manager", [
     AgentMenuEntry(code="CB", description="Create product brief", skill="product_manager"),

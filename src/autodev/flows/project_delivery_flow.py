@@ -32,10 +32,10 @@ from ..agents import (
     VerifierAgent,
 )
 from ..agents._crewai_bridge import make_crew
+from ..agents._scaffold_verification import ScaffoldVerification
 from ..config import FactoryConfig
 from ..executors.executor_router import ExecutorRouter
 from ..reports.reporter import Reporter
-from ..agents._scaffold_verification import ScaffoldVerification
 from ..schemas import (
     ExecutionBackend,
     Language,
@@ -94,7 +94,7 @@ class ProjectDeliveryFlow:
         Path(inp.repo_path).mkdir(parents=True, exist_ok=True)
 
         run = init_run(repo_path=inp.repo_path, mode=inp.mode, flow="project_delivery_flow",
-                       languages=[l.value for l in languages])
+                       languages=[lang.value for lang in languages])
         run.save_text("input/raw_input.md", source_text)
 
         # 1) classify

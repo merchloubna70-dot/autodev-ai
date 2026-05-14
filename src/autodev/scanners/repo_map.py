@@ -14,9 +14,8 @@ from __future__ import annotations
 
 import re
 from collections import defaultdict
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Sequence
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -79,7 +78,7 @@ def _count_tokens(text: str) -> int:
 class RepoMapEntry:
     """Mutable scoring entry; converted to schema after ranking."""
 
-    __slots__ = ("file_path", "signature_summary", "score", "symbol_count")
+    __slots__ = ("file_path", "score", "signature_summary", "symbol_count")
 
     def __init__(self, file_path: str, signature_summary: str, score: float, symbol_count: int) -> None:
         self.file_path = file_path

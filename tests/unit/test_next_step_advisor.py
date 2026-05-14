@@ -1,8 +1,6 @@
 """Unit tests for NextStepAdvisor — one test per decision-tree branch."""
 from __future__ import annotations
 
-import pytest
-
 from autodev.agents.next_step_advisor import NextStepAdvisor
 from autodev.schemas import (
     GateOutcome,
@@ -11,7 +9,6 @@ from autodev.schemas import (
     Language,
     Milestone,
     MilestonePlan,
-    PipelineMode,
     PipelineRunState,
     QualityGateResult,
     ReleaseCheckReport,

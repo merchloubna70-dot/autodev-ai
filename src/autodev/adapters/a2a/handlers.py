@@ -6,7 +6,7 @@ an agent A2AMessage appended to task.history.
 from __future__ import annotations
 
 import uuid
-from typing import Callable
+from collections.abc import Callable
 
 from ...schemas import (
     A2AMessage,
@@ -82,7 +82,6 @@ def handle_classify_input(task: A2ATask) -> A2ATask:
 def handle_create_prd(task: A2ATask) -> A2ATask:
     """skill=create-prd — run PRD writer pipeline."""
     try:
-        from ...agents.input_classifier import InputClassifierAgent
         from ...agents.prd_writer import PRDWriterAgent
         from ...agents.product_manager import ProductManagerAgent
         from ...agents.requirement_analyst import RequirementAnalystAgent
@@ -135,7 +134,7 @@ def handle_roundtable(task: A2ATask) -> A2ATask:
         max_participants = int(task.metadata.get("max_participants", 4))
 
         rt = RoundtableAgent()
-        conversation, synth_msg = rt.discuss_and_synthesize(
+        _conversation, synth_msg = rt.discuss_and_synthesize(
             topic=topic,
             needed_skills=skills,
             max_participants=max_participants,

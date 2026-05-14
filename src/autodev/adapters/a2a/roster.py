@@ -4,7 +4,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from ...schemas import AgentCard, A2ARosterEntry
+from ...schemas import A2ARosterEntry, AgentCard
 
 
 class AgentRoster:
@@ -81,7 +81,7 @@ class AgentRoster:
     # ------------------------------------------------------------------
 
     @classmethod
-    def default(cls) -> "AgentRoster":
+    def default(cls) -> AgentRoster:
         """Return a roster pre-loaded with five standard specialist cards."""
         roster = cls()
         defaults = [

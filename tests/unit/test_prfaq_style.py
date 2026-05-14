@@ -4,15 +4,14 @@ from __future__ import annotations
 from typer.testing import CliRunner
 
 from autodev.agents.prd_writer import PRDWriterAgent
+from autodev.cli import app
 from autodev.schemas import (
     AcceptanceCriterion,
     FunctionalRequirement,
     NonFunctionalRequirement,
-    ProductBrief,
     PRFAQDocument,
+    ProductBrief,
 )
-from autodev.cli import app
-
 
 # ---------------------------------------------------------------------------
 # Helpers

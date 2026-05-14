@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import csv
 import os
-from importlib import resources
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -67,7 +66,7 @@ class ElicitationMethodsAgent:
         self,
         csv_path: str | Path | None = None,
         *,
-        methods_agent: "ElicitationMethodsAgent | None" = None,  # noqa: F821
+        methods_agent: ElicitationMethodsAgent | None = None,  # noqa: F821
     ) -> None:
         self._csv_path = Path(csv_path) if csv_path else _DEFAULT_CSV
         self._methods: list[ElicitationMethod] | None = None

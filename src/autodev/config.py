@@ -62,11 +62,11 @@ class FactoryConfig:
     claude_code: ClaudeCodeExecutorConfig = field(default_factory=ClaudeCodeExecutorConfig)
     executor_policy: ExecutorSelectionPolicy = field(default_factory=ExecutorSelectionPolicy)
 
-    mock_codex_fixture: "MockFixtureConfig" = field(default_factory=lambda: MockFixtureConfig())
-    mock_claude_fixture: "MockFixtureConfig" = field(default_factory=lambda: MockFixtureConfig())
+    mock_codex_fixture: MockFixtureConfig = field(default_factory=lambda: MockFixtureConfig())
+    mock_claude_fixture: MockFixtureConfig = field(default_factory=lambda: MockFixtureConfig())
 
     @classmethod
-    def from_env(cls) -> "FactoryConfig":
+    def from_env(cls) -> FactoryConfig:
         cfg = cls()
         if os.environ.get("FACTORY_CODEX_BIN"):
             cfg.codex.binary = os.environ["FACTORY_CODEX_BIN"]
@@ -79,7 +79,7 @@ class FactoryConfig:
         return cfg
 
     @classmethod
-    def from_stack(cls, repo_path: "str | None" = None) -> "FactoryConfig":
+    def from_stack(cls, repo_path: str | None = None) -> FactoryConfig:
         """Build a FactoryConfig by layering TOML config files then env vars.
 
         Loads 4 layers in priority order:

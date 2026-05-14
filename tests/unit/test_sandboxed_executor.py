@@ -13,7 +13,6 @@ import pytest
 from autodev.executors.mock_codex_executor import MockCodexExecutor
 from autodev.executors.sandboxed_executor import SandboxedExecutor
 from autodev.schemas import (
-    ExecutionBackend,
     ExecutionRequest,
     Language,
     PipelineMode,

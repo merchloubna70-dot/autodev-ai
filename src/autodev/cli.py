@@ -1011,7 +1011,7 @@ def dashboard_cmd(
             "[autodev] Textual is not installed. Run: pip install autodev-ai[tui]",
             err=True,
         )
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1) from None
     _run(root=root)
 
 

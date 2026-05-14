@@ -10,9 +10,8 @@ from ..config import CodexCliExecutorConfig
 from ..schemas import CodexInnerStep, ExecutionBackend, ExecutionRequest, ExecutionResult, PipelineMode
 from ..utils.command_safety import scan_prompt_for_unsafe
 from ..utils.hashing import short_hash
-from .base_executor import BaseExecutor
 from ._fs_observer import diff_repo, snapshot_repo
-
+from .base_executor import BaseExecutor
 
 CODEX_PROMPT_BOUNDARY = """
 SAFETY BOUNDARY (mandatory):

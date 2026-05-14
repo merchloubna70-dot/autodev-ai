@@ -32,7 +32,7 @@ def test_typescript_scanner():
 
 def test_repo_scanner_mixed():
     res = RepoScanner().scan(str(FIX / "mixed_project"))
-    langs = {l.value for l in res.detected_languages}
+    langs = {lang.value for lang in res.detected_languages}
     assert "python" in langs
     assert "rust" in langs
     assert "typescript" in langs

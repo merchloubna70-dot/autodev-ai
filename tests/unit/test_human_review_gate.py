@@ -5,8 +5,6 @@ import threading
 import time
 from pathlib import Path
 
-import pytest
-
 from autodev.agents.human_review_gate import HumanReviewGate
 from autodev.schemas import HumanReviewDecision
 

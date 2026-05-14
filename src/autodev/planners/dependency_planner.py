@@ -1,6 +1,8 @@
 """Compute parallel waves for task dependencies (same-file conflicts serialized)."""
 from __future__ import annotations
 
+import itertools
+
 from ..schemas import DeliveryTask, RiskLevel
 from ..utils.concurrency import topological_batches
 from ._wave_explanation import WaveExplanation
@@ -45,7 +47,7 @@ class DependencyPlanner:
                         continue
                     by_file.setdefault(f, []).append(t.task_id)
             for fname, task_ids in by_file.items():
-                for a, b in zip(task_ids, task_ids[1:]):
+                for a, b in itertools.pairwise(task_ids):
                     edges.append((a, b))
                     edge_reasons[b].append(
                         f"blocked-by-{a} (same-file conflict: {fname})"

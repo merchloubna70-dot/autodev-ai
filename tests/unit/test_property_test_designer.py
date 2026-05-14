@@ -4,8 +4,6 @@ from __future__ import annotations
 import textwrap
 from pathlib import Path
 
-import pytest
-
 from autodev.agents.property_test_designer import PropertyTestDesigner
 from autodev.schemas import PropertyTestSuggestion
 

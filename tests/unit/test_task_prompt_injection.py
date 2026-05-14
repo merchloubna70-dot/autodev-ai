@@ -10,22 +10,19 @@ Covers:
 """
 from __future__ import annotations
 
-import pytest
-
 from autodev.planners.task_planner import TaskPlanner
 from autodev.schemas import (
+    PRD,
     AcceptanceCriterion,
     ArchitectureSpec,
     ExecutionBackend,
     Language,
     Milestone,
-    PRD,
     ProductBrief,
     TaskPromptContext,
     TaskType,
     render_task_prompt,
 )
-
 
 # ---------------------------------------------------------------------------
 # Fixtures / helpers

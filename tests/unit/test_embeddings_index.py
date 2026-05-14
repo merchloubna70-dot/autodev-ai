@@ -1,8 +1,6 @@
 """Tests for EmbeddingsIndex — deterministic in-memory TF-IDF."""
 from __future__ import annotations
 
-import pytest
-
 from autodev.adapters.embeddings_index import EmbeddingsIndex
 
 

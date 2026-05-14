@@ -31,7 +31,7 @@ class Reporter:
         lines.append(f"- flow: `{s.flow}`")
         lines.append(f"- mode: `{s.mode.value}`")
         lines.append(f"- repo: `{s.repo_path}`")
-        lines.append(f"- languages: {', '.join(l.value for l in s.languages)}")
+        lines.append(f"- languages: {', '.join(lang.value for lang in s.languages)}")
         lines.append(f"- backends_used: {', '.join(b.value for b in s.backends_used)}")
         lines.append(f"- MockExecutionUsed: `{s.mock_execution_used}`")
         lines.append(f"- DryRun: `{s.mode.value == 'dry-run'}`")

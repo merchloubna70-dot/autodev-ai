@@ -34,7 +34,6 @@ from ...schemas import (
 )
 from .handlers import SKILL_HANDLERS
 
-
 # ---------------------------------------------------------------------------
 # AgentCard for autodev
 # ---------------------------------------------------------------------------
@@ -187,7 +186,7 @@ class _A2AHandler(BaseHTTPRequestHandler):
 
         def _sse_event(event_type: str, data: Any) -> bytes:
             payload = json.dumps(data, ensure_ascii=False)
-            return f"event: {event_type}\ndata: {payload}\n\n".encode("utf-8")
+            return f"event: {event_type}\ndata: {payload}\n\n".encode()
 
         # Initial status event
         try:
@@ -234,7 +233,7 @@ class _A2AHandler(BaseHTTPRequestHandler):
         # Build or validate task
         try:
             task = A2ATask.model_validate(data)
-        except Exception as exc:  # noqa: BLE001
+        except Exception:  # noqa: BLE001
             # Build minimal task from the data dict
             task = A2ATask(
                 id=data.get("id") or str(uuid.uuid4()),

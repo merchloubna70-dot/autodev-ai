@@ -8,10 +8,11 @@ from __future__ import annotations
 
 import sys
 import time
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
-from ..schemas import ActivationResult, ActivationStep, AgentCustomizeSnapshot
+from ..schemas import ActivationResult, AgentCustomizeSnapshot
 
 if sys.version_info >= (3, 11):
     import tomllib

@@ -65,7 +65,7 @@ def _product_manager_brief(ctx: Any) -> str:
 def _requirement_analysis(ctx: Any) -> str:
     from ...agents import RequirementAnalystAgent
 
-    run = ctx["run"]
+    ctx["run"]
     brief = ctx["brief"]
     source_text = ctx.get("source_text", "")
     req = RequirementAnalystAgent()
@@ -113,7 +113,7 @@ def _architecture_design(ctx: Any) -> str:
     run = ctx["run"]
     prd = ctx["prd"]
     scan = ctx["scan_first"]
-    inp = ctx["inp"]
+    ctx["inp"]
     languages = ctx["languages"]
     architect = SystemArchitectAgent()
     arch = architect.design(prd=prd, scan=scan, languages=languages)
@@ -250,13 +250,12 @@ def _test_design(ctx: Any) -> str:
     tasks = ctx["tasks"]
     tp = TestDesignerAgent().design(milestones=milestones, tasks=tasks, languages=languages)
     run.save_json("quality/test_plan.json", tp)
-    return f"test_plan=ok"
+    return "test_plan=ok"
 
 
 def _implementation_loop(ctx: Any) -> str:
     from ...agents import ImplementerAgent
     from ...executors.executor_router import ExecutorRouter
-    from ...schemas import PipelineMode
 
     run = ctx["run"]
     inp = ctx["inp"]
@@ -406,7 +405,7 @@ def _final_report(ctx: Any) -> str:
     ctx_ref = ctx  # local alias
     # crew assembly for visibility
     try:
-        agents_list = [
+        [
             ctx_ref.get("pm_agent"),
             ctx_ref.get("req_agent"),
         ]

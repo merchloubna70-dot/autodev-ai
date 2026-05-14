@@ -11,16 +11,13 @@ Three steps mirror the BMAD skill:
 """
 from __future__ import annotations
 
-import json
-import os
 import re
 from pathlib import Path
-from typing import Optional
 
 from ..schemas import (
+    PRD,
     ContextRule,
     DiscoveryReport,
-    PRD,
     ProjectContext,
     ProjectContextDraft,
 )
@@ -114,7 +111,7 @@ class ContextGeneratorAgent:
 
         return report
 
-    def _detect_package_manager(self, root: Path) -> Optional[str]:
+    def _detect_package_manager(self, root: Path) -> str | None:
         if (root / "uv.lock").is_file():
             return "uv"
         if (root / "poetry.lock").is_file():
@@ -189,7 +186,7 @@ class ContextGeneratorAgent:
                 hooks.append(m.group(1))
         return hooks[:10]  # cap at 10
 
-    def _detect_commit_style(self, root: Path) -> Optional[str]:
+    def _detect_commit_style(self, root: Path) -> str | None:
         # Check .commitlintrc*, commitlint.config.js, or conventional-changelog in package.json
         for name in (".commitlintrc", ".commitlintrc.json", ".commitlintrc.yaml", ".commitlintrc.yml", "commitlint.config.js"):
             if (root / name).is_file():
@@ -218,8 +215,8 @@ class ContextGeneratorAgent:
     def synthesize(
         self,
         discovery: DiscoveryReport,
-        prd: Optional[PRD] = None,
-        brief: Optional[str] = None,
+        prd: PRD | None = None,
+        brief: str | None = None,
     ) -> ProjectContextDraft:
         """Turn raw discovery findings into RULE statements."""
         rules: list[ContextRule] = []
@@ -487,8 +484,8 @@ class ContextGeneratorAgent:
     def run(
         self,
         repo_path: str | Path = ".",
-        prd: Optional[PRD] = None,
-        brief: Optional[str] = None,
+        prd: PRD | None = None,
+        brief: str | None = None,
         product_name: str = "",
     ) -> ProjectContext:
         """Discover → synthesize → commit.  Returns the committed ProjectContext."""
@@ -498,8 +495,8 @@ class ContextGeneratorAgent:
 
 
 # BMAD-17: register agent menu at module load time
-from ._menu import register_default_menu  # noqa: E402
 from ..schemas import AgentMenuEntry  # noqa: E402
+from ._menu import register_default_menu  # noqa: E402
 
 register_default_menu("context_generator", [
     AgentMenuEntry(code="GC", description="Generate project context file", skill="context_generator"),

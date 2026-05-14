@@ -6,7 +6,6 @@ Also exposes as_agent_card() for registration in AgentRoster.
 """
 from __future__ import annotations
 
-import os
 import re
 from pathlib import Path
 

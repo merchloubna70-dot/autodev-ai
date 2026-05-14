@@ -82,7 +82,7 @@ class HumanReviewGate:
         content_lines = [
             "# Pending Human Review",
             "",
-            f"## Summary",
+            "## Summary",
             summary or "(no summary provided)",
             "",
         ]

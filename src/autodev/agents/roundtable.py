@@ -9,7 +9,6 @@ from __future__ import annotations
 import os
 import uuid
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import TYPE_CHECKING
 
 # Defensive imports — A2A-1 may not have committed yet
 try:
@@ -34,7 +33,6 @@ from ..schemas import (
     A2ATaskStatus,
     AgentCard,
 )
-
 
 _MAX_WORKERS = 4
 _FORCE_MOCK = os.environ.get("FACTORY_FORCE_MOCK", "0") == "1"
@@ -73,7 +71,6 @@ class _FallbackMockClient:
     """Used when A2AClient is not yet available (A2A-1 still in flight)."""
 
     def send(self, card: AgentCard, task: A2ATask) -> A2ATask:
-        import copy
         t = task.model_copy(deep=True)
         mock_text = (
             f"[MOCK-{card.name}] Review complete. "
@@ -121,8 +118,8 @@ class RoundtableAgent:
 
     def __init__(
         self,
-        roster: "AgentRoster | None" = None,  # type: ignore[type-arg]
-        client: "A2AClient | None" = None,  # type: ignore[type-arg]
+        roster: AgentRoster | None = None,  # type: ignore[type-arg]
+        client: A2AClient | None = None,  # type: ignore[type-arg]
         default_model: str = "auto",
     ) -> None:
         # Roster
@@ -137,7 +134,7 @@ class RoundtableAgent:
         if client is not None:
             self._client = client
         elif _FORCE_MOCK or not _CLIENT_AVAILABLE or A2AClient is None:
-            self._client = _FallbackMockClient()
+            self._client = _FallbackMockClient()  # type: ignore[assignment]
         else:
             self._client = A2AClient()  # type: ignore[call-arg]
 

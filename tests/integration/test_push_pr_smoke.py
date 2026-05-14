@@ -10,7 +10,6 @@ from autodev.schemas import (
 )
 from autodev.utils.command_safety import is_command_allowed
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------

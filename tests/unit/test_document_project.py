@@ -7,8 +7,7 @@ from pathlib import Path
 import pytest
 
 from autodev.agents.document_project import DocumentProjectAgent
-from autodev.schemas import BrownfieldDoc, BrownfieldDocSection, Language
-
+from autodev.schemas import BrownfieldDoc, Language
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -218,7 +217,7 @@ def test_idempotent_writes(simple_python_repo: Path) -> None:
     # Same output_dir
     assert doc1.output_dir == doc2.output_dir
     # Files exist and are the same size
-    for s1, s2 in zip(doc1.sections, doc2.sections):
+    for s1, s2 in zip(doc1.sections, doc2.sections, strict=False):
         assert s1.name == s2.name
         assert s1.file_path is not None
         p = Path(s1.file_path)

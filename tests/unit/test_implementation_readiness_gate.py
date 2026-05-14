@@ -1,12 +1,12 @@
 """Unit tests for ImplementationReadinessGate — 6 checks + happy path."""
 from __future__ import annotations
 
-import pytest
-
 from autodev.gates.implementation_readiness_gate import ImplementationReadinessGate
 from autodev.schemas import (
+    PRD,
     AcceptanceCriterion,
     ArchitectureSpec,
+    CodeReviewReport,
     ComponentSpec,
     DeliveryTask,
     DependencyGraph,
@@ -16,14 +16,11 @@ from autodev.schemas import (
     MilestonePlan,
     ModuleSpec,
     PipelineRunState,
-    PRD,
-    Severity,
-    UXDesignSpec,
-    CodeReviewReport,
     SecurityReviewReport,
+    Severity,
     SeverityFinding,
+    UXDesignSpec,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers

@@ -1,19 +1,14 @@
 """Tests for ClarificationGate 3-round BMAD elicitation (BMAD-4)."""
 from __future__ import annotations
 
-import os
-
-import pytest
-
 from autodev.agents.clarification_gate import ClarificationGate
 from autodev.schemas import (
+    PRD,
     AcceptanceCriterion,
     ClarificationTranscript,
     FunctionalRequirement,
-    PRD,
     ProductBrief,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers

@@ -6,14 +6,12 @@ from autodev.agents.task_decomposer import TaskDecomposerAgent
 from autodev.agents.verifier import VerifierAgent
 from autodev.gates.release_gate import ReleaseGate
 from autodev.schemas import (
+    PRD,
     ApiContract,
     ApiEndpoint,
     DependencyGraph,
-    ExecutionResult,
-    ExecutionBackend,
     GateStatus,
     Language,
-    PRD,
     PipelineRunState,
     ReleaseDecision,
     RepoScanResult,

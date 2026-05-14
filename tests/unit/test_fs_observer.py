@@ -1,10 +1,6 @@
 """Tests for _fs_observer.py — snapshot_repo / diff_repo helpers."""
 from __future__ import annotations
 
-import os
-
-import pytest
-
 from autodev.executors._fs_observer import diff_repo, snapshot_repo
 
 

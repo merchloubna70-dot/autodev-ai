@@ -1,17 +1,12 @@
 """Unit tests for UXDesignerAgent (Sally)."""
 from __future__ import annotations
 
-import os
-
-import pytest
-
 from autodev.agents.ux_designer import UXDesignerAgent
 from autodev.schemas import (
+    PRD,
     AcceptanceCriterion,
     AgentCard,
     FunctionalRequirement,
-    Language,
-    PRD,
     ProductBrief,
     UXDesignSpec,
 )

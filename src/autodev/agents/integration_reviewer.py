@@ -50,7 +50,7 @@ class IntegrationReviewerAgent:
         report = self.gate.review(
             api_contract=api_contract,
             dependency_graph=dependency_graph,
-            languages=[l.value for l in languages],
+            languages=[lang.value for lang in languages],
         )
 
         # Build severity_findings and prefix the findings strings

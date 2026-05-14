@@ -1,8 +1,6 @@
 """Unit tests for OpusConsultAgent under FACTORY_FORCE_MOCK=1."""
 from __future__ import annotations
 
-import os
-
 import pytest
 
 from autodev.agents.opus_consult import OpusConsultAgent

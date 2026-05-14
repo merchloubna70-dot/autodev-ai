@@ -95,7 +95,7 @@ class RunState:
     # ------------------------------------------------------------------
 
     @classmethod
-    def load(cls, repo_path: str, run_id: str, state_dir: str = ".dev-factory") -> "RunState":
+    def load(cls, repo_path: str, run_id: str, state_dir: str = ".dev-factory") -> RunState:
         rs = cls.__new__(cls)
         rs.repo_path = str(Path(repo_path).resolve())
         rs.run_id = run_id
@@ -106,7 +106,7 @@ class RunState:
         return rs
 
     @classmethod
-    def latest(cls, repo_path: str, state_dir: str = ".dev-factory") -> "RunState | None":
+    def latest(cls, repo_path: str, state_dir: str = ".dev-factory") -> RunState | None:
         runs_root = Path(repo_path) / state_dir / "runs"
         if not runs_root.exists():
             return None

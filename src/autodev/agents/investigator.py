@@ -12,7 +12,7 @@ import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
-from ..schemas import CaseFile, EvidenceEntry, InvestigationInput, InvestigationInputKind
+from ..schemas import CaseFile, EvidenceEntry, InvestigationInputKind
 
 # ---------------------------------------------------------------------------
 # helpers
@@ -386,8 +386,8 @@ class InvestigatorAgent:
 
 
 # BMAD-17: register agent menu at module load time
-from ._menu import register_default_menu  # noqa: E402
 from ..schemas import AgentMenuEntry  # noqa: E402
+from ._menu import register_default_menu  # noqa: E402
 
 register_default_menu("investigator", [
     AgentMenuEntry(code="OC", description="Open investigation case", skill="investigator"),

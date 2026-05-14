@@ -4,11 +4,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import pytest
-
-from autodev.flows.sprint_flow import SprintFlow, _next_sprint_id, _sprint_base
+from autodev.flows.sprint_flow import SprintFlow, _sprint_base
 from autodev.schemas import SprintInput
-
 
 # ---------------------------------------------------------------------------
 # helpers
@@ -158,7 +155,7 @@ def test_status_health_complete(tmp_path: Path) -> None:
 
     # Manually write tasks into state.json so total == done
     sprint_dir = _sprint_base(str(tmp_path)) / state.sprint_id
-    raw = json.loads((sprint_dir / "state.json").read_text())
+    json.loads((sprint_dir / "state.json").read_text())
     # With 2 done results and tasks_total computed from result files, health should be complete
     status = flow.status(str(tmp_path), state.sprint_id)
     # tasks_total == tasks_done == 2 → complete

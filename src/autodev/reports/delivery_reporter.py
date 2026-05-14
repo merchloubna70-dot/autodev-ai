@@ -10,7 +10,7 @@ class DeliveryReporter:
         summary_parts = [
             f"run_id={state.run_id}",
             f"mode={state.mode.value}",
-            f"languages={[l.value for l in state.languages]}",
+            f"languages={[lang.value for lang in state.languages]}",
             f"mock={state.mock_execution_used}",
             f"decision={decision.value}",
         ]

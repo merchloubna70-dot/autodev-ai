@@ -7,9 +7,10 @@ from __future__ import annotations
 
 import json
 import os
-from dataclasses import dataclass, field
+from collections.abc import Callable
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 
 @dataclass
@@ -93,9 +94,9 @@ _tool_classify = Tool(
 
 def _handle_create_prd(args: dict[str, Any]) -> str:
     brief_text = args.get("brief_text", "")
+    from ..agents.prd_writer import PRDWriterAgent
     from ..agents.product_manager import ProductManagerAgent
     from ..agents.requirement_analyst import RequirementAnalystAgent
-    from ..agents.prd_writer import PRDWriterAgent
     pm = ProductManagerAgent()
     req = RequirementAnalystAgent()
     writer = PRDWriterAgent()
@@ -132,9 +133,9 @@ def _handle_deliver_project(args: dict[str, Any]) -> dict[str, Any]:
     from_scratch = bool(args.get("from_scratch", False))
     mode_str = args.get("mode", "dry-run")
 
-    from ..schemas import Language, PipelineMode
     from ..config import FactoryConfig
     from ..flows.project_delivery_flow import ProjectDeliveryFlow, ProjectDeliveryInput
+    from ..schemas import Language, PipelineMode
 
     langs = []
     for lang in (languages_raw if isinstance(languages_raw, list) else [languages_raw]):
@@ -206,9 +207,9 @@ def _handle_run_issue(args: dict[str, Any]) -> dict[str, Any]:
     languages_raw = args.get("languages", ["python"])
     mode_str = args.get("mode", "dry-run")
 
-    from ..schemas import Language, PipelineMode
     from ..config import FactoryConfig
     from ..flows.issue_pipeline_flow import IssuePipelineFlow, IssuePipelineInput
+    from ..schemas import Language, PipelineMode
 
     langs = []
     for lang in (languages_raw if isinstance(languages_raw, list) else [languages_raw]):
@@ -271,8 +272,8 @@ _tool_run_issue = Tool(
 def _handle_report(args: dict[str, Any]) -> str:
     repo_path = args.get("repo_path", ".")
     run_id = args.get("run_id", "")
-    from ..state import RunState
     from ..reports.reporter import Reporter
+    from ..state import RunState
     run = RunState.load(repo_path, run_id)
     Reporter().write_final_report(run)
     report_path = run.path("delivery/final_report.md")
@@ -351,8 +352,8 @@ _tool_roundtable = Tool(
 def _handle_release_check(args: dict[str, Any]) -> dict[str, Any]:
     repo_path = args.get("repo_path", ".")
     run_id = args.get("run_id", "")
-    from ..state import RunState
     from ..flows.release_flow import ReleaseFlow
+    from ..state import RunState
     run = RunState.load(repo_path, run_id)
     rc = ReleaseFlow().check(run)
     return json.loads(rc.model_dump_json())

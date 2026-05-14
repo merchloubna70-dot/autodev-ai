@@ -1,5 +1,4 @@
 """Unit tests for Severity enum and SeverityFinding / ParallelSectionReviewReport schemas."""
-import pytest
 
 from autodev.schemas import (
     ParallelSectionReviewReport,

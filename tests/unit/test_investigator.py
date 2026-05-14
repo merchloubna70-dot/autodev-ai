@@ -12,7 +12,6 @@ import pytest
 from autodev.agents.investigator import InvestigatorAgent
 from autodev.schemas import CaseFile, EvidenceEntry, InvestigationInputKind
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------

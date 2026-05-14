@@ -97,7 +97,7 @@ class EmbeddingsIndex:
         hits = idx.search("quick fox", k=3)
     """
 
-    def __init__(self, distillator: "Distillator | None" = None) -> None:
+    def __init__(self, distillator: Distillator | None = None) -> None:
         self._store: _InMemoryStore = _InMemoryStore()
         self._distillator = distillator
 

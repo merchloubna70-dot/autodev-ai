@@ -1,14 +1,11 @@
 """Tests for scanners/repo_map.py — RepoMap ranking logic."""
 from __future__ import annotations
 
-import os
-import tempfile
 from pathlib import Path
 
 import pytest
 
 from autodev.scanners.repo_map import RepoMap
-
 
 # ---------------------------------------------------------------------------
 # Fixtures

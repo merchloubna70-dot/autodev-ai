@@ -1,14 +1,10 @@
 """Unit tests for the 3-pass LOCATE sub-decomposition in FourStagePlanner (W5)."""
 from __future__ import annotations
 
-import pytest
-
 from autodev.planners.four_stage_planner import (
     FourStagePlanner,
-    _THREE_PASS_STAGES,
 )
 from autodev.schemas import TaskType
-
 
 _BUG = "NullPointerException in auth module"
 _REPO = "/tmp/myrepo"

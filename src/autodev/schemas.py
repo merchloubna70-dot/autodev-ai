@@ -11,7 +11,6 @@ from typing import Any
 
 from pydantic import BaseModel, Field, model_validator
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
@@ -416,7 +415,7 @@ class SecurityReviewReport(BaseModel):
     blocked_commands: list[str] = Field(default_factory=list)
     severity: RiskLevel = RiskLevel.LOW
     status: GateStatus = GateStatus.PASSED
-    severity_findings: list["SeverityFinding"] = Field(default_factory=list)
+    severity_findings: list[SeverityFinding] = Field(default_factory=list)
     false_positives_filtered: list[str] = Field(default_factory=list)
 
 
@@ -424,7 +423,7 @@ class CodeReviewReport(BaseModel):
     findings: list[str] = Field(default_factory=list)
     coverage_summary: str = ""
     status: GateStatus = GateStatus.PASSED
-    severity_findings: list["SeverityFinding"] = Field(default_factory=list)
+    severity_findings: list[SeverityFinding] = Field(default_factory=list)
 
 
 class IntegrationReviewReport(BaseModel):
@@ -433,7 +432,7 @@ class IntegrationReviewReport(BaseModel):
     schema_drift_detected: bool = False
     findings: list[str] = Field(default_factory=list)
     status: GateStatus = GateStatus.PASSED
-    severity_findings: list["SeverityFinding"] = Field(default_factory=list)
+    severity_findings: list[SeverityFinding] = Field(default_factory=list)
 
 
 class VerificationReport(BaseModel):
@@ -502,7 +501,7 @@ class PipelineRunState(BaseModel):
     errors: list[str] = Field(default_factory=list)
 
     @model_validator(mode="after")
-    def _normalize(self) -> "PipelineRunState":
+    def _normalize(self) -> PipelineRunState:
         # de-dupe backends
         seen: list[ExecutionBackend] = []
         for b in self.backends_used:
@@ -543,7 +542,7 @@ class ContractDiffReport(BaseModel):
     summary: str = ""
 
     @model_validator(mode="after")
-    def _compute_breaking(self) -> "ContractDiffReport":
+    def _compute_breaking(self) -> ContractDiffReport:
         has_changed_types = any(
             entry.get("changed_types") for entry in self.changed_endpoints
         )
@@ -761,7 +760,7 @@ class ParallelSectionReviewReport(BaseModel):
     synthesis_summary: str = ""
 
     @model_validator(mode="after")
-    def _count(self) -> "ParallelSectionReviewReport":
+    def _count(self) -> ParallelSectionReviewReport:
         for f in self.findings:
             if f.severity == Severity.BLOCKER:
                 self.blocker_count += 1
@@ -909,7 +908,7 @@ def render_task_prompt(
     title: str,
     description: str,
     target_files: list[str],
-    context: "TaskPromptContext | None" = None,
+    context: TaskPromptContext | None = None,
 ) -> str:
     """Pure helper: assemble structured task prompt. Stable, testable."""
     lines = [f"[{task_id}] {title}"]
@@ -1051,7 +1050,7 @@ class A2AHttpServerConfig(BaseModel):
 
 
 class A2AServerTaskRecord(BaseModel):
-    task: "A2ATask"
+    task: A2ATask
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     updated_at: str | None = None
     handler_name: str = ""

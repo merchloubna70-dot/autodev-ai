@@ -178,7 +178,7 @@ class ImplementerAgent:
                 "Provide a concise implementation plan."
             )
             opus_result = agent.architect(question)
-            plan = opus_result.response or ""
+            plan = opus_result.response_text or ""
             run.save_text(f"execution/architect_plan_{task.task_id}.md", plan)
             _logger.info("architect plan obtained for task=%s", task.task_id)
             return plan

@@ -1,15 +1,8 @@
 """Tests for EditorialReviewer — prose and structure checks (BMAD-4)."""
 from __future__ import annotations
 
-import os
-import tempfile
-from pathlib import Path
-
-import pytest
-
 from autodev.agents.editorial_reviewer import EditorialReviewer
-from autodev.schemas import EditorialReport, Severity
-
+from autodev.schemas import EditorialReport
 
 # ---------------------------------------------------------------------------
 # Prose checks
@@ -128,7 +121,7 @@ class TestBrokenLink:
     def test_no_flag_for_existing_file(self, tmp_path):
         real_file = tmp_path / "real.md"
         real_file.write_text("hello")
-        text = f"# Doc\n\nSee [real](real.md) for details."
+        text = "# Doc\n\nSee [real](real.md) for details."
         reviewer = EditorialReviewer()
         findings = reviewer.review_structure(text, file_path=str(tmp_path / "index.md"))
         broken = [f for f in findings if f.check == "broken-link"]

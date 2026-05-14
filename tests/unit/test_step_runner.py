@@ -10,8 +10,7 @@ from pathlib import Path
 import pytest
 
 from autodev.flows.step_runner import Step, StepRegistry, StepRunner
-from autodev.schemas import StepRecord, StepStatus
-
+from autodev.schemas import StepStatus
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -72,7 +71,7 @@ def test_register_and_list():
     s2 = _make_step("b")
     reg.register(s1)
     reg.register(s2)
-    names = [s.name for s in reg.list()]
+    names = [s.name for s in reg.list_steps()]
     assert "a" in names and "b" in names
 
 

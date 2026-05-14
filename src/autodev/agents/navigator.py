@@ -2,10 +2,10 @@
 from __future__ import annotations
 
 import re
-from pathlib import Path
 
 from ..scanners.repo_map import RepoMap as _RepoMap
-from ..schemas import NavigatorResult, RepoMapEntry as _SchemaEntry
+from ..schemas import NavigatorResult
+from ..schemas import RepoMapEntry as _SchemaEntry
 from ._crewai_bridge import make_agent
 
 

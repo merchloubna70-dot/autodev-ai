@@ -3,11 +3,8 @@ from __future__ import annotations
 
 import json
 
-import pytest
-
 from autodev.executors.codex_cli_executor import _parse_inner_steps
 from autodev.schemas import CodexInnerStep
-
 
 JSONL_SAMPLE = "\n".join([
     json.dumps({"type": "thinking", "content": "I need to write a function", "duration_ms": 120}),

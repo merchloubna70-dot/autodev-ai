@@ -6,13 +6,13 @@ re-entry at any granularity.
 """
 from __future__ import annotations
 
-import json
 import time
 from collections import defaultdict
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Callable, Optional
+from typing import Any
 
 from ..schemas import StepRecord, StepStatus
 
@@ -37,7 +37,7 @@ class StepRegistry:
     def register(self, step: Step) -> None:
         self._steps[step.name] = step
 
-    def list(self) -> list[Step]:
+    def list_steps(self) -> list[Step]:
         return list(self._steps.values())
 
     def find(self, name: str) -> Step:
@@ -85,8 +85,8 @@ class StepRunner:
         registry: StepRegistry,
         run_state: Any,  # RunState — avoid circular import
         *,
-        from_step: Optional[str] = None,
-        until_step: Optional[str] = None,
+        from_step: str | None = None,
+        until_step: str | None = None,
         force_restart: bool = False,
     ) -> dict[str, StepRecord]:
         """Run all registered steps in topological order.
@@ -228,7 +228,7 @@ class StepRunner:
     def _record_path(steps_dir: Path, step_name: str) -> Path:
         return steps_dir / f"{step_name}.json"
 
-    def _load_record(self, steps_dir: Path, step_name: str) -> Optional[StepRecord]:
+    def _load_record(self, steps_dir: Path, step_name: str) -> StepRecord | None:
         p = self._record_path(steps_dir, step_name)
         if not p.exists():
             return None

@@ -1,15 +1,14 @@
 """Tests for A2A Pydantic schema models."""
 from __future__ import annotations
 
-import pytest
 from autodev.schemas import (
-    A2APart,
+    A2AConversation,
     A2AMessage,
+    A2APart,
+    A2ARosterEntry,
     A2ATask,
     A2ATaskStatus,
     AgentCard,
-    A2ARosterEntry,
-    A2AConversation,
 )
 
 

@@ -17,13 +17,12 @@ from typing import Any
 from autodev.adapters.a2a.client import A2AClient
 from autodev.adapters.a2a.transports.http import A2AHttpTransport
 from autodev.schemas import (
-    AgentCard,
     A2AMessage,
     A2APart,
     A2ATask,
     A2ATaskStatus,
+    AgentCard,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers (duplicated locally to keep tests independent from SRV-2)

@@ -1,13 +1,8 @@
 """Tests for AgentRoster."""
 from __future__ import annotations
 
-import json
-import tempfile
-from pathlib import Path
-
-import pytest
-from autodev.schemas import AgentCard
 from autodev.adapters.a2a.roster import AgentRoster
+from autodev.schemas import AgentCard
 
 
 def _make_card(name: str, skills: list[str], capabilities: list[str] | None = None) -> AgentCard:

@@ -13,11 +13,8 @@ import urllib.request
 import uuid
 from urllib.error import HTTPError
 
-import pytest
-
 from autodev.adapters.a2a.server import A2AHttpServer
-from autodev.schemas import A2ATask, A2ATaskStatus
-
+from autodev.schemas import A2ATaskStatus
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -229,7 +226,7 @@ def test_get_task_after_post():
     try:
         task_body = _make_task("scan", {"repo_path": "."})
         task_id = task_body["id"]
-        post_status, post_body = _post(f"http://127.0.0.1:{port}/tasks/send", task_body)
+        post_status, _post_body = _post(f"http://127.0.0.1:{port}/tasks/send", task_body)
         assert post_status == 200
 
         get_status, get_body = _get(f"http://127.0.0.1:{port}/tasks/{task_id}")

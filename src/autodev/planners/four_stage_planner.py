@@ -23,6 +23,7 @@ Default behavior (``three_pass_locate=False``) is fully preserved.
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 from ..schemas import (
     DeliveryTask,
@@ -181,7 +182,7 @@ class FourStagePlanner:
 
         tasks: list[DeliveryTask] = []
 
-        common_kwargs = dict(
+        common_kwargs: dict[str, Any] = dict(
             bug_description=bug_description,
             repo_path=repo_path,
             language=language,

@@ -1,16 +1,13 @@
 """Unit tests for ClarificationGate (W5)."""
 from __future__ import annotations
 
-import os
-
 import pytest
 
 from autodev.agents.clarification_gate import ClarificationGate
 from autodev.schemas import (
-    AcceptanceCriterion,
+    PRD,
     ClarificationDecision,
     FunctionalRequirement,
-    PRD,
     ProductBrief,
 )
 

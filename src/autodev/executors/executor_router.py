@@ -14,6 +14,7 @@ from dataclasses import dataclass
 
 from ..config import FactoryConfig
 from ..schemas import (
+    _BACKEND_COST_PER_KTOKEN_CENTS,
     BudgetHint,
     ExecutionBackend,
     ExecutionRequest,
@@ -24,7 +25,6 @@ from ..schemas import (
     RiskLevel,
     RouterMetricsSummary,
     TaskType,
-    _BACKEND_COST_PER_KTOKEN_CENTS,
 )
 from .base_executor import BaseExecutor
 from .claude_code_executor import ClaudeCodeExecutor
@@ -300,5 +300,5 @@ class ExecutorRouter:
 
 # Convenience: detect cross-language tasks from a list of languages
 def is_cross_language(languages: list[Language]) -> bool:
-    distinct = {l for l in languages if l not in (Language.UNKNOWN, Language.MIXED)}
+    distinct = {lang for lang in languages if lang not in (Language.UNKNOWN, Language.MIXED)}
     return len(distinct) >= 2

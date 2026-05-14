@@ -1,7 +1,6 @@
 """Integration tests — assert ESCALATION_HINT is present in both executor boundaries."""
 from __future__ import annotations
 
-
 from autodev.executors.claude_code_executor import CLAUDE_PROMPT_BOUNDARY
 from autodev.executors.codex_cli_executor import CODEX_PROMPT_BOUNDARY
 
@@ -40,17 +39,16 @@ class TestEscalationHintPresent:
     def test_codex_escalation_block_within_12_lines(self):
         # Count the lines of the ESCALATION_HINT block (from its header to the last call line).
         lines = CODEX_PROMPT_BOUNDARY.splitlines()
-        hint_lines = [l for l in lines if l.strip()]  # non-blank lines from hint block
         # Find the ESCALATION_HINT block boundaries
-        start = next((i for i, l in enumerate(lines) if "ESCALATION_HINT" in l), None)
+        start = next((i for i, line in enumerate(lines) if "ESCALATION_HINT" in line), None)
         assert start is not None, "ESCALATION_HINT not found in CODEX_PROMPT_BOUNDARY"
         # Count non-empty lines from start to end
-        block = [l for l in lines[start:] if l.strip()]
+        block = [line for line in lines[start:] if line.strip()]
         assert len(block) <= 12, f"ESCALATION_HINT block has {len(block)} non-blank lines, max 12"
 
     def test_claude_escalation_block_within_12_lines(self):
         lines = CLAUDE_PROMPT_BOUNDARY.splitlines()
-        start = next((i for i, l in enumerate(lines) if "ESCALATION_HINT" in l), None)
+        start = next((i for i, line in enumerate(lines) if "ESCALATION_HINT" in line), None)
         assert start is not None, "ESCALATION_HINT not found in CLAUDE_PROMPT_BOUNDARY"
-        block = [l for l in lines[start:] if l.strip()]
+        block = [line for line in lines[start:] if line.strip()]
         assert len(block) <= 12, f"ESCALATION_HINT block has {len(block)} non-blank lines, max 12"

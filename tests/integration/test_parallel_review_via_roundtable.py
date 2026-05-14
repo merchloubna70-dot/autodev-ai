@@ -8,17 +8,11 @@ Verifies that the migrated ParallelSectionReviewer:
 """
 from __future__ import annotations
 
-import re
-from pathlib import Path
-
-import pytest
-
 from autodev.agents.parallel_section_reviewer import (
     ParallelSectionReviewer,
     _extract_severity_findings_from_text,
 )
-from autodev.schemas import ParallelSectionReviewReport, Severity, SeverityFinding
-
+from autodev.schemas import ParallelSectionReviewReport, Severity
 
 # ---------------------------------------------------------------------------
 # Test 1: ParallelSectionReviewer still produces ParallelSectionReviewReport

@@ -1,13 +1,11 @@
 """Tests for RequirementAnalystAgent.infer_scale heuristic."""
 from __future__ import annotations
 
-import pytest
-
 from autodev.agents.requirement_analyst import RequirementAnalystAgent
 from autodev.schemas import (
+    PRD,
     AcceptanceCriterion,
     Language,
-    PRD,
     ProductBrief,
     Scale,
 )

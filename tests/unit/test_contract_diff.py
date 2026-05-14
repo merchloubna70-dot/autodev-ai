@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from autodev.gates.contract_diff import diff_openapi_specs, diff_json_schemas
+from autodev.gates.contract_diff import diff_json_schemas, diff_openapi_specs
 from autodev.schemas import ContractDiffReport
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "openapi"

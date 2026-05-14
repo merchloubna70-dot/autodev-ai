@@ -54,9 +54,8 @@ class SandboxedExecutor(BaseExecutor):
     def execute(self, request: ExecutionRequest) -> ExecutionResult:
         """Run inner executor after applying network policy checks."""
         # Propagate allow_domains into the execution environment
-        env_overrides: dict[str, str] = {}
         if self._allowlist is not None:
-            env_overrides = self._allowlist.shell_env(self.allow_domains)
+            self._allowlist.shell_env(self.allow_domains)
 
         # When sandbox_provider is unconfigured, run inner with audit_only annotation
         if self.sandbox_provider == "none":
@@ -86,8 +85,8 @@ class SandboxedExecutor(BaseExecutor):
     def _build_allowlist(self):
         """Dynamically import NetworkAllowlist; return None if unavailable."""
         try:
-            from .network_allowlist import NetworkAllowlist
             from ..schemas import NetworkAllowlistPolicy
+            from .network_allowlist import NetworkAllowlist
 
             policy = NetworkAllowlistPolicy(allow_domains=list(self.allow_domains))
             return NetworkAllowlist(policy=policy)

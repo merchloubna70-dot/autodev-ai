@@ -7,13 +7,13 @@ from pathlib import Path
 from autodev.agents.system_architect import SystemArchitectAgent
 from autodev.agents.task_decomposer import TaskDecomposerAgent
 from autodev.schemas import (
+    PRD,
     AcceptanceCriterion,
     ExecutionBackend,
     Language,
     Milestone,
-    PRD,
-    ProductBrief,
     PipelineMode,
+    ProductBrief,
     RepoScanResult,
 )
 
@@ -164,7 +164,7 @@ def test_project_delivery_flow_tasks_contain_product_name(tmp_path):
 
     import json
     tasks_data = json.loads(tasks_path.read_text())
-    all_prompts = " ".join(t.get("codex_prompt", "") for t in tasks_data)
+    " ".join(t.get("codex_prompt", "") for t in tasks_data)
 
     # The brief mentions "compliance" — product name or prompt should include it
     assert any(

@@ -10,12 +10,10 @@ from __future__ import annotations
 import shutil
 from pathlib import Path
 
-import pytest
-
 from autodev.config import FactoryConfig
 from autodev.flows.project_delivery_flow import ProjectDeliveryInput
 from autodev.flows.project_delivery_microfile import ProjectDeliveryMicroFlow
-from autodev.schemas import ExecutionBackend, Language, PipelineMode, ReleaseDecision
+from autodev.schemas import ExecutionBackend, Language, PipelineMode
 
 FIX = Path(__file__).resolve().parents[1] / "fixtures"
 

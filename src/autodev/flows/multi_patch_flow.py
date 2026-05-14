@@ -14,12 +14,11 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass, field
-from pathlib import Path
 
 from ..agents.implementer import ImplementerAgent
 from ..config import FactoryConfig
 from ..executors.executor_router import ExecutorRouter
-from ..planners.four_stage_planner import FourStagePlanner, _MILESTONE_ID
+from ..planners.four_stage_planner import FourStagePlanner
 from ..schemas import (
     ExecutionBackend,
     Language,
@@ -29,7 +28,6 @@ from ..schemas import (
     PatchCandidate,
     PipelineMode,
     RiskLevel,
-    TaskType,
 )
 from ..state import RunState
 from ..utils.logging import get_logger
@@ -146,7 +144,6 @@ class MultiPatchFlow:
                 else:
                     test_fail += 1
 
-            mock_used = impl.mock_used
 
             candidate = PatchCandidate(
                 candidate_id=candidate_id,

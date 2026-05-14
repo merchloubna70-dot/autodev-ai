@@ -6,7 +6,7 @@ when crewai is not installed.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 from ..schemas import ExecutionBackend, Language, PipelineMode
@@ -111,7 +111,7 @@ class ProjectDeliveryCrewFlow(Flow):  # type: ignore[misc]
         inp = self._inp
         assert inp is not None
         writer = PRDWriterAgent()
-        prd = writer.write(inp.brief_text or "", path=inp.prd_path)
+        prd = writer.write(inp.brief_text or "", path=inp.prd_path)  # type: ignore[call-arg, arg-type, misc]
         self._state["prd"] = prd
         return {"prd": prd.model_dump()}
 
@@ -159,7 +159,7 @@ class ProjectDeliveryCrewFlow(Flow):  # type: ignore[misc]
         prd = self._state["prd"]
         arch = self._state["architecture"]
         planner = MilestonePlannerAgent()
-        milestones = planner.plan(prd=prd, architecture=arch, languages=languages)
+        milestones = planner.plan(prd=prd, architecture=arch, languages=languages)  # type: ignore[call-arg]
         decomposer = TaskDecomposerAgent()
         tasks = decomposer.decompose(milestones=milestones, architecture=arch, languages=languages)
         self._state["milestones"] = milestones
@@ -169,9 +169,9 @@ class ProjectDeliveryCrewFlow(Flow):  # type: ignore[misc]
     @listen(plan_milestones)  # type: ignore[misc]
     def implement(self, plan_result: dict[str, Any]) -> dict[str, Any]:
         """Node 6 — implementation via executor router."""
+        from ..agents.implementer import ImplementerAgent
         from ..config import FactoryConfig
         from ..executors.executor_router import ExecutorRouter
-        from ..agents.implementer import ImplementerAgent
         from ..state import init_run
 
         inp = self._inp
@@ -182,7 +182,7 @@ class ProjectDeliveryCrewFlow(Flow):  # type: ignore[misc]
         config = FactoryConfig()
         run = init_run(repo_path=inp.repo_path, mode=inp.mode,
                        flow="project_delivery_crewflow",
-                       languages=[l.value for l in languages])
+                       languages=[lang.value for lang in languages])
         router_inst = ExecutorRouter(config, allow_mock=inp.allow_mock)
         implementer = ImplementerAgent(router_inst)
         results = []

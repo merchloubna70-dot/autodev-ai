@@ -10,17 +10,16 @@ import os
 from typing import TYPE_CHECKING
 
 from ..schemas import (
+    PRD,
     AgentCard,
     ComponentSpec,
     DesignToken,
     Language,
-    PRD,
     ProductBrief,
     ResponsiveBreakpoint,
     UserJourney,
     UserJourneyStep,
     UserPersona,
-    UXDesignInput,
     UXDesignSpec,
     UXPattern,
 )
@@ -374,8 +373,8 @@ def _resolve_product_name(prd: PRD | None, brief: ProductBrief | None) -> str:
 
 
 # BMAD-17: register agent menu at module load time
-from ._menu import register_default_menu  # noqa: E402
 from ..schemas import AgentMenuEntry  # noqa: E402
+from ._menu import register_default_menu  # noqa: E402
 
 register_default_menu("ux_designer", [
     AgentMenuEntry(code="UX", description="Generate UX design spec", skill="ux_designer"),

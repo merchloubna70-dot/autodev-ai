@@ -1,16 +1,10 @@
 """Tests for ElicitationMethodsAgent (BMAD-14)."""
 from __future__ import annotations
 
-import csv
-import os
 import textwrap
-from pathlib import Path
-
-import pytest
 
 from autodev.agents.elicitation_methods import ElicitationMethodsAgent
 from autodev.schemas import ElicitationMethod, ElicitationOutput
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -173,7 +167,8 @@ def test_importable_from_agents_package():
 # ---------------------------------------------------------------------------
 
 def test_schemas_importable():
-    from autodev.schemas import ElicitationMethod as EM, ElicitationOutput as EO
+    from autodev.schemas import ElicitationMethod as EM
+    from autodev.schemas import ElicitationOutput as EO
     m = EM(category="core", method_name="test", description="desc")
     assert m.prompt_template == ""
     assert m.tags == []

@@ -2,12 +2,11 @@
 from __future__ import annotations
 
 import os
-import pytest
 
 os.environ.setdefault("FACTORY_FORCE_MOCK", "1")
 
 # Import directly from submodule to avoid __init__ chain side-effects
-from autodev.adapters.mcp_client import MCPToolClient, DEFAULT_ALLOWED_BINS
+from autodev.adapters.mcp_client import MCPToolClient
 
 
 class TestMCPClientMock:

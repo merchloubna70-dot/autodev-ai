@@ -1,18 +1,18 @@
 """Tests for LocalShellTransport, MockTransport, and A2AClient."""
 from __future__ import annotations
 
-import os
 import pytest
+
+from autodev.adapters.a2a.client import A2AClient
+from autodev.adapters.a2a.transports.local_shell import LocalShellTransport
+from autodev.adapters.a2a.transports.mock import MockTransport
 from autodev.schemas import (
-    AgentCard,
     A2AMessage,
     A2APart,
     A2ATask,
     A2ATaskStatus,
+    AgentCard,
 )
-from autodev.adapters.a2a.transports.local_shell import LocalShellTransport, _mock_response
-from autodev.adapters.a2a.transports.mock import MockTransport
-from autodev.adapters.a2a.client import A2AClient
 
 
 def _make_task(prompt: str, task_id: str = "t-1", context_id: str = "ctx-1") -> A2ATask:
@@ -62,8 +62,8 @@ def test_force_mock_deterministic_same_input(monkeypatch):
     task2 = _make_task("Check for SQL injection")
     r1 = transport.send_task(card, task1)
     r2 = transport.send_task(card, task2)
-    text1 = [m for m in r1.history if m.role == "agent"][0].parts[0].text
-    text2 = [m for m in r2.history if m.role == "agent"][0].parts[0].text
+    text1 = next(m for m in r1.history if m.role == "agent").parts[0].text
+    text2 = next(m for m in r2.history if m.role == "agent").parts[0].text
     assert text1 == text2
 
 
@@ -73,8 +73,8 @@ def test_force_mock_different_inputs_differ(monkeypatch):
     card = _make_card("security")
     r1 = transport.send_task(card, _make_task("prompt A"))
     r2 = transport.send_task(card, _make_task("prompt B"))
-    text1 = [m for m in r1.history if m.role == "agent"][0].parts[0].text
-    text2 = [m for m in r2.history if m.role == "agent"][0].parts[0].text
+    text1 = next(m for m in r1.history if m.role == "agent").parts[0].text
+    text2 = next(m for m in r2.history if m.role == "agent").parts[0].text
     assert text1 != text2
 
 
@@ -84,8 +84,8 @@ def test_force_mock_different_card_names_differ(monkeypatch):
     same_prompt = "Analyze this code"
     r1 = transport.send_task(_make_card("architect"), _make_task(same_prompt))
     r2 = transport.send_task(_make_card("security"), _make_task(same_prompt))
-    text1 = [m for m in r1.history if m.role == "agent"][0].parts[0].text
-    text2 = [m for m in r2.history if m.role == "agent"][0].parts[0].text
+    text1 = next(m for m in r1.history if m.role == "agent").parts[0].text
+    text2 = next(m for m in r2.history if m.role == "agent").parts[0].text
     assert text1 != text2
 
 
@@ -113,7 +113,7 @@ def test_force_mock_reads_card_system_prompt(monkeypatch):
     task = _make_task("Write something")
     result = transport.send_task(card, task)
     # The mock response is keyed on card.name — confirms system_prompt card was used
-    agent_msg = [m for m in result.history if m.role == "agent"][0]
+    agent_msg = next(m for m in result.history if m.role == "agent")
     assert "[MOCK-LOCAL-SHELL:custom-agent]" in agent_msg.parts[0].text
 
 
@@ -148,7 +148,7 @@ def test_no_exception_even_on_internal_error(monkeypatch):
         with mock.patch.object(transport, "_run_claude", side_effect=RuntimeError("boom")):
             # Should not raise
             try:
-                result = transport.send_task(_make_card(), _make_task("test"))
+                transport.send_task(_make_card(), _make_task("test"))
                 # Either FAILED or COMPLETED is acceptable; must not raise
             except Exception:
                 pytest.fail("send_task raised an exception — it must not")
@@ -175,15 +175,14 @@ def test_mock_transport_deterministic(monkeypatch):
     card = _make_card("det-agent")
     r1 = transport.send_task(card, _make_task("same prompt"))
     r2 = transport.send_task(card, _make_task("same prompt"))
-    t1 = [m for m in r1.history if m.role == "agent"][0].parts[0].text
-    t2 = [m for m in r2.history if m.role == "agent"][0].parts[0].text
+    t1 = next(m for m in r1.history if m.role == "agent").parts[0].text
+    t2 = next(m for m in r2.history if m.role == "agent").parts[0].text
     assert t1 == t2
 
 
 def test_mock_transport_never_shells(monkeypatch):
     """MockTransport should not import or call subprocess."""
     import unittest.mock as mock
-    import subprocess
     transport = MockTransport()
     with mock.patch("subprocess.run", side_effect=AssertionError("subprocess.run called!")):
         result = transport.send_task(_make_card("no-shell"), _make_task("hello"))

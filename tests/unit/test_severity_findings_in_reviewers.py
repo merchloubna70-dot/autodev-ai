@@ -1,8 +1,5 @@
 """Tests that reviewers emit severity-prefixed findings and severity_findings attr."""
-import os
-import tempfile
 
-import pytest
 
 from autodev.agents.code_reviewer import CodeReviewerAgent
 from autodev.agents.integration_reviewer import IntegrationReviewerAgent
@@ -10,9 +7,6 @@ from autodev.agents.security_reviewer import SecurityReviewerAgent
 from autodev.schemas import (
     ApiContract,
     ApiEndpoint,
-    DependencyGraph,
-    ExecutionResult,
-    ExecutionBackend,
     Language,
     Severity,
 )
@@ -57,8 +51,8 @@ def test_integration_reviewer_contract_diff_finding_is_major():
 
 def test_code_reviewer_no_execution_result_is_major():
     """CodeReviewerAgent 'no execution result' finding maps to MAJOR severity."""
-    from autodev.agents.system_architect import SystemArchitectAgent
     from autodev.agents.milestone_planner import MilestonePlannerAgent
+    from autodev.agents.system_architect import SystemArchitectAgent
     from autodev.agents.task_decomposer import TaskDecomposerAgent
     from autodev.schemas import PRD, RepoScanResult
 

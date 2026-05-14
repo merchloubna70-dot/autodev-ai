@@ -1,8 +1,6 @@
 """Tests for ConventionLoader — offline, no network, no shell."""
 from __future__ import annotations
 
-import pytest
-
 from autodev.adapters.convention_loader import ConventionLoader
 
 

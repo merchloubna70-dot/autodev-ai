@@ -9,7 +9,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from ..config import FactoryConfig
-from ..schemas import Language, PipelineMode
+from ..schemas import Language
 from ..state import RunState, init_run
 from .project_delivery_flow import ProjectDeliveryInput
 from .step_definitions.project_delivery_steps import PROJECT_DELIVERY_REGISTRY
@@ -64,7 +64,7 @@ class ProjectDeliveryMicroFlow:
             repo_path=inp.repo_path,
             mode=inp.mode,
             flow="project_delivery_microfile",
-            languages=[l.value for l in languages],
+            languages=[lang.value for lang in languages],
         )
         source_text = inp.prd_text or inp.brief_text or ""
         run.save_text("input/raw_input.md", source_text)

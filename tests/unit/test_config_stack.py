@@ -3,13 +3,11 @@ from __future__ import annotations
 
 import sys
 import textwrap
-from pathlib import Path
 
 import pytest
 
-from autodev.utils.config_stack import ConfigStack, _deep_merge
 from autodev.config import FactoryConfig
-
+from autodev.utils.config_stack import ConfigStack, _deep_merge
 
 # ---------------------------------------------------------------------------
 # 1. Load missing file does not crash

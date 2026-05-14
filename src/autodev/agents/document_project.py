@@ -10,10 +10,8 @@ import ast
 import re
 import subprocess
 from pathlib import Path
-from typing import Any
 
 from ..schemas import BrownfieldDoc, BrownfieldDocSection, Language
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -45,7 +43,7 @@ def _find_python_files(root: Path, limit: int = 300) -> list[Path]:
     files: list[Path] = []
     for p in sorted(root.rglob("*.py")):
         # skip hidden dirs, venv, __pycache__, build
-        parts = set(p.parts)
+        set(p.parts)
         if any(
             part.startswith(".") or part in {"__pycache__", "venv", ".venv", "node_modules", "dist", "build", "site-packages"}
             for part in p.relative_to(root).parts
@@ -177,7 +175,7 @@ class DocumentProjectAgent:
         ]
         if readme_text:
             # Include first ~30 non-empty lines of README as context
-            preview_lines = [l for l in readme_text.splitlines() if l.strip()][:30]
+            preview_lines = [ln for ln in readme_text.splitlines() if ln.strip()][:30]
             lines.append("## README Preview\n")
             lines.extend(preview_lines[:30])
 
@@ -257,9 +255,9 @@ class DocumentProjectAgent:
         found_layers: list[str] = []
         for child in sorted(root.rglob("*")):
             if child.is_dir() and child.name in arch_clues:
-                rel = str(child.relative_to(root))
-                if not any(s in rel for s in skip):
-                    found_layers.append(f"- `{rel}/` — {arch_clues[child.name]}")
+                rel_str = str(child.relative_to(root))
+                if not any(s in rel_str for s in skip):
+                    found_layers.append(f"- `{rel_str}/` — {arch_clues[child.name]}")
 
         if found_layers:
             lines.append("## Architectural Layers Detected\n")
@@ -335,13 +333,13 @@ class DocumentProjectAgent:
         route_hits: list[str] = []
         for py_file in _find_python_files(root, limit=200):
             text = _read_file(py_file)
-            rel = str(py_file.relative_to(root))
+            rel_str = str(py_file.relative_to(root))
             for pat, label in route_patterns:
                 for m in pat.finditer(text):
                     if label == "HTTP route":
-                        route_hits.append(f"- `{rel}` — {m.group(1).upper()} `{m.group(2)}`")
+                        route_hits.append(f"- `{rel_str}` — {m.group(1).upper()} `{m.group(2)}`")
                     else:
-                        route_hits.append(f"- `{rel}` — {label} `{m.group(1)}`")
+                        route_hits.append(f"- `{rel_str}` — {label} `{m.group(1)}`")
 
         if route_hits:
             lines.append("## HTTP Routes Detected\n")
@@ -481,7 +479,7 @@ class DocumentProjectAgent:
         for req in req_files:
             text = _read_file(req)
             lines.append(f"## `{req.name}`\n")
-            pkgs = [l.strip() for l in text.splitlines() if l.strip() and not l.startswith("#")]
+            pkgs = [ln.strip() for ln in text.splitlines() if ln.strip() and not ln.startswith("#")]
             for p in pkgs[:40]:
                 lines.append(f"- `{p}`")
             lines.append("")
@@ -675,8 +673,8 @@ class DocumentProjectAgent:
 
 
 # BMAD-17: register agent menu at module load time
-from ._menu import register_default_menu  # noqa: E402
 from ..schemas import AgentMenuEntry  # noqa: E402
+from ._menu import register_default_menu  # noqa: E402
 
 register_default_menu("document_project", [
     AgentMenuEntry(code="DP", description="Document existing brownfield project", skill="document_project"),

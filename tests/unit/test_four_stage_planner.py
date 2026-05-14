@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import pytest
 
-from autodev.planners.four_stage_planner import FourStagePlanner, _MILESTONE_ID
+from autodev.planners.four_stage_planner import _MILESTONE_ID, FourStagePlanner
 from autodev.schemas import Language, TaskType
 
 

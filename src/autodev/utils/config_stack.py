@@ -93,7 +93,7 @@ class ConfigStack:
             {"name": "runtime", "path": None, "loaded": False, "keys_count": 0},
         ]
 
-    def load(self) -> "ConfigStack":
+    def load(self) -> ConfigStack:
         """Load all layers and build the merged config.  Returns self for chaining."""
         merged: dict[str, Any] = {}
 
@@ -148,7 +148,6 @@ class ConfigStack:
         Supports flat scalar keys that map to FactoryConfig attributes, plus
         dotted sub-sections ``codex.*`` and ``claude_code.*``.
         """
-        from ..config import FactoryConfig  # local to avoid circular import
 
         top_scalar_keys = {
             "state_dir",

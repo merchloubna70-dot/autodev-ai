@@ -1,10 +1,10 @@
+from .a2a.client import A2AClient  # noqa: F401
+from .a2a.roster import AgentRoster  # noqa: F401
+from .convention_loader import ConventionLoader  # noqa: F401
+from .distillator import Distillator  # noqa: F401
+from .embeddings_index import EmbeddingsIndex  # noqa: F401
 from .filesystem_adapter import FilesystemAdapter  # noqa: F401
 from .git_adapter import GitAdapter  # noqa: F401
 from .github_adapter import GitHubAdapter  # noqa: F401
-from .convention_loader import ConventionLoader  # noqa: F401
 from .mcp_client import MCPToolClient  # noqa: F401
-from .embeddings_index import EmbeddingsIndex  # noqa: F401
 from .pydantic_ai_bridge import PydanticAIAgentFactory  # noqa: F401
-from .a2a.roster import AgentRoster  # noqa: F401
-from .a2a.client import A2AClient  # noqa: F401
-from .distillator import Distillator  # noqa: F401

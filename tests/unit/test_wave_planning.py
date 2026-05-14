@@ -1,11 +1,8 @@
 """Unit tests for DependencyPlanner wave logic (Bug8 regression suite)."""
 from __future__ import annotations
 
-import pytest
-
 from autodev.planners.dependency_planner import DependencyPlanner
 from autodev.schemas import DeliveryTask, RiskLevel, TaskDependency
-
 
 # ---------------------------------------------------------------------------
 # helpers

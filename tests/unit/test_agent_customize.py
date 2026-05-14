@@ -1,14 +1,12 @@
 """BMAD-18: Tests for AgentCustomizeLoader (4-layer customize.toml merge)."""
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 
 import pytest
 
 from autodev.agents._activation import AgentCustomizeLoader
 from autodev.schemas import AgentCustomizeSnapshot
-
 
 # ---------------------------------------------------------------------------
 # Helpers

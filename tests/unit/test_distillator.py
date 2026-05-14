@@ -1,13 +1,7 @@
 """Tests for Distillator."""
 from __future__ import annotations
 
-import os
-import tempfile
-
-import pytest
-
 from autodev.adapters.distillator import Distillator, _sha256
-
 
 LOREM = (
     "The quick brown fox jumps over the lazy dog. "
@@ -99,7 +93,7 @@ class TestDistillator:
         results = d.distill_run_artifacts(str(tmp_path))
         assert "final_report" in results
         assert "prd" in results
-        for key, r in results.items():
+        for _key, r in results.items():
             assert r.source_chars > 0
             assert r.distilled_text != ""
 

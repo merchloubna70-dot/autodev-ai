@@ -2,12 +2,12 @@
 from __future__ import annotations
 
 from ..schemas import (
+    PRD,
     ArchitectureSpec,
     DeliveryTask,
     ExecutionBackend,
     Language,
     Milestone,
-    PRD,
     ProductBrief,
     RiskLevel,
     Scale,

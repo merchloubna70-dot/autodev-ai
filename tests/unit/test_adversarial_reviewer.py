@@ -4,15 +4,12 @@ FACTORY_FORCE_MOCK=1 path — no LLM calls needed.
 """
 from __future__ import annotations
 
-import os
-import tempfile
 from pathlib import Path
 
 import pytest
 
 from autodev.agents.adversarial_reviewer import AdversarialReviewer
-from autodev.schemas import AgentCard, AdversarialFinding, Severity, SeverityFinding
-
+from autodev.schemas import AdversarialFinding, AgentCard, Severity
 
 # ---------------------------------------------------------------------------
 # Fixtures

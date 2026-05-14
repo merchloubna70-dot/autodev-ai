@@ -14,7 +14,6 @@ from ..schemas import (
 from ..utils.command_safety import DEFAULT_DENYLIST
 from ._crewai_bridge import make_agent
 
-
 # File-scanning denylist: full DEFAULT_DENYLIST minus patterns that legitimately
 # appear in source code as variable names (`exec `, `eval`).
 # `" env "` is kept here but is doc/code-context-sensitive (see _DOC_CONTEXT_SENSITIVE_PATTERNS).

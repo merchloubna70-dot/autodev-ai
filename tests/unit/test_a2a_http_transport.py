@@ -14,17 +14,14 @@ from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from typing import Any
 
-import pytest
-
 from autodev.adapters.a2a.transports.http import A2AHttpTransport
 from autodev.schemas import (
-    AgentCard,
     A2AMessage,
     A2APart,
     A2ATask,
     A2ATaskStatus,
+    AgentCard,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers

@@ -13,11 +13,10 @@ from datetime import datetime, timezone
 from typing import Any
 
 from ....schemas import (
-    AgentCard,
-    A2AMessage,
     A2APart,
     A2ATask,
     A2ATaskStatus,
+    AgentCard,
 )
 from .base import BaseA2ATransport
 
@@ -185,7 +184,7 @@ class A2AHttpTransport(BaseA2ATransport):
     def _poll_until_done(self, card: AgentCard, task: A2ATask) -> A2ATask:
         """Poll ``{endpoint}/tasks/{id}`` until terminal status or max attempts."""
         poll_url = f"{self._endpoint}/tasks/{task.id}"
-        for attempt in range(self._max_poll_attempts):
+        for _attempt in range(self._max_poll_attempts):
             time.sleep(self._poll_interval)
             status_code, resp = self._get_json(poll_url)
             if status_code == 0 or resp is None:

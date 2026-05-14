@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from ..planners.task_planner import TaskPlanner
-from ..schemas import ArchitectureSpec, DeliveryTask, Language, Milestone, PRD, ProductBrief, Scale
+from ..schemas import PRD, ArchitectureSpec, DeliveryTask, Language, Milestone, ProductBrief, Scale
 from ._crewai_bridge import make_agent
 
 
@@ -40,8 +40,8 @@ class TaskDecomposerAgent:
 
 
 # BMAD-17: register agent menu at module load time
-from ._menu import register_default_menu  # noqa: E402
 from ..schemas import AgentMenuEntry  # noqa: E402
+from ._menu import register_default_menu  # noqa: E402
 
 register_default_menu("task_decomposer", [
     AgentMenuEntry(code="DT", description="Decompose milestones into tasks", skill="task_decomposer"),

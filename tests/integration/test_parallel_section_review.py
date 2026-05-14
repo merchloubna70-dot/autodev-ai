@@ -1,11 +1,8 @@
 """Integration tests for ParallelSectionReviewer."""
-import os
-import tempfile
 
-import pytest
 
 from autodev.agents.parallel_section_reviewer import ParallelSectionReviewer
-from autodev.schemas import ParallelSectionReviewReport, Severity
+from autodev.schemas import ParallelSectionReviewReport
 
 
 def test_parallel_section_reviewer_runs_three_sections(tmp_path):

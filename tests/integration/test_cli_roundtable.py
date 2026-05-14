@@ -5,14 +5,10 @@ Runs offline (FACTORY_FORCE_MOCK=1 set by conftest).
 from __future__ import annotations
 
 import json
-import os
-from pathlib import Path
 
-import pytest
 from typer.testing import CliRunner
 
 from autodev.cli import app
-
 
 runner = CliRunner()
 

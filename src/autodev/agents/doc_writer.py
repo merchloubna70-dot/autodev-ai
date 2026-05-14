@@ -1,7 +1,7 @@
 """Doc Writer — README / usage / architecture docs for the delivered project."""
 from __future__ import annotations
 
-from ..schemas import ArchitectureSpec, PRD
+from ..schemas import PRD, ArchitectureSpec
 from ._crewai_bridge import make_agent
 
 

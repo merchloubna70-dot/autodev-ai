@@ -1,9 +1,6 @@
 """Unit tests for ScaffolderAgent.verify()."""
 from __future__ import annotations
 
-import os
-from pathlib import Path
-
 import pytest
 
 from autodev.agents.scaffolder import ScaffolderAgent

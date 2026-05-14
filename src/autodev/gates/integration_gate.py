@@ -39,7 +39,7 @@ class IntegrationGate:
                 if src not in node_set or dst not in node_set:
                     findings.append(f"dependency edge references unknown node: {src}->{dst}")
                     drift = True
-        if len({l for l in languages if l not in ("unknown", "mixed")}) >= 2:
+        if len({lang for lang in languages if lang not in ("unknown", "mixed")}) >= 2:
             findings.append("cross-language project: ensure schemas/contracts align via Claude Code review")
 
         # OpenAPI contract diff

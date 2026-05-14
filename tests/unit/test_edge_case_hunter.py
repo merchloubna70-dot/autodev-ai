@@ -9,8 +9,7 @@ from pathlib import Path
 import pytest
 
 from autodev.agents.edge_case_hunter import EdgeCaseHunter, _ast_scan_python
-from autodev.schemas import AgentCard, EdgeCasePattern, Severity, SeverityFinding
-
+from autodev.schemas import AgentCard, EdgeCasePattern, Severity
 
 # ---------------------------------------------------------------------------
 # Fixtures

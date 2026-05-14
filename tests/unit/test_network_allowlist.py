@@ -1,8 +1,6 @@
 """Tests for NetworkAllowlist — offline, no network calls."""
 from __future__ import annotations
 
-import pytest
-
 from autodev.executors.network_allowlist import NetworkAllowlist
 from autodev.schemas import NetworkAllowlistPolicy
 

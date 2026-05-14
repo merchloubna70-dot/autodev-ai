@@ -63,9 +63,8 @@ class ReplayFlow:
         # Fine-grained step resume via StepRunner
         # ------------------------------------------------------------------
         if from_step is not None:
-            from .step_definitions.project_delivery_steps import PROJECT_DELIVERY_REGISTRY
-            from .step_runner import StepRunner
             from .project_delivery_flow import ProjectDeliveryInput
+            from .step_definitions.project_delivery_steps import PROJECT_DELIVERY_REGISTRY
 
             run = RunState.load(repo_path, run_id)
             state = run.state
@@ -124,8 +123,8 @@ class ReplayFlow:
         state = run.state
 
         # Determine languages from persisted state
-        languages: list[Language] = list(state.languages) if state.languages else [Language.PYTHON]
-        mode: PipelineMode = state.mode or PipelineMode.DRY_RUN
+        languages: list[Language] = list(state.languages) if state.languages else [Language.PYTHON]  # type: ignore[no-redef]
+        mode: PipelineMode = state.mode or PipelineMode.DRY_RUN  # type: ignore[no-redef]
 
         start_idx = STAGES.index(from_stage)
         active_stages = STAGES[start_idx:]
@@ -166,7 +165,7 @@ class ReplayFlow:
             architect = SystemArchitectAgent()
             scan = explorer.explore(repo_path)
             state.repo_scan = scan
-            prd = state.prd
+            prd = state.prd  # type: ignore[assignment]
             if prd is None:
                 # Minimal fallback if no prd in state yet
                 from ..schemas import PRD
@@ -180,7 +179,7 @@ class ReplayFlow:
         if "planning" in active_stages:
             mplanner = MilestonePlannerAgent()
             decomposer = TaskDecomposerAgent()
-            arch = state.architecture
+            arch = state.architecture  # type: ignore[assignment]
             if arch is None:
                 raise ValueError("Cannot replay 'planning' without architecture in state.")
             milestones = mplanner.plan(architecture=arch, languages=languages, max_milestones=6)
@@ -192,7 +191,7 @@ class ReplayFlow:
 
         # --- implementation ---
         if "implementation" in active_stages:
-            plan = state.milestone_plan
+            plan = state.milestone_plan  # type: ignore[assignment]
             if plan is None:
                 raise ValueError("Cannot replay 'implementation' without milestone_plan in state.")
             router = ExecutorRouter(self.config, allow_mock=True)
@@ -217,7 +216,7 @@ class ReplayFlow:
             security = SecurityReviewerAgent()
             code_reviewer = CodeReviewerAgent()
             integration_reviewer = IntegrationReviewerAgent()
-            arch = state.architecture
+            arch = state.architecture  # type: ignore[assignment]
 
             qg = quality.run(repo_path=repo_path, languages=languages, dry_run=mode == PipelineMode.DRY_RUN)
             state.quality_gates = qg
@@ -256,8 +255,8 @@ class ReplayFlow:
             state.release_check = rc
             run.save_json("verification/release_check.json", rc)
             doc_writer = DocWriterAgent()
-            prd = state.prd
-            arch = state.architecture
+            prd = state.prd  # type: ignore[assignment]
+            arch = state.architecture  # type: ignore[assignment]
             if prd and arch:
                 run.save_text("delivery/README.generated.md", doc_writer.readme(prd=prd, architecture=arch))
                 run.save_text("delivery/usage.generated.md", doc_writer.usage(prd=prd))

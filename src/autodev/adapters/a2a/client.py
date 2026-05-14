@@ -3,12 +3,11 @@ from __future__ import annotations
 
 import os
 
-from ...schemas import AgentCard, A2ATask
+from ...schemas import A2ATask, AgentCard
 from .transports.base import BaseA2ATransport
 from .transports.http import A2AHttpTransport
 from .transports.local_shell import LocalShellTransport
 from .transports.mock import MockTransport
-
 
 _TRANSPORT_REGISTRY: dict[str, type[BaseA2ATransport]] = {
     "local-shell": LocalShellTransport,

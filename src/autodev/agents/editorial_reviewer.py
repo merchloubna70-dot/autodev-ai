@@ -18,7 +18,6 @@ Structure layer:
 """
 from __future__ import annotations
 
-import os
 import re
 from pathlib import Path
 
@@ -321,8 +320,8 @@ class EditorialReviewer:
     def _check_heading_skip(self, text: str) -> list[EditorialFinding]:
         """Return MAJOR finding when heading levels are skipped (e.g. H1 → H3)."""
         findings: list[EditorialFinding] = []
-        headings = _HEADING_RE.finditer(text)
-        lines = text.splitlines()
+        _HEADING_RE.finditer(text)
+        text.splitlines()
 
         level_seq: list[tuple[int, int]] = []  # (level, lineno)
         for m in _HEADING_RE.finditer(text):

@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import json
 import os
-import signal
 import socket
 import subprocess
 import sys
@@ -15,9 +14,6 @@ import urllib.request
 import uuid
 from pathlib import Path
 from urllib.error import HTTPError
-
-import pytest
-
 
 # ---------------------------------------------------------------------------
 # Helpers

@@ -14,17 +14,15 @@ BMAD-style 3-round elicitation (added in BMAD-4):
 """
 from __future__ import annotations
 
-import copy
 import os
-from typing import Any
 
 from ..schemas import (
+    PRD,
     AcceptanceCriterion,
     ClarificationDecision,
     ClarificationRound,
     ClarificationTranscript,
     FunctionalRequirement,
-    PRD,
     ProductBrief,
 )
 

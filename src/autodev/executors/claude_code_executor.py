@@ -10,9 +10,8 @@ from ..config import ClaudeCodeExecutorConfig
 from ..schemas import CodexInnerStep, ExecutionBackend, ExecutionRequest, ExecutionResult
 from ..utils.command_safety import scan_prompt_for_unsafe
 from ..utils.hashing import short_hash
-from .base_executor import BaseExecutor
 from ._fs_observer import diff_repo, snapshot_repo
-
+from .base_executor import BaseExecutor
 
 CLAUDE_PROMPT_BOUNDARY = """
 SAFETY BOUNDARY (mandatory):

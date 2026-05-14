@@ -27,8 +27,8 @@ class MilestonePlannerAgent:
 
 
 # BMAD-17: register agent menu at module load time
-from ._menu import register_default_menu  # noqa: E402
 from ..schemas import AgentMenuEntry  # noqa: E402
+from ._menu import register_default_menu  # noqa: E402
 
 register_default_menu("milestone_planner", [
     AgentMenuEntry(code="PM", description="Plan milestones from architecture", skill="milestone_planner"),

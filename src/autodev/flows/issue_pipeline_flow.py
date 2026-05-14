@@ -26,12 +26,12 @@ from ..config import FactoryConfig
 from ..executors.executor_router import ExecutorRouter
 from ..reports.reporter import Reporter
 from ..schemas import (
+    PRD,
     ArchitectureSpec,
     DeliveryTask,
     ExecutionBackend,
     Language,
     Milestone,
-    PRD,
     PipelineMode,
     RepoScanResult,
 )
@@ -73,7 +73,7 @@ class IssuePipelineFlow:
     def run(self, inp: IssuePipelineInput) -> RunState:
         languages = inp.languages or [Language.PYTHON]
         run = init_run(repo_path=inp.repo_path, mode=inp.mode, flow="issue_pipeline_flow",
-                       languages=[l.value for l in languages])
+                       languages=[lang.value for lang in languages])
 
         # Save raw input
         run.save_text("input/raw_input.md", inp.issue_text)
@@ -120,11 +120,14 @@ class IssuePipelineFlow:
         # If empty (no language matched defaults), synthesize a feature task
         if not tasks:
             from ..planners.task_planner import TaskPlanner
-            tasks = TaskPlanner()._build_issue_default(m, issue.title, languages[0] if languages else Language.PYTHON) \
+            _tp = TaskPlanner()
+            tasks = (
+                _tp._build_issue_default(m, issue.title, languages[0] if languages else Language.PYTHON)  # type: ignore[attr-defined]
                 if hasattr(TaskPlanner, "_build_issue_default") else [
                     DeliveryTask(task_id="MI-1-T1", milestone_id="MI-1", title=issue.title,
                                  description=issue.summary or issue.title)
                 ]
+            )
         from ..schemas import MilestonePlan
         plan = MilestonePlan(milestones=[m], tasks=tasks)
         run.state.milestone_plan = plan

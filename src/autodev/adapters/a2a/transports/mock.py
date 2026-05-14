@@ -4,11 +4,11 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 from ....schemas import (
-    AgentCard,
     A2AMessage,
     A2APart,
     A2ATask,
     A2ATaskStatus,
+    AgentCard,
 )
 from ....utils.hashing import sha256_hex
 from .base import BaseA2ATransport

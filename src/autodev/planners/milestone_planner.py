@@ -33,7 +33,7 @@ class MilestonePlanner:
         architecture: ArchitectureSpec,
         languages: list[Language],
         max_milestones: int = 6,
-        scale: "Scale | None" = None,
+        scale: Scale | None = None,
     ) -> list[Milestone]:
         # Determine which template rows to use based on scale
         if scale is None:

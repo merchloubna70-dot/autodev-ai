@@ -5,18 +5,15 @@ when prd/product_brief/product_name are provided.
 """
 from __future__ import annotations
 
-import pytest
-
 from autodev.planners.task_planner import TaskPlanner
 from autodev.schemas import (
+    PRD,
     AcceptanceCriterion,
     ArchitectureSpec,
     Language,
     Milestone,
-    PRD,
     ProductBrief,
 )
-
 
 # ---------------------------------------------------------------------------
 # Fixtures

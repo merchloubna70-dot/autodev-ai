@@ -1,25 +1,20 @@
 """Unit tests for RoundtableAgent (BMAD party-mode via A2A)."""
 from __future__ import annotations
 
-import os
-import uuid
-
 import pytest
 
 # If A2A-1 hasn't committed yet, skip the whole module gracefully
 roster_mod = pytest.importorskip("autodev.adapters.a2a.roster", reason="A2A-1 not yet committed")
 AgentRoster = roster_mod.AgentRoster
 
-from autodev.schemas import (
+from autodev.agents.roundtable import RoundtableAgent, _FallbackMockClient, _make_text_message  # noqa: E402
+from autodev.schemas import (  # noqa: E402
     A2AConversation,
     A2AMessage,
-    A2APart,
     A2ATask,
     A2ATaskStatus,
     AgentCard,
 )
-from autodev.agents.roundtable import RoundtableAgent, _make_text_message, _FallbackMockClient
-
 
 # ---------------------------------------------------------------------------
 # Fixture: mock client that echoes back a deterministic message per card

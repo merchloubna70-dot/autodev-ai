@@ -1,9 +1,6 @@
 """Integration tests for 'autodev investigate' CLI command (BMAD-10)."""
 from __future__ import annotations
 
-from pathlib import Path
-
-import pytest
 from typer.testing import CliRunner
 
 from autodev.cli import app

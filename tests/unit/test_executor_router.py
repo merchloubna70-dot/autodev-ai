@@ -97,7 +97,7 @@ def test_falls_back_to_mock_claude_when_missing():
 
 def test_fail_closed_when_mock_disallowed():
     r = _router(codex_ok=False, allow_mock=False)
-    d = r.decide(_req(task_type=TaskType.SCAFFOLD))
+    r.decide(_req(task_type=TaskType.SCAFFOLD))
     # decide() keeps the preferred backend; execute() must fail-closed.
     result, _ = r.execute(_req(task_type=TaskType.SCAFFOLD))
     assert result.success is False

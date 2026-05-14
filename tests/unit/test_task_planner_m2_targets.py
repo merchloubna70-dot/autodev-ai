@@ -1,8 +1,6 @@
 """Tests for TaskPlanner M2 feature task target files and layout nudge."""
 from __future__ import annotations
 
-import pytest
-
 from autodev.planners.task_planner import TaskPlanner
 from autodev.schemas import ArchitectureSpec, Language, Milestone
 

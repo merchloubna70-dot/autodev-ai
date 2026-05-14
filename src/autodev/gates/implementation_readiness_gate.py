@@ -11,11 +11,11 @@ Steps mirror the BMAD bmad-check-implementation-readiness skill:
 from __future__ import annotations
 
 from ..schemas import (
+    PRD,
     ArchitectureSpec,
     DeliveryTask,
     ImplementationReadinessReport,
     Milestone,
-    PRD,
     PipelineRunState,
     ReadinessCheckResult,
     Severity,
@@ -192,12 +192,12 @@ class ImplementationReadinessGate:
         # Aggregate all milestone acceptance criteria text
         all_milestone_ac: list[str] = []
         for m in milestones:
-            for ac in m.acceptance_criteria:
-                all_milestone_ac.append(ac.lower())
+            for mac in m.acceptance_criteria:
+                all_milestone_ac.append(mac.lower())
 
         uncovered: list[str] = []
-        for ac in prd.acceptance_criteria:
-            needle = ac.description.lower().strip()
+        for prd_ac in prd.acceptance_criteria:
+            needle = prd_ac.description.lower().strip()
             if not needle:
                 continue
             # Try keyword overlap: any word >4 chars from AC appears in milestone ACs
@@ -209,7 +209,7 @@ class ImplementationReadinessGate:
                 for milestone_ac in all_milestone_ac
             )
             if not covered:
-                uncovered.append(ac.id)
+                uncovered.append(prd_ac.id)
 
         if uncovered:
             return ReadinessCheckResult(

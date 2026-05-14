@@ -7,7 +7,6 @@ from __future__ import annotations
 from ..schemas import CriticVerdict
 from .opus_consult import OpusConsultAgent
 
-
 _SCORE_DONE_THRESHOLD = 0.8
 
 

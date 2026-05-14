@@ -8,7 +8,6 @@ from ..schemas import Language, PipelineMode, ScaffoldPlan
 from ._crewai_bridge import make_agent
 from ._scaffold_verification import ScaffoldVerification
 
-
 PY_PYPROJECT_TEMPLATE = """[build-system]
 requires = ["hatchling>=1.21"]
 build-backend = "hatchling.build"
@@ -186,8 +185,8 @@ class ScaffolderAgent:
 
 
 # BMAD-17: register agent menu at module load time
-from ._menu import register_default_menu  # noqa: E402
 from ..schemas import AgentMenuEntry  # noqa: E402
+from ._menu import register_default_menu  # noqa: E402
 
 register_default_menu("scaffolder", [
     AgentMenuEntry(code="SC", description="Scaffold new project skeleton", skill="scaffolder"),

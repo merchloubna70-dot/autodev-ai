@@ -10,9 +10,7 @@ from __future__ import annotations
 
 import html
 import json
-import os
 from pathlib import Path
-
 
 # Deterministic colour palette keyed by backend name (cycles for unknowns)
 _LANE_COLOURS: list[str] = [

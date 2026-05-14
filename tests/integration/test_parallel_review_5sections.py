@@ -7,11 +7,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pytest
-
 from autodev.agents.parallel_section_reviewer import ParallelSectionReviewer
-from autodev.schemas import ParallelSectionReviewReport, Severity
-
+from autodev.schemas import ParallelSectionReviewReport
 
 # ---------------------------------------------------------------------------
 # Test 1: All 5 sections run and appear in report

@@ -4,8 +4,6 @@ Covers: one test per dimension + happy-path + sweep aggregate.
 """
 from __future__ import annotations
 
-import pytest
-
 from autodev.planners.task_readiness_checker import TaskReadinessChecker
 from autodev.schemas import (
     DeliveryTask,

@@ -1,8 +1,6 @@
 """Tests for MockFixtureConfig-driven mock executors."""
 from __future__ import annotations
 
-from pathlib import Path
-
 from autodev.config import MockFixtureConfig
 from autodev.executors.mock_codex_executor import MockCodexExecutor
 from autodev.schemas import (

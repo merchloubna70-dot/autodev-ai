@@ -1,8 +1,6 @@
 """Tests for Bug2: --sandbox flag injected based on PipelineMode."""
 from __future__ import annotations
 
-import pytest
-
 from autodev.config import CodexCliExecutorConfig
 from autodev.executors.codex_cli_executor import CodexCliExecutor, _sandbox_args_for
 from autodev.schemas import ExecutionRequest, Language, PipelineMode, TaskType
@@ -37,7 +35,7 @@ def test_build_command_dry_run_contains_read_only(tmp_path):
     ex = CodexCliExecutor(cfg)
     req = _req(tmp_path, PipelineMode.DRY_RUN)
     prompt = ex._render_prompt(req)
-    cmd_str, argv = ex._build_command(req, prompt)
+    cmd_str, _argv = ex._build_command(req, prompt)
     assert "--sandbox" in cmd_str
     assert "read-only" in cmd_str
 
@@ -50,7 +48,7 @@ def test_build_command_apply_contains_workspace_write(tmp_path):
     ex = CodexCliExecutor(cfg)
     req = _req(tmp_path, PipelineMode.APPLY)
     prompt = ex._render_prompt(req)
-    cmd_str, argv = ex._build_command(req, prompt)
+    cmd_str, _argv = ex._build_command(req, prompt)
     assert "--sandbox" in cmd_str
     assert "workspace-write" in cmd_str
 
@@ -64,7 +62,7 @@ def test_build_command_no_duplicate_sandbox_when_template_has_it(tmp_path):
     ex = CodexCliExecutor(cfg)
     req = _req(tmp_path, PipelineMode.DRY_RUN)
     prompt = ex._render_prompt(req)
-    cmd_str, argv = ex._build_command(req, prompt)
+    cmd_str, _argv = ex._build_command(req, prompt)
     # Should appear exactly once (the one already in the template).
     assert cmd_str.count("--sandbox") == 1
 

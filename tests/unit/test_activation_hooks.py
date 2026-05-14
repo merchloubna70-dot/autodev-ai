@@ -1,11 +1,8 @@
 """BMAD-16: Tests for ActivatableAgent activation hooks."""
 from __future__ import annotations
 
-import pytest
-
 from autodev.agents._activation import ActivatableAgent, ActivationContext
 from autodev.schemas import ActivationResult
-
 
 # ---------------------------------------------------------------------------
 # Helpers / fixtures

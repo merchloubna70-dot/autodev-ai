@@ -1,10 +1,6 @@
 """Tests for Bug4: changed_files populated after execution."""
 from __future__ import annotations
 
-import os
-
-import pytest
-
 from autodev.config import ClaudeCodeExecutorConfig, CodexCliExecutorConfig
 from autodev.executors._fs_observer import diff_repo, snapshot_repo
 from autodev.executors.claude_code_executor import ClaudeCodeExecutor

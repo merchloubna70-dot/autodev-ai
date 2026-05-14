@@ -1,15 +1,9 @@
 """Unit tests for the autodev MCP server (stdio JSON-RPC 2.0)."""
 from __future__ import annotations
 
-import io
 import json
 import os
-import tempfile
-from pathlib import Path
 from unittest.mock import patch
-
-import pytest
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -164,7 +158,7 @@ def test_list_runs_empty_repo(tmp_path):
 
 
 def test_mcp_schemas_importable():
-    from autodev.schemas import MCPToolHandlerResult, MCPServerStatus
+    from autodev.schemas import MCPServerStatus, MCPToolHandlerResult
 
     r = MCPToolHandlerResult(tool_name="autodev_scan", success=True, content_text="ok")
     assert r.tool_name == "autodev_scan"

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from ....schemas import AgentCard, A2ATask
+from ....schemas import A2ATask, AgentCard
 
 
 class BaseA2ATransport(ABC):

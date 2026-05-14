@@ -8,11 +8,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import pytest
-
 from autodev.agents.context_generator import ContextGeneratorAgent
-from autodev.schemas import DiscoveryReport, ProjectContextDraft, ContextRule
-
+from autodev.schemas import ContextRule, DiscoveryReport, ProjectContextDraft
 
 # ---------------------------------------------------------------------------
 # Step 1: discover
@@ -190,7 +187,7 @@ class TestCommitToDisk:
         """commit_to_disk writes _autodev/project-context.md."""
         agent = ContextGeneratorAgent()
         draft = self._make_draft()
-        ctx = agent.commit_to_disk(draft, tmp_path, product_name="TestApp")
+        agent.commit_to_disk(draft, tmp_path, product_name="TestApp")
 
         md_path = tmp_path / "_autodev" / "project-context.md"
         assert md_path.exists()

@@ -4,11 +4,11 @@ from __future__ import annotations
 import re
 
 from ..schemas import (
+    PRD,
     AcceptanceCriterion,
     FunctionalRequirement,
     Language,
     NonFunctionalRequirement,
-    PRD,
     ProductBrief,
     Scale,
     ScaleInferenceReport,
@@ -63,12 +63,12 @@ class RequirementAnalystAgent:
 
     def infer_scale(
         self,
-        prd: "PRD | None" = None,
-        brief: "ProductBrief | None" = None,
-        languages: "list[Language] | None" = None,
+        prd: PRD | None = None,
+        brief: ProductBrief | None = None,
+        languages: list[Language] | None = None,
         repo_scan=None,
         from_scratch: bool = False,
-    ) -> "ScaleInferenceReport":
+    ) -> ScaleInferenceReport:
         """Heuristically infer the project scale from available context.
 
         Rules (evaluated in priority order):
@@ -136,8 +136,8 @@ class RequirementAnalystAgent:
 
 
 # BMAD-17: register agent menu at module load time
-from ._menu import register_default_menu  # noqa: E402
 from ..schemas import AgentMenuEntry  # noqa: E402
+from ._menu import register_default_menu  # noqa: E402
 
 register_default_menu("requirement_analyst", [
     AgentMenuEntry(code="DR", description="Derive requirements from brief", skill="requirement_analyst"),

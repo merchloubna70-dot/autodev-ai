@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import fnmatch
 import ipaddress
-from typing import Sequence
+from collections.abc import Sequence
 
 from ..schemas import AllowVerdict, NetworkAllowlistPolicy
 

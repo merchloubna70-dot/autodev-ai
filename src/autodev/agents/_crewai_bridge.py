@@ -6,8 +6,8 @@ from typing import Any
 
 try:  # pragma: no cover - import side effect varies by env
     from crewai import Agent as _CrewAgent  # type: ignore
-    from crewai import Task as _CrewTask  # type: ignore
     from crewai import Crew as _CrewCrew  # type: ignore
+    from crewai import Task as _CrewTask  # type: ignore
     CREWAI_AVAILABLE = True
 except Exception:
     _CrewAgent = None  # type: ignore

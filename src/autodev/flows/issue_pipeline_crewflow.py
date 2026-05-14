@@ -6,7 +6,7 @@ when crewai is not installed.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 from ..schemas import ExecutionBackend, Language, PipelineMode
@@ -94,8 +94,9 @@ class IssuePipelineCrewFlow(Flow):  # type: ignore[misc]
     @start()  # type: ignore[misc]
     def classify_input(self) -> dict[str, Any]:
         """Node 1 — classify the raw issue text."""
-        from ..agents.input_classifier import InputClassifierAgent
         from pathlib import Path
+
+        from ..agents.input_classifier import InputClassifierAgent
 
         inp = self._inp
         assert inp is not None
@@ -164,11 +165,11 @@ class IssuePipelineCrewFlow(Flow):  # type: ignore[misc]
     @listen("implement")  # type: ignore[misc]
     def implement(self, route: str) -> dict[str, Any]:
         """Node 5 — task decomposition + implementation."""
+        from ..agents.implementer import ImplementerAgent
         from ..agents.task_decomposer import TaskDecomposerAgent
-        from ..schemas import DeliveryTask, Milestone, MilestonePlan
         from ..config import FactoryConfig
         from ..executors.executor_router import ExecutorRouter
-        from ..agents.implementer import ImplementerAgent
+        from ..schemas import DeliveryTask, Milestone
         from ..state import init_run
 
         inp = self._inp
@@ -199,7 +200,7 @@ class IssuePipelineCrewFlow(Flow):  # type: ignore[misc]
             ]
         config = FactoryConfig()
         run = init_run(repo_path=inp.repo_path, mode=inp.mode, flow="issue_pipeline_crewflow",
-                       languages=[l.value for l in languages])
+                       languages=[lang.value for lang in languages])
         router_inst = ExecutorRouter(config, allow_mock=inp.allow_mock)
         implementer = ImplementerAgent(router_inst)
         impl = implementer.run_milestone(

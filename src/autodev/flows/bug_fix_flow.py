@@ -12,14 +12,12 @@ Hard rules
 """
 from __future__ import annotations
 
-import json
 from dataclasses import dataclass, field
-from pathlib import Path
 
 from ..agents.implementer import ImplementerAgent
 from ..config import FactoryConfig
 from ..executors.executor_router import ExecutorRouter
-from ..planners.four_stage_planner import FourStagePlanner, _MILESTONE_ID
+from ..planners.four_stage_planner import _MILESTONE_ID, FourStagePlanner
 from ..schemas import (
     ExecutionBackend,
     Language,

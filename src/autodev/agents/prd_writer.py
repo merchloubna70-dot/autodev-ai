@@ -2,10 +2,10 @@
 from __future__ import annotations
 
 from ..schemas import (
+    PRD,
     AcceptanceCriterion,
     FunctionalRequirement,
     NonFunctionalRequirement,
-    PRD,
     PRFAQDocument,
     ProductBrief,
 )
@@ -173,8 +173,8 @@ class PRDWriterAgent:
 
 
 # BMAD-17: register agent menu at module load time
-from ._menu import register_default_menu  # noqa: E402
 from ..schemas import AgentMenuEntry  # noqa: E402
+from ._menu import register_default_menu  # noqa: E402
 
 register_default_menu("prd_writer", [
     AgentMenuEntry(code="WP", description="Write PRD document", skill="prd_writer"),

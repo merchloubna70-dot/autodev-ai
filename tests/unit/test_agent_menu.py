@@ -1,24 +1,20 @@
 """BMAD-17: Tests for AgentMenu registry."""
 from __future__ import annotations
 
-import pytest
-
-from autodev.agents._menu import AgentMenu, register_default_menu, list_for, list_all
-from autodev.schemas import AgentMenuEntry, AgentMenuSnapshot
-
+import autodev.agents.context_generator  # noqa: F401
+import autodev.agents.document_project  # noqa: F401
+import autodev.agents.investigator  # noqa: F401
+import autodev.agents.milestone_planner  # noqa: F401
+import autodev.agents.prd_writer  # noqa: F401
 
 # Ensure all agent modules are imported so their module-level register calls fire
 import autodev.agents.product_manager  # noqa: F401
 import autodev.agents.requirement_analyst  # noqa: F401
-import autodev.agents.prd_writer  # noqa: F401
 import autodev.agents.system_architect  # noqa: F401
-import autodev.agents.milestone_planner  # noqa: F401
 import autodev.agents.task_decomposer  # noqa: F401
 import autodev.agents.ux_designer  # noqa: F401
-import autodev.agents.context_generator  # noqa: F401
-import autodev.agents.document_project  # noqa: F401
-import autodev.agents.investigator  # noqa: F401
-
+from autodev.agents._menu import AgentMenu, list_all, list_for, register_default_menu
+from autodev.schemas import AgentMenuEntry, AgentMenuSnapshot
 
 # ---------------------------------------------------------------------------
 # Tests

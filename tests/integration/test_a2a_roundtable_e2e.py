@@ -14,17 +14,14 @@ from __future__ import annotations
 
 import os
 
-import pytest
-
 # conftest sets FACTORY_FORCE_MOCK=1 before imports — verify it here
 assert os.environ.get("FACTORY_FORCE_MOCK") == "1", "Tests require FACTORY_FORCE_MOCK=1"
 
-from autodev.adapters.a2a.client import A2AClient
-from autodev.adapters.a2a.roster import AgentRoster
-from autodev.adapters.a2a.transports.mock import MockTransport, _mock_response
-from autodev.agents.roundtable import RoundtableAgent
-from autodev.schemas import A2AConversation, A2AMessage, AgentCard
-
+from autodev.adapters.a2a.client import A2AClient  # noqa: E402
+from autodev.adapters.a2a.roster import AgentRoster  # noqa: E402
+from autodev.adapters.a2a.transports.mock import _mock_response  # noqa: E402
+from autodev.agents.roundtable import RoundtableAgent  # noqa: E402
+from autodev.schemas import A2AConversation, A2AMessage  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Helper: build a RoundtableAgent that uses MockTransport explicitly

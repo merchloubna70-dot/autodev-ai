@@ -12,8 +12,6 @@ import subprocess
 import time
 from typing import Any
 
-from ..executors.shell_executor import ShellExecutor
-
 # Default set of binary names allowed to be spawned as MCP servers.
 DEFAULT_ALLOWED_BINS: frozenset[str] = frozenset(
     {
@@ -115,7 +113,7 @@ class MCPToolClient:
             return False
         if self._proc is not None and self._proc.poll() is None:
             return True
-        argv = [self.command] + self.args
+        argv = [self.command, *self.args]
         try:
             self._proc = subprocess.Popen(
                 argv,
