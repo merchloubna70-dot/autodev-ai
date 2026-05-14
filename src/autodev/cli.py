@@ -1341,5 +1341,97 @@ def ci_run_cmd(
         raise typer.Exit(code=exit_code)
 
 
+# ---------------------------------------------------------------------------
+# deliver-multi
+# ---------------------------------------------------------------------------
+
+
+@app.command("deliver-multi")
+def deliver_multi(
+    config: str = typer.Option(..., "--config", help="Path to multi-repo YAML config file."),
+    mode: str = typer.Option("dry-run", "--mode", help="Pipeline mode: dry-run (default) or apply."),
+    allow_mock_executor: str | None = typer.Option(None, "--allow-mock-executor"),
+    output_base: str | None = typer.Option(
+        None,
+        "--output-base",
+        help="Root directory for multi-run artifact tree (default: .dev-factory/multi-runs).",
+    ),
+    scale: str | None = typer.Option(
+        None,
+        "--scale",
+        help="Project scale hint applied to all repos: bug-fix|small|medium|enterprise.",
+    ),
+    fail_fast: bool = typer.Option(True, "--fail-fast/--no-fail-fast"),
+    concurrency: int = typer.Option(3, "--concurrency"),
+    claude_timeout: int = typer.Option(900, "--claude-timeout"),
+    codex_timeout: int = typer.Option(600, "--codex-timeout"),
+) -> None:
+    """Run deliver-project semantics across multiple repos defined in a YAML config.
+
+    The YAML config has the shape:
+
+    \b
+    group_name: my-multi-project
+    repos:
+      - path: ./api-service
+        brief_file: ./briefs/api.md
+        languages: [python]
+      - path: ./web-frontend
+        brief_file: ./briefs/web.md
+        languages: [typescript]
+
+    Artifacts are written to .dev-factory/multi-runs/<group_id>/ with per-repo
+    subdirectories and an aggregate summary.json.
+    """
+    from .flows.multi_repo_flow import MultiRepoFlow, parse_multi_repo_config
+
+    pmode = _parse_mode(mode)
+    cfg = _build_config(
+        mode=pmode,
+        allow_mock=_parse_tri_bool(allow_mock_executor),
+        fail_fast=fail_fast,
+        continue_and_report=False,
+        concurrency=concurrency,
+        codex_timeout=codex_timeout,
+        claude_timeout=claude_timeout,
+    )
+
+    resolved_scale: Scale | None = None
+    if scale is not None:
+        try:
+            resolved_scale = Scale(scale)
+        except ValueError:
+            typer.echo(
+                f"[autodev] unknown scale '{scale}'; valid: bug-fix|small|medium|enterprise",
+                err=True,
+            )
+            raise typer.Exit(1) from None
+
+    try:
+        multi_config = parse_multi_repo_config(config)
+    except (FileNotFoundError, ValueError) as exc:
+        typer.echo(f"[autodev] deliver-multi config error: {exc}", err=True)
+        raise typer.Exit(2) from None
+
+    typer.echo(
+        f"[autodev] deliver-multi group={multi_config.group_name!r} repos={len(multi_config.repos)}",
+        err=True,
+    )
+
+    flow = MultiRepoFlow(
+        config=cfg,
+        mode=pmode,
+        scale=resolved_scale,
+        output_base=output_base,
+    )
+    summary = flow.run(multi_config)
+
+    typer.echo(
+        f"group_id={summary.group_id} total={summary.total} "
+        f"succeeded={summary.succeeded} failed={summary.failed} "
+        f"artifact_root={summary.artifact_root}"
+    )
+
+
 if __name__ == "__main__":  # pragma: no cover
     app()
