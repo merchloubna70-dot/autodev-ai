@@ -106,7 +106,10 @@ def repo(tmp_path: Path) -> Path:
     # packaging files
     docker = tmp_path / "packaging" / "docker"
     docker.mkdir(parents=True)
-    (docker / "Dockerfile").write_text("FROM python:3.10\n", encoding="utf-8")
+    # R3-D: must be digest-pinned (@sha256:<64-hex>)
+    (docker / "Dockerfile").write_text(
+        "FROM python:3.12-slim@sha256:" + ("a" * 64) + "\n", encoding="utf-8"
+    )
 
     pyinst = tmp_path / "packaging" / "pyinstaller"
     pyinst.mkdir(parents=True)
@@ -114,17 +117,57 @@ def repo(tmp_path: Path) -> Path:
 
     formula_dir = tmp_path / "packaging" / "homebrew" / "Formula"
     formula_dir.mkdir(parents=True)
+    # R3-F: honestly blocked formula
     (formula_dir / "autodev-ai.rb").write_text(
+        '# STATUS: BLOCKED for publish until PyPI 0.1.0a1 sha256 is real\n'
         'url "https://github.com/merchloubna70-dot/autodev-ai/releases/..."\n'
-        'sha256 "abcdef1234567890"\n',
+        'sha256 "TODO_PUBLISH_SHA256"\n',
         encoding="utf-8",
     )
+    # R3-F: PUBLISH_CHECKLIST.md required
+    (tmp_path / "packaging" / "homebrew" / "PUBLISH_CHECKLIST.md").write_text(
+        "# Homebrew publish checklist\n\n1. Confirm PyPI live\n", encoding="utf-8"
+    )
 
-    # R2: A2A SSRF transport
+    # R2: A2A SSRF transport + R3-E DNS rebinding pin symbols
     transport_dir = tmp_path / "src" / "autodev" / "adapters" / "a2a" / "transports"
     transport_dir.mkdir(parents=True)
     (transport_dir / "http.py").write_text(
-        "class A2AHttpSSRFError(ValueError): pass\n", encoding="utf-8"
+        "class A2AHttpSSRFError(ValueError): pass\n"
+        "def _resolve_and_pin_host(host: str) -> str: ...\n"
+        "class _PinnedHTTPHandler: pass\n"
+        "class _PinnedHTTPSHandler: pass\n",
+        encoding="utf-8",
+    )
+
+    # R3-B: MCP apply guardrail symbols
+    mcp_dir = tmp_path / "src" / "autodev" / "mcp_server"
+    mcp_dir.mkdir(parents=True)
+    (mcp_dir / "tools.py").write_text(
+        "AUTODEV_MCP_ALLOW_APPLY = 'AUTODEV_MCP_ALLOW_APPLY'\n"
+        "def tool(allow_apply: bool = False): ...\n",
+        encoding="utf-8",
+    )
+
+    # R3-H: WorkerIsolator path-escape exception
+    isolator_dir = tmp_path / "src" / "autodev" / "executors"
+    isolator_dir.mkdir(parents=True)
+    (isolator_dir / "worker_isolator.py").write_text(
+        "class WorkerIsolatorPathEscapeError(Exception): pass\n", encoding="utf-8"
+    )
+
+    # R3-G: CHANGELOG + configuration + troubleshooting docs
+    (tmp_path / "CHANGELOG.md").write_text(
+        "# Changelog\n\n## [0.1.0a1] — 2026-05-14 (Pre-Release)\n\n- First public alpha\n",
+        encoding="utf-8",
+    )
+    (docs / "configuration.md").write_text(
+        "# Configuration\n\n" + ("This document covers FACTORY_FORCE_MOCK and FACTORY_LOG. " * 20),
+        encoding="utf-8",
+    )
+    (docs / "troubleshooting.md").write_text(
+        "# Troubleshooting\n\n" + ("Common issues and fixes for autodev-ai users. " * 20),
+        encoding="utf-8",
     )
 
     # R2: macOS Info.plist
@@ -146,6 +189,12 @@ def repo(tmp_path: Path) -> Path:
     (gh_dir / "release.yml").write_text(
         "jobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - run: pytest\n"
         "  publish:\n    needs: test\n    runs-on: ubuntu-latest\n",
+        encoding="utf-8",
+    )
+    # R3-C: lint.yml must scan scripts/
+    (gh_dir / "lint.yml").write_text(
+        "jobs:\n  lint:\n    runs-on: ubuntu-latest\n    steps:\n"
+        "      - run: ruff check src tests scripts\n      - run: mypy src/autodev\n",
         encoding="utf-8",
     )
 
@@ -195,10 +244,11 @@ def test_each_check_has_required_fields(repo: Path) -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_exactly_24_checks(repo: Path) -> None:
+def test_exactly_36_checks(repo: Path) -> None:
+    """R3 grew the gate from 24 → 36 checks (BASE 12 + R2 12 + R3 12)."""
     with patch.object(gate, "_run", return_value=(0, "", "")):
         result = gate.main(["--repo-path", str(repo), "--output", str(repo / "rrgate_test.json")])
-    assert len(result["checks"]) == 24
+    assert len(result["checks"]) == 36
 
 
 def test_exactly_12_checks_include_r2_only(repo: Path) -> None:

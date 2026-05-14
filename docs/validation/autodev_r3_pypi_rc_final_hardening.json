@@ -1,0 +1,175 @@
+{
+  "round": "autodev_r3_pypi_rc_final_hardening",
+  "status": "completed",
+  "overall_result": "pass",
+  "audit_date": "2026-05-14",
+  "auditor": "8-agent parallel R3 round (R3-A/B/C/D/E/F/G/H) + Opus integration (R3-I/J/K)",
+  "predecessor_rounds": [
+    "autodev_release_hardening_round (R1)",
+    "autodev_r2_pypi_release_blocker_closure (R2)"
+  ],
+  "r3_closure_matrix": {
+    "mypy_pydantic_ai_bridge": "pass",
+    "mcp_apply_guardrail": "pass",
+    "ruff_and_lint_scripts": "pass",
+    "docker_digest_pinning": "pass",
+    "a2a_dns_rebinding": "pass",
+    "homebrew_publish_time_blocker": "pass",
+    "docs_minimum": "pass",
+    "worker_isolator_symlink": "pass"
+  },
+  "r3_closure_detail": {
+    "mypy_pydantic_ai_bridge": "Actual mypy error was in src/autodev/adapters/a2a/transports/http.py:136 (R2-D SSRF code; sockaddr[0] type str|int). R3-A used str() narrowing — no `# type: ignore`. mypy src/autodev: 1 → 0 errors across 171 files. 5 bridge tests added.",
+    "mcp_apply_guardrail": "MCP autodev_deliver_project + autodev_run_issue now enforce dual-gate: allow_apply=True tool param + AUTODEV_MCP_ALLOW_APPLY=1 server env. commit/push/tag default False. JSONL audit log at $AUTODEV_MCP_AUDIT_LOG (default /tmp/autodev_mcp_audit.log). 19 tests pass. Documented residuals: world-writable default path, no per-caller auth, commit/push/tag plumbing advisory.",
+    "ruff_and_lint_scripts": "ruff 55 → 0 errors (46 auto-fixes + 9 manual, zero # noqa). .github/workflows/lint.yml now scans src/tests/scripts. 4 policy tests pass.",
+    "docker_digest_pinning": "packaging/docker/Dockerfile both stages pinned to python@sha256:401f6e1a67dad31a1bd78e9ad22d0ee0a3b52154e6bd30e90be696bb6a3d7461 (obtained via real docker pull + docker inspect on 2026-05-14). packaging/docker/UPDATE.md added with digest rotation procedure. 6 tests pass. docker build verified.",
+    "a2a_dns_rebinding": "src/autodev/adapters/a2a/transports/http.py: _resolve_and_pin_host() single DNS resolution + blocklist + IP pin. _PinnedHTTPHandler / _PinnedHTTPSHandler override do_open to connect to pinned IP, not hostname. TLS server_hostname preserved for cert + SNI. Per-redirect re-resolve. 10 tests pass. Residuals: egress-proxy SSRF (firewall layer), kernel BGP/anycast (RPKI/mTLS layer).",
+    "homebrew_publish_time_blocker": "Formula sha256 = TODO_PUBLISH_SHA256 (conventional placeholder) + explicit BLOCKED-for-publish comment + packaging/homebrew/PUBLISH_CHECKLIST.md (7 activation steps). Homebrew status unchanged (still blocked) but now HONESTLY blocked, not silently broken. Gate semantics now separate Homebrew publish readiness from PyPI RC verdict.",
+    "docs_minimum": "CHANGELOG.md (612 words, Keep-a-Changelog format, 0.1.0a1 pre-release marker, no fake stable). docs/configuration.md (1,249 words: ConfigStack, env vars, executor selection, MCP/A2A config, AUTODEV_MCP_ALLOW_APPLY, AUTODEV_MCP_AUDIT_LOG, AUTODEV_A2A_ALLOW_PRIVATE_NETWORKS). docs/troubleshooting.md (1,175 words: 12 scenarios). README + 4 lines linking new docs. 6 tests pass.",
+    "worker_isolator_symlink": "src/autodev/executors/worker_isolator.py: WorkerIsolatorPathEscapeError exception, resolve(strict=True) + is_relative_to(parent_home) before every symlink, branch-name validation rejects .. / NUL, cleanup_worktree() validates target inside root before shutil.rmtree, CODEX_HOME injection guard. 4 attack vectors blocked, 10 tests pass. Residual: TOCTOU on cleanup (shutil.rmtree non-atomic, mitigation via fd-pinning out of scope)."
+  },
+  "release_readiness": {
+    "internal_dogfood": "allowed",
+    "public_beta": "allowed",
+    "pypi_0_1_0_rc": "allowed",
+    "pypi_0_1_0_final_publish": "allowed_with_limitations",
+    "docker": "allowed_with_limitations",
+    "homebrew": "blocked",
+    "production_enterprise_use": "blocked"
+  },
+  "release_readiness_changes_vs_r2": {
+    "internal_dogfood": "unchanged (allowed)",
+    "public_beta": "unchanged (allowed)",
+    "pypi_0_1_0_rc": "allowed_with_limitations → allowed (upgrade: mypy clean, ruff clean, all R2 carryovers closed)",
+    "pypi_0_1_0_final_publish": "NEW classification — RC ready; final publish gated on user adding PYPI_API_TOKEN secret + manual tag",
+    "docker": "unchanged (allowed_with_limitations); base image now digest-pinned but image-side runtime concerns remain (no rootless build attestation, no SBOM)",
+    "homebrew": "blocked → blocked (now honestly blocked with PUBLISH_CHECKLIST.md; no longer poisons strict gate via --strict-rc)",
+    "production_enterprise_use": "unchanged (blocked); enterprise-grade controls (egress sandbox, per-caller MCP auth, signed Docker, SLSA provenance) remain a future round"
+  },
+  "release_readiness_gate_run": {
+    "total_checks": 36,
+    "pass": 36,
+    "fail": 0,
+    "skip": 0,
+    "base_subset_pass": 12,
+    "r2_subset_pass": 12,
+    "r3_subset_pass": 12,
+    "strict_exit_code": 0,
+    "strict_r2_exit_code": 0,
+    "strict_r3_exit_code": 0,
+    "strict_rc_exit_code": 0,
+    "all_gates_pass_no_carryover": true
+  },
+  "test_count_progression": {
+    "pre_r1": 843,
+    "post_r1": "915 + 4 xfail",
+    "post_r2": "1000 + 4 xfail",
+    "post_r3": "1062 + 4 xfail",
+    "delta_r3": 62,
+    "delta_total_3_rounds": 219,
+    "regressions": 0
+  },
+  "code_quality_progression": {
+    "ruff": {
+      "pre_r1": "unknown",
+      "post_r1": "0 (after SN-LINT)",
+      "post_r2": "17 regressions introduced by R1 audit additions",
+      "post_r3": 0
+    },
+    "mypy": {
+      "post_r1": "29 → 0 after SN-LINT but then 1 regression in pydantic_ai_bridge:137 / actually http.py:136",
+      "post_r2": 1,
+      "post_r3": 0
+    },
+    "coverage_pct": 81
+  },
+  "validation_commands_executed": [
+    "python --version → 3.12",
+    "autodev --help → exit 0",
+    "autodev --version → autodev-ai 0.1.0a1",
+    "python -m autodev.cli --version → autodev-ai 0.1.0a1",
+    "ruff check . → All checks passed!",
+    "mypy src/autodev → Success: no issues found in 171 source files",
+    "pytest tests/ → 1062 passed, 4 xfailed",
+    "python scripts/release_readiness_gate.py → 36 pass / 0 fail / 0 skip",
+    "python scripts/release_readiness_gate.py --strict-r2 → exit 0",
+    "python scripts/release_readiness_gate.py --strict-r3 → exit 0",
+    "python scripts/release_readiness_gate.py --strict-rc → exit 0",
+    "python scripts/release_readiness_gate.py --strict → exit 0",
+    "python -m json.tool docs/validation/autodev_r3_pypi_rc_final_hardening.json → valid"
+  ],
+  "evidence_files": [
+    "docs/validation/autodev_r3_pypi_rc_final_hardening.{md,json}",
+    "docs/validation/autodev_r3_mypy_bridge_closure.{md,json}",
+    "docs/validation/autodev_r3_mcp_apply_guardrail.{md,json}",
+    "docs/validation/autodev_r3_a2a_dns_rebinding_hardening.{md,json}",
+    "docs/validation/autodev_r3_ruff_lint_closure.{md,json}",
+    "docs/validation/autodev_r3_docker_digest_pinning.{md,json}",
+    "docs/validation/autodev_r3_homebrew_publish_time_blocker.{md,json}",
+    "docs/validation/autodev_r3_documentation_minimum_closure.{md,json}",
+    "docs/validation/autodev_r3_worker_isolator_symlink_hardening.{md,json}",
+    "docs/validation/autodev_release_readiness_gate.{md,json} (updated with 36-check inventory)",
+    "docs/validation/autodev_release_hardening_round.{md,json} (R1 baseline)",
+    "docs/validation/autodev_r2_pypi_release_blocker_closure.{md,json} (R2 baseline)"
+  ],
+  "new_files_r3": [
+    "CHANGELOG.md (612 words)",
+    "docs/configuration.md (1249 words)",
+    "docs/troubleshooting.md (1175 words)",
+    "packaging/docker/UPDATE.md (digest rotation procedure)",
+    "packaging/homebrew/PUBLISH_CHECKLIST.md (7-step activation)",
+    "tests/unit/test_pydantic_ai_bridge.py (5 tests)",
+    "tests/integration/test_mcp_apply_guardrail.py (19 tests)",
+    "tests/unit/test_a2a_dns_rebinding_hardening.py (10 tests)",
+    "tests/unit/test_docs_minimum.py (6 tests)",
+    "tests/unit/test_worker_isolator_symlink_hardening.py (10 tests)",
+    "tests/unit/test_lint_workflow_policy.py (4 tests)",
+    "tests/unit/test_docker_digest_pinning.py (6 tests)",
+    "tests/unit/test_homebrew_publish_time_blocker.py (7 tests)",
+    "docs/validation/autodev_r3_*.{md,json} (9 reports)"
+  ],
+  "modified_files_r3": [
+    "src/autodev/adapters/a2a/transports/http.py (mypy fix + DNS rebinding IP-pin)",
+    "src/autodev/mcp_server/tools.py (dual-gate guardrail)",
+    "src/autodev/executors/worker_isolator.py (symlink hardening + WorkerIsolatorPathEscapeError)",
+    "packaging/docker/Dockerfile (digest-pinned both stages)",
+    "packaging/homebrew/Formula/autodev-ai.rb (TODO_PUBLISH_SHA256 + BLOCKED comment)",
+    ".github/workflows/lint.yml (scans src/tests/scripts)",
+    "scripts/release_readiness_gate.py (24 → 36 checks; new --strict-r3 / --strict-rc flags)",
+    "tests/unit/test_release_readiness_gate.py (12 → 37 tests, fixture updated for R3)",
+    "tests/unit/test_homebrew_formula_metadata.py (placeholder accept compat)",
+    "README.md (+4 lines linking new docs)",
+    "docs/validation/autodev_release_readiness_gate.{md,json} (gate inventory updated)"
+  ],
+  "remaining_blockers": [
+    {
+      "id": "PKG-01-publish-time",
+      "severity": "publish-time-blocker (not RC blocker)",
+      "title": "Homebrew sha256 is placeholder TODO_PUBLISH_SHA256",
+      "detail": "True close requires PyPI 0.1.0a1 to be actually published, then sha256 computed from PyPI metadata and patched into the formula. Closure procedure documented in packaging/homebrew/PUBLISH_CHECKLIST.md (7 steps).",
+      "unblocks": ["Homebrew tap publish"],
+      "does_not_block": ["PyPI RC", "Docker", "internal dogfood", "public beta"]
+    },
+    {
+      "id": "PYPI-TOKEN",
+      "severity": "operational (not technical)",
+      "title": "PyPI auto-publish needs PYPI_API_TOKEN GitHub secret",
+      "detail": "release.yml's twine upload step has `if: ${{ secrets.PYPI_API_TOKEN != '' }}` — currently no-ops because secret is unset. User must add the secret to enable PyPI publish on tag push.",
+      "unblocks": ["PyPI 0.1.0 final publish"]
+    },
+    {
+      "id": "PROD-ENTERPRISE",
+      "severity": "scope-deferred",
+      "title": "Production enterprise readiness gaps",
+      "detail": "Egress sandbox (network firewall around codex/claude shells), per-caller MCP auth (bearer tokens / OAuth on MCP transport), signed Docker images (cosign), SLSA provenance attestation, SBOM generation. These are not in scope for RC; they belong to a R4+ Enterprise Hardening round.",
+      "unblocks": ["production_enterprise_use"]
+    }
+  ],
+  "remaining_high_risks": [
+    "A2A DNS rebinding: 2 documented residuals — egress-proxy SSRF (mitigation at firewall layer) + kernel BGP/anycast hijack (mitigation at RPKI/mTLS layer). Both out of scope for pure-Python HTTP adapter.",
+    "MCP guardrail: audit log at default path is world-writable; no per-caller auth — defense-in-depth gap for multi-tenant MCP deployment.",
+    "WorkerIsolator cleanup TOCTOU: shutil.rmtree is non-atomic — accepted residual; fd-pinning out of scope.",
+    "Docker image: no runtime attestation, no rootless guarantee, no SBOM. Image works but not enterprise-grade by SLSA standards."
+  ],
+  "next_round_recommendation": "Round 4 — Enterprise Hardening: (1) SLSA provenance via cosign + sigstore on Docker images; (2) SBOM generation in release.yml; (3) per-caller MCP auth (bearer or OAuth); (4) egress-sandbox documentation for codex/claude shell execution; (5) PyPI publish + Homebrew formula sha256 update after PyPI live; (6) WorkerIsolator fd-pin alternative for atomic cleanup."
+}

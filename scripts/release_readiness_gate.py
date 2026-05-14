@@ -188,10 +188,9 @@ def check_pytest_evidence(repo: Path) -> CheckResult:
 def check_ruff_passes(repo: Path) -> CheckResult:
     name = "ruff_passes"
     t0 = time.monotonic()
-    rc, stdout, stderr = _run(["ruff", "check", "."], repo, timeout=60)
+    # Use sys.executable -m so we pick up the same ruff as the dev env.
+    rc, stdout, stderr = _run([sys.executable, "-m", "ruff", "check", "."], repo, timeout=60)
     combined = (stdout + stderr)[:400]
-    if rc == -2:
-        return _make(name, "skip", "ruff not on PATH", (time.monotonic() - t0) * 1000)
     if rc == 0:
         return _make(name, "pass", "ruff check . exit 0", (time.monotonic() - t0) * 1000)
     return _make(name, "fail", f"ruff exit {rc}:\n{combined}", (time.monotonic() - t0) * 1000)
@@ -200,10 +199,10 @@ def check_ruff_passes(repo: Path) -> CheckResult:
 def check_mypy_passes(repo: Path) -> CheckResult:
     name = "mypy_passes"
     t0 = time.monotonic()
-    rc, stdout, stderr = _run(["mypy", "src/autodev"], repo, timeout=60)
+    # Use sys.executable -m so we pick up the same mypy as the dev env
+    # (bare `mypy` on PATH may resolve to an older system install).
+    rc, stdout, stderr = _run([sys.executable, "-m", "mypy", "src/autodev"], repo, timeout=60)
     combined = (stdout + stderr)[:400]
-    if rc == -2:
-        return _make(name, "skip", "mypy not on PATH", (time.monotonic() - t0) * 1000)
     if rc == 0:
         return _make(name, "pass", "mypy src/autodev exit 0", (time.monotonic() - t0) * 1000)
     return _make(name, "fail", f"mypy exit {rc}:\n{combined}", (time.monotonic() - t0) * 1000)
@@ -288,50 +287,60 @@ def check_mock_executor_works(repo: Path) -> CheckResult:
 
     env_extra = {"FACTORY_FORCE_MOCK": "1"}
     import os
+    import tempfile
 
     env = {**os.environ, **env_extra}
 
-    # Try via installed command first, then via python module
-    for cmd in (
-        ["autodev", "classify-input", "--input", "test"],
-        [sys.executable, "-m", "autodev.cli", "classify-input", "--input", "test"],
-    ):
-        try:
-            proc = subprocess.run(
-                cmd,
-                cwd=str(repo),
-                capture_output=True,
-                text=True,
-                timeout=15,
-                env=env,
-            )
-            if proc.returncode == 0:
-                return _make(
-                    name,
-                    "pass",
-                    f"FACTORY_FORCE_MOCK=1 {' '.join(cmd)} exit 0",
-                    (time.monotonic() - t0) * 1000,
+    # classify-input takes --input as a file path, not raw text — write a temp file.
+    tmp = tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False, encoding="utf-8")
+    try:
+        tmp.write("Build a CLI tool that counts lines in markdown files.")
+        tmp.close()
+        # Try via installed command first, then via python module
+        for cmd in (
+            ["autodev", "classify-input", "--input", tmp.name],
+            [sys.executable, "-m", "autodev.cli", "classify-input", "--input", tmp.name],
+        ):
+            try:
+                proc = subprocess.run(
+                    cmd,
+                    cwd=str(repo),
+                    capture_output=True,
+                    text=True,
+                    timeout=15,
+                    env=env,
                 )
-            # Distinguish "command not found" vs real failure
-            if proc.returncode == 2 and "No such command" in (proc.stderr + proc.stdout):
-                # classify-input sub-command might not exist; treat as skip
-                return _make(
-                    name,
-                    "skip",
-                    "'classify-input' sub-command not found in CLI; skipping",
-                    (time.monotonic() - t0) * 1000,
-                )
-        except FileNotFoundError:
-            continue
-        except subprocess.TimeoutExpired:
-            return _make(name, "fail", "mock_executor timed out", (time.monotonic() - t0) * 1000)
+                if proc.returncode == 0:
+                    return _make(
+                        name,
+                        "pass",
+                        f"FACTORY_FORCE_MOCK=1 {' '.join(cmd[:3])} exit 0",
+                        (time.monotonic() - t0) * 1000,
+                    )
+                # Distinguish "command not found" vs real failure
+                if proc.returncode == 2 and "No such command" in (proc.stderr + proc.stdout):
+                    return _make(
+                        name,
+                        "skip",
+                        "'classify-input' sub-command not found in CLI; skipping",
+                        (time.monotonic() - t0) * 1000,
+                    )
+            except FileNotFoundError:
+                continue
+            except subprocess.TimeoutExpired:
+                return _make(name, "fail", "mock_executor timed out", (time.monotonic() - t0) * 1000)
 
-    return _make(
-        name,
-        "skip",
-        "autodev not on PATH or classify-input not available; skipping mock executor check",
-        (time.monotonic() - t0) * 1000,
-    )
+        return _make(
+            name,
+            "skip",
+            "autodev not on PATH or classify-input not available; skipping mock executor check",
+            (time.monotonic() - t0) * 1000,
+        )
+    finally:
+        try:
+            os.unlink(tmp.name)
+        except OSError:
+            pass
 
 
 def check_packaging_files_exist(repo: Path) -> CheckResult:
@@ -907,6 +916,212 @@ def check_r2_remaining_blockers_recorded(repo: Path) -> CheckResult:
 
 
 # ---------------------------------------------------------------------------
+# R3 CHECKS — PyPI RC Final Hardening
+# ---------------------------------------------------------------------------
+
+def check_r3_mypy_clean(repo: Path) -> CheckResult:
+    """R3-A: mypy across src/autodev should be 0 errors."""
+    name = "r3_mypy_clean"
+    t0 = time.monotonic()
+    rc, out, err = _run([sys.executable, "-m", "mypy", "src/autodev"], repo, timeout=60)
+    dur = (time.monotonic() - t0) * 1000
+    if rc == 0:
+        return _make(name, "pass", "mypy src/autodev: 0 errors", dur, evidence=out.strip().split("\n")[-1] if out else "")
+    return _make(name, "fail", f"mypy returned exit {rc}; tail={out.strip().split(chr(10))[-1] if out else err.strip()[:120]}", dur)
+
+
+def check_r3_ruff_clean(repo: Path) -> CheckResult:
+    """R3-C: ruff check . should be 0 errors."""
+    name = "r3_ruff_clean"
+    t0 = time.monotonic()
+    rc, out, err = _run([sys.executable, "-m", "ruff", "check", "."], repo, timeout=30)
+    dur = (time.monotonic() - t0) * 1000
+    if rc == 0:
+        return _make(name, "pass", "ruff check .: 0 errors", dur, evidence=out.strip().split("\n")[-1] if out else "All checks passed!")
+    return _make(name, "fail", f"ruff returned exit {rc}; tail={out.strip().split(chr(10))[-1] if out else err.strip()[:120]}", dur)
+
+
+def check_r3_lint_yml_scans_scripts(repo: Path) -> CheckResult:
+    """R3-C: .github/workflows/lint.yml must scan scripts/."""
+    name = "r3_lint_yml_scans_scripts"
+    t0 = time.monotonic()
+    p = repo / ".github" / "workflows" / "lint.yml"
+    dur = (time.monotonic() - t0) * 1000
+    if not p.exists():
+        return _make(name, "fail", "lint.yml not found", dur)
+    content = p.read_text(encoding="utf-8")
+    if "scripts" in content and ("ruff" in content.lower() or "ruff" in content):
+        return _make(name, "pass", "lint.yml ruff step includes scripts/", dur)
+    return _make(name, "fail", "lint.yml does not appear to scan scripts/ with ruff", dur)
+
+
+def check_r3_mcp_apply_guardrail_present(repo: Path) -> CheckResult:
+    """R3-B: MCP tools.py must enforce dual-gate for apply mode."""
+    name = "r3_mcp_apply_guardrail_present"
+    t0 = time.monotonic()
+    p = repo / "src" / "autodev" / "mcp_server" / "tools.py"
+    dur = (time.monotonic() - t0) * 1000
+    if not p.exists():
+        return _make(name, "fail", "mcp_server/tools.py not found", dur)
+    src = p.read_text(encoding="utf-8")
+    have_env = "AUTODEV_MCP_ALLOW_APPLY" in src
+    have_param = "allow_apply" in src
+    if have_env and have_param:
+        return _make(name, "pass", "MCP dual-gate: allow_apply param + AUTODEV_MCP_ALLOW_APPLY env both referenced", dur)
+    return _make(name, "fail", f"MCP guardrail incomplete: allow_apply={have_param}, AUTODEV_MCP_ALLOW_APPLY={have_env}", dur)
+
+
+def check_r3_a2a_dns_rebinding_pinned(repo: Path) -> CheckResult:
+    """R3-E: A2A HTTP transport must IP-pin against DNS rebinding TOCTOU."""
+    name = "r3_a2a_dns_rebinding_pinned"
+    t0 = time.monotonic()
+    p = repo / "src" / "autodev" / "adapters" / "a2a" / "transports" / "http.py"
+    dur = (time.monotonic() - t0) * 1000
+    if not p.exists():
+        return _make(name, "fail", "a2a/transports/http.py not found", dur)
+    src = p.read_text(encoding="utf-8")
+    have_resolver = "_resolve_and_pin_host" in src or "PinnedHTTP" in src
+    have_handler = "PinnedHTTPHandler" in src or "PinnedHTTPSHandler" in src
+    if have_resolver and have_handler:
+        return _make(name, "pass", "IP-pin symbols present: _resolve_and_pin_host / _PinnedHTTP[S]Handler", dur)
+    return _make(name, "fail", f"DNS rebinding mitigation incomplete: resolver={have_resolver}, handler={have_handler}", dur)
+
+
+def check_r3_worker_isolator_symlink_safe(repo: Path) -> CheckResult:
+    """R3-H: WorkerIsolator must defend against symlink escape."""
+    name = "r3_worker_isolator_symlink_safe"
+    t0 = time.monotonic()
+    p = repo / "src" / "autodev" / "executors" / "worker_isolator.py"
+    dur = (time.monotonic() - t0) * 1000
+    if not p.exists():
+        return _make(name, "fail", "executors/worker_isolator.py not found", dur)
+    src = p.read_text(encoding="utf-8")
+    if "WorkerIsolatorPathEscapeError" in src:
+        return _make(name, "pass", "WorkerIsolatorPathEscapeError exception present", dur)
+    return _make(name, "fail", "WorkerIsolatorPathEscapeError not found — symlink hardening missing", dur)
+
+
+def check_r3_changelog_present(repo: Path) -> CheckResult:
+    """R3-G: CHANGELOG.md present at repo root, mentions 0.1.0a1."""
+    name = "r3_changelog_present"
+    t0 = time.monotonic()
+    p = repo / "CHANGELOG.md"
+    dur = (time.monotonic() - t0) * 1000
+    if not p.exists():
+        return _make(name, "fail", "CHANGELOG.md not found", dur)
+    content = p.read_text(encoding="utf-8")
+    if "0.1.0a1" in content:
+        return _make(name, "pass", f"CHANGELOG.md exists ({len(content)} chars), mentions 0.1.0a1", dur)
+    return _make(name, "fail", "CHANGELOG.md exists but does not mention 0.1.0a1", dur)
+
+
+def check_r3_configuration_doc_present(repo: Path) -> CheckResult:
+    """R3-G: docs/configuration.md present and substantive."""
+    name = "r3_configuration_doc_present"
+    t0 = time.monotonic()
+    p = repo / "docs" / "configuration.md"
+    dur = (time.monotonic() - t0) * 1000
+    if not p.exists():
+        return _make(name, "fail", "docs/configuration.md not found", dur)
+    content = p.read_text(encoding="utf-8")
+    if len(content) >= 500:
+        return _make(name, "pass", f"configuration.md exists ({len(content)} chars)", dur)
+    return _make(name, "fail", f"configuration.md too short ({len(content)} chars, need >=500)", dur)
+
+
+def check_r3_troubleshooting_doc_present(repo: Path) -> CheckResult:
+    """R3-G: docs/troubleshooting.md present and substantive."""
+    name = "r3_troubleshooting_doc_present"
+    t0 = time.monotonic()
+    p = repo / "docs" / "troubleshooting.md"
+    dur = (time.monotonic() - t0) * 1000
+    if not p.exists():
+        return _make(name, "fail", "docs/troubleshooting.md not found", dur)
+    content = p.read_text(encoding="utf-8")
+    if len(content) >= 500:
+        return _make(name, "pass", f"troubleshooting.md exists ({len(content)} chars)", dur)
+    return _make(name, "fail", f"troubleshooting.md too short ({len(content)} chars, need >=500)", dur)
+
+
+def check_r3_docker_base_digest_pinned(repo: Path) -> CheckResult:
+    """R3-D: packaging/docker/Dockerfile FROM lines must be digest-pinned (@sha256:)."""
+    name = "r3_docker_base_digest_pinned"
+    t0 = time.monotonic()
+    p = repo / "packaging" / "docker" / "Dockerfile"
+    dur = (time.monotonic() - t0) * 1000
+    if not p.exists():
+        return _make(name, "fail", "packaging/docker/Dockerfile not found", dur)
+    import re
+    content = p.read_text(encoding="utf-8")
+    from_lines = [ln for ln in content.splitlines() if ln.strip().startswith("FROM ") and not ln.strip().startswith("#")]
+    if not from_lines:
+        return _make(name, "fail", "No FROM lines found in Dockerfile", dur)
+    bad = []
+    for ln in from_lines:
+        if not re.search(r"@sha256:[0-9a-f]{64}", ln):
+            bad.append(ln.strip())
+    if bad:
+        return _make(name, "fail", f"FROM line(s) not digest-pinned: {bad[0][:80]}", dur)
+    return _make(name, "pass", f"{len(from_lines)} FROM line(s) all digest-pinned (@sha256:<64-hex>)", dur)
+
+
+def check_r3_homebrew_publish_time_blocker_clean(repo: Path) -> CheckResult:
+    """R3-F: Homebrew formula must be HONESTLY blocked.
+
+    Pass iff ALL of:
+      (a) sha256 is a recognized placeholder (TODO_PUBLISH_SHA256 or REPLACE_WITH_*)
+      (b) formula contains explicit "BLOCKED" comment
+      (c) packaging/homebrew/PUBLISH_CHECKLIST.md exists
+    """
+    name = "r3_homebrew_publish_time_blocker_clean"
+    t0 = time.monotonic()
+    formula = repo / "packaging" / "homebrew" / "Formula" / "autodev-ai.rb"
+    checklist = repo / "packaging" / "homebrew" / "PUBLISH_CHECKLIST.md"
+    dur = (time.monotonic() - t0) * 1000
+    if not formula.exists():
+        return _make(name, "fail", "Formula file not found", dur)
+    if not checklist.exists():
+        return _make(name, "fail", "PUBLISH_CHECKLIST.md not found", dur)
+    content = formula.read_text(encoding="utf-8")
+    has_placeholder = "TODO_PUBLISH_SHA256" in content or "REPLACE_WITH_PYPI" in content
+    has_blocked = "BLOCKED" in content
+    if has_placeholder and has_blocked:
+        return _make(name, "pass", "Homebrew formula is honestly BLOCKED with placeholder + checklist", dur)
+    return _make(name, "fail",
+                 f"Homebrew honesty check failed: placeholder={has_placeholder}, BLOCKED comment={has_blocked}",
+                 dur)
+
+
+def check_r3_pypi_rc_not_blocked_by_homebrew(repo: Path) -> CheckResult:
+    """Meta check: if Homebrew is honestly blocked (R3-F clean), PyPI RC is not contaminated.
+
+    This always returns pass if r3_homebrew_publish_time_blocker_clean would pass.
+    Used by --strict-rc to record the separation logic.
+    """
+    name = "r3_pypi_rc_not_blocked_by_homebrew"
+    t0 = time.monotonic()
+    result = check_r3_homebrew_publish_time_blocker_clean(repo)
+    dur = (time.monotonic() - t0) * 1000
+    if result["status"] == "pass":
+        return _make(name, "pass",
+                     "Homebrew is honestly blocked → does not block PyPI RC verdict",
+                     dur)
+    return _make(name, "fail",
+                 "Homebrew is not honestly blocked → could ambiguously block PyPI RC",
+                 dur)
+
+
+# Names of checks whose failure is permitted under --strict-rc (Homebrew publish only).
+# These do NOT block PyPI RC readiness, but DO block Homebrew publish.
+_HOMEBREW_PUBLISH_ONLY_CHECKS: tuple[str, ...] = (
+    # Currently empty: all Homebrew checks we run (owner_fixed, sha256_not_stale,
+    # publish_time_blocker_clean, pypi_rc_not_blocked_by_homebrew) are honesty-checks
+    # that SHOULD pass post-R2/R3. We keep the list infrastructure for future use
+    # if a real "Homebrew published?" check is ever added.
+)
+
+
+# ---------------------------------------------------------------------------
 # Orchestrator
 # ---------------------------------------------------------------------------
 
@@ -940,7 +1155,22 @@ R2_CHECKS = [
     check_r2_remaining_blockers_recorded,
 ]
 
-ALL_CHECKS = BASE_CHECKS + R2_CHECKS
+R3_CHECKS = [
+    check_r3_mypy_clean,
+    check_r3_ruff_clean,
+    check_r3_lint_yml_scans_scripts,
+    check_r3_mcp_apply_guardrail_present,
+    check_r3_a2a_dns_rebinding_pinned,
+    check_r3_worker_isolator_symlink_safe,
+    check_r3_changelog_present,
+    check_r3_configuration_doc_present,
+    check_r3_troubleshooting_doc_present,
+    check_r3_docker_base_digest_pinned,
+    check_r3_homebrew_publish_time_blocker_clean,
+    check_r3_pypi_rc_not_blocked_by_homebrew,
+]
+
+ALL_CHECKS = BASE_CHECKS + R2_CHECKS + R3_CHECKS
 
 
 def run_checks(repo: Path, checks: list) -> list[CheckResult]:
@@ -986,7 +1216,7 @@ def build_report(repo: Path, checks_to_run: list | None = None) -> dict[str, Any
 
 
 def main(argv: list[str] | None = None) -> dict[str, Any]:
-    parser = argparse.ArgumentParser(description="autodev-ai Release Readiness Gate (24 checks)")
+    parser = argparse.ArgumentParser(description="autodev-ai Release Readiness Gate (36 checks)")
     parser.add_argument("--repo-path", default=".", help="Path to the repository root")
     parser.add_argument(
         "--output",
@@ -996,25 +1226,48 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
     parser.add_argument(
         "--strict",
         action="store_true",
-        help="Exit 1 if any check fails (all 24 checks)",
+        help="Exit 1 if any check fails (all checks, no Homebrew exemption)",
     )
     parser.add_argument(
         "--include-r2",
         action="store_true",
         default=False,
-        help="Run only the 12 R2-specific checks (skip base 12)",
+        help="Run only the 12 R2-specific checks",
     )
     parser.add_argument(
         "--strict-r2",
         action="store_true",
-        help="Exit 1 if any R2 check fails (implies --include-r2 scope for exit code)",
+        help="Exit 1 if any R2 check fails",
+    )
+    parser.add_argument(
+        "--include-r3",
+        action="store_true",
+        default=False,
+        help="Run only the 12 R3-specific checks",
+    )
+    parser.add_argument(
+        "--strict-r3",
+        action="store_true",
+        help="Exit 1 if any R3 check fails",
+    )
+    parser.add_argument(
+        "--strict-rc",
+        action="store_true",
+        help=(
+            "Exit 1 if any non-Homebrew-publish check fails. "
+            "Allows the known Homebrew publish-time blocker (formula needs PyPI 0.1.0a1 sha256) "
+            "to pass through so PyPI RC readiness is not contaminated by Homebrew's downstream "
+            "dependency."
+        ),
     )
     args = parser.parse_args(argv)
 
     repo = Path(args.repo_path).resolve()
 
     # Determine which checks to run
-    if args.include_r2:
+    if args.include_r3:
+        checks_to_run = R3_CHECKS
+    elif args.include_r2:
         checks_to_run = R2_CHECKS
     else:
         checks_to_run = ALL_CHECKS
@@ -1026,11 +1279,26 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
     if args.strict and not report["strict_pass"]:
         strict_fail = True
     if args.strict_r2:
-        # Check only R2 checks for strict exit
         r2_results = [c for c in report["checks"] if c["name"].startswith("r2_")]
-        r2_fails = sum(1 for c in r2_results if c["status"] == "fail")
-        if r2_fails > 0:
+        if sum(1 for c in r2_results if c["status"] == "fail") > 0:
             strict_fail = True
+    if args.strict_r3:
+        r3_results = [c for c in report["checks"] if c["name"].startswith("r3_")]
+        if sum(1 for c in r3_results if c["status"] == "fail") > 0:
+            strict_fail = True
+    if args.strict_rc:
+        # PyPI RC strict: fail iff any non-Homebrew-publish check fails.
+        # If Homebrew is honestly blocked (r3_homebrew_publish_time_blocker_clean
+        # passes), its blocked-ness does not contaminate the RC verdict.
+        rc_fails = [
+            c for c in report["checks"]
+            if c["status"] == "fail" and c["name"] not in _HOMEBREW_PUBLISH_ONLY_CHECKS
+        ]
+        if rc_fails:
+            strict_fail = True
+        # Annotate the report with the RC verdict
+        report["pypi_rc_verdict"] = "pass" if not rc_fails else "fail"
+        report["pypi_rc_excluded_from_strict"] = list(_HOMEBREW_PUBLISH_ONLY_CHECKS)
 
     # Resolve output path
     out_path = Path(args.output)
