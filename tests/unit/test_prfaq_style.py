@@ -111,17 +111,30 @@ def test_prfaq_document_schema_instantiation():
 # 4. CLI --style prfaq flag works (smoke test)
 # ---------------------------------------------------------------------------
 
+def _strip_ansi_and_wraps(text: str) -> str:
+    """Strip ANSI escape sequences and soft line-wraps that typer/rich apply
+    when stdout is narrow (e.g. on CI runners where COLUMNS=80).
+
+    Soft-wrapping splits long flags like ``--style`` across lines as
+    ``--st\nyle`` which defeats a plain ``in`` substring check.
+    """
+    import re
+    no_ansi = re.sub(r"\x1b\[[0-9;]*m", "", text)
+    # Collapse any whitespace (spaces, newlines, tabs) into a single space so
+    # wrapped flags re-join.
+    return re.sub(r"\s+", " ", no_ansi)
+
+
 def test_cli_style_flag_accepted():
     """--style prfaq should be accepted by the CLI without error."""
     runner = CliRunner()
-    # Invoke with --help to confirm the flag is registered
     result = runner.invoke(app, ["create-prd", "--help"])
     assert result.exit_code == 0
-    assert "--style" in result.output
+    assert "--style" in _strip_ansi_and_wraps(result.output)
 
 
 def test_cli_deliver_project_style_flag_accepted():
     runner = CliRunner()
     result = runner.invoke(app, ["deliver-project", "--help"])
     assert result.exit_code == 0
-    assert "--style" in result.output
+    assert "--style" in _strip_ansi_and_wraps(result.output)
