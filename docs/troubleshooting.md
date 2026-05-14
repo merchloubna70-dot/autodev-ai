@@ -210,22 +210,33 @@ pip install --upgrade build
 
 ---
 
-## 9. Homebrew sha256 placeholder
+## 9. Homebrew install
 
-**Symptom:** `brew install autodev-ai` (or tapping the formula) fails because
-the sha256 in the formula is a placeholder (`PLACEHOLDER_SHA256_PYPI_WHEEL`).
+The Homebrew tap is now live. Install autodev-ai via Homebrew on macOS or Linux
+(Linuxbrew):
 
-**Explanation:** The Homebrew formula is pre-written but cannot be activated
-until the PyPI `0.1.0a1` wheel is published and its SHA-256 is known.
-
-**Workaround until PyPI publish:**
 ```bash
-# Install from the GitHub Release wheel directly
-pip install https://github.com/merchloubna70-dot/autodev-ai/releases/download/v0.1.0-alpha/autodev_ai-0.1.0-py3-none-any.whl
+brew tap merchloubna70-dot/autodev
+brew install autodev-ai
+autodev --version
 ```
 
-After the PyPI publish, the formula will be updated with the real sha256 and
-`brew install` will work.
+The tap is hosted at https://github.com/merchloubna70-dot/homebrew-autodev and
+tracks `stable 0.1.0a3`.
+
+**If `brew install` still fails** (e.g., formula cache stale), try:
+
+```bash
+brew update
+brew tap --repair merchloubna70-dot/autodev
+brew install autodev-ai
+```
+
+As a fallback, install directly from PyPI:
+
+```bash
+pip install --pre autodev-ai==0.1.0a3
+```
 
 ---
 

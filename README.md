@@ -18,16 +18,28 @@ audit trail, A2A agent networking, MCP server support, and sprint-mode planning.
 
 ## Install
 
-> **Status**: alpha — [`v0.1.0-alpha`](https://github.com/merchloubna70-dot/autodev-ai/releases/tag/v0.1.0-alpha) on GitHub Releases.
-> PyPI publish gated on user feedback; install from wheel or source for now.
+> **Status**: alpha — [`v0.1.0a3`](https://github.com/merchloubna70-dot/autodev-ai/releases/tag/v0.1.0a3) on GitHub Releases.
 
-From the GitHub Release wheel:
+From PyPI (recommended):
 
 ```bash
-pip install --pre autodev-ai           # once published on PyPI
-# OR install directly from the GitHub Release wheel:
-pip install https://github.com/merchloubna70-dot/autodev-ai/releases/download/v0.1.0a1/autodev_ai-0.1.0a1-py3-none-any.whl
+pip install --pre autodev-ai==0.1.0a3
+# or latest pre-release:
+pip install --pre autodev-ai
 ```
+
+### Limitations (Alpha)
+
+This is a public alpha. The following are **not yet available**:
+
+| Limitation | Detail |
+|------------|--------|
+| **SLSA L3 absent** | Build provenance attestations are not generated; supply-chain hardening is post-alpha. |
+| **SBOM absent** | No Software Bill of Materials is produced for releases. |
+| **cosign not signed** | Docker images are not signed; `cosign verify` will fail. |
+| **MCP per-caller auth absent** | The MCP server has no per-caller authentication tokens; any process that can reach the stdio server has full tool access. |
+| **Coverage 80.5%** | Line + branch coverage is 80.5%, below the 90% production target. |
+| **Enterprise use blocked** | Production or enterprise deployments are not supported. See [`docs/release_notes/v0.1.0a1.md`](docs/release_notes/v0.1.0a1.md) for the full scope statement. |
 
 From source:
 
@@ -40,9 +52,20 @@ pip install -e ".[dev]"
 Docker (codex + claude pre-installed, ~2 GB):
 
 ```bash
-docker pull ghcr.io/merchloubna70-dot/autodev-ai:0.1.0-alpha
-docker run --rm ghcr.io/merchloubna70-dot/autodev-ai:0.1.0-alpha --help
+docker pull ghcr.io/merchloubna70-dot/autodev-ai:0.1.0a3
+docker run --rm ghcr.io/merchloubna70-dot/autodev-ai:0.1.0a3 --help
 ```
+
+### Homebrew (macOS / Linux)
+
+```bash
+brew tap merchloubna70-dot/autodev
+brew install autodev-ai
+autodev --version
+```
+
+> Linux users require [Linuxbrew](https://docs.brew.sh/Homebrew-on-Linux). The tap
+> is live at https://github.com/merchloubna70-dot/homebrew-autodev.
 
 Optional — real CrewAI runtime:
 
@@ -264,6 +287,7 @@ autodev plan-project       — Generate a project plan from PRD
 autodev plan-milestones    — Generate milestones from a project plan
 autodev plan-tasks         — Generate tasks from milestones
 autodev review             — Approve/reject a paused human-review gate
+autodev dashboard          — Launch the Textual TUI dashboard (requires: pip install autodev-ai[tui])
 ```
 
 ---

@@ -16,7 +16,7 @@ realistic audit artifacts without spending any API quota.
 ## Step 1 — Install
 
 ```bash
-git clone https://github.com/your-org/autodev-ai.git
+git clone https://github.com/merchloubna70-dot/autodev-ai.git
 cd autodev-ai
 pip install -e ".[dev]"
 ```
@@ -77,7 +77,7 @@ activated automatically by `--allow-mock-executor true`.
 ## Step 3 — Run the demo project
 
 ```bash
-autodev deliver-project \
+FACTORY_FORCE_MOCK=1 autodev deliver-project \
   --project-brief examples/01-mdlines/brief.md \
   --from-scratch true \
   --mode dry-run \
@@ -85,6 +85,10 @@ autodev deliver-project \
   --allow-mock-executor true \
   --repo-path /tmp/mdlines-demo
 ```
+
+> **`FACTORY_FORCE_MOCK=1`** skips CLI detection and uses deterministic mocks even
+> when `codex`/`claude` binaries are installed. Combined with `--allow-mock-executor true`,
+> this guarantees a fully offline run with no API quota consumed.
 
 The command runs through seven pipeline stages (classify → PRD → architect →
 plan → scaffold → quality-gate → verify) and exits in roughly 10–30 seconds
