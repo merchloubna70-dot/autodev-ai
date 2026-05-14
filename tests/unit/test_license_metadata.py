@@ -1,9 +1,13 @@
 """Tests for LICENSE file existence and pyproject.toml / README license metadata."""
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
-import tomllib
+if sys.version_info >= (3, 11):
+    import tomllib
+else:  # py3.10 compat
+    import tomli as tomllib  # type: ignore[no-redef,import-not-found]
 
 REPO_ROOT = Path(__file__).parent.parent.parent
 LICENSE_FILE = REPO_ROOT / "LICENSE"
