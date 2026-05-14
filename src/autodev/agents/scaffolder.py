@@ -183,3 +183,13 @@ class ScaffolderAgent:
             dropped_task_ids=[],
             survived_task_ids=[],
         )
+
+
+# BMAD-17: register agent menu at module load time
+from ._menu import register_default_menu  # noqa: E402
+from ..schemas import AgentMenuEntry  # noqa: E402
+
+register_default_menu("scaffolder", [
+    AgentMenuEntry(code="SC", description="Scaffold new project skeleton", skill="scaffolder"),
+    AgentMenuEntry(code="VS", description="Verify scaffold plan", skill="scaffolder"),
+])

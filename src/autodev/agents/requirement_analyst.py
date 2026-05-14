@@ -133,3 +133,14 @@ class RequirementAnalystAgent:
             language_count=language_count,
             risk_level=risk_level,
         )
+
+
+# BMAD-17: register agent menu at module load time
+from ._menu import register_default_menu  # noqa: E402
+from ..schemas import AgentMenuEntry  # noqa: E402
+
+register_default_menu("requirement_analyst", [
+    AgentMenuEntry(code="DR", description="Derive requirements from brief", skill="requirement_analyst"),
+    AgentMenuEntry(code="IS", description="Infer project scale", skill="requirement_analyst"),
+    AgentMenuEntry(code="NFR", description="Extract non-functional requirements", skill="requirement_analyst"),
+])

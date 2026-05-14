@@ -34,3 +34,14 @@ class SystemArchitectAgent:
         for d in spec.decisions:
             lines.append(f"- {d}")
         return "\n".join(lines) + "\n"
+
+
+# BMAD-17: register agent menu at module load time
+from ._menu import register_default_menu  # noqa: E402
+from ..schemas import AgentMenuEntry  # noqa: E402
+
+register_default_menu("system_architect", [
+    AgentMenuEntry(code="DA", description="Design architecture from PRD", skill="system_architect"),
+    AgentMenuEntry(code="MA", description="Render architecture as Markdown", skill="system_architect"),
+    AgentMenuEntry(code="VA", description="Validate architecture spec", skill="system_architect"),
+])

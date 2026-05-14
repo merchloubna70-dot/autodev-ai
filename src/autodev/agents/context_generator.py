@@ -495,3 +495,13 @@ class ContextGeneratorAgent:
         discovery = self.discover(repo_path)
         draft = self.synthesize(discovery, prd=prd, brief=brief)
         return self.commit_to_disk(draft, repo_path, product_name=product_name)
+
+
+# BMAD-17: register agent menu at module load time
+from ._menu import register_default_menu  # noqa: E402
+from ..schemas import AgentMenuEntry  # noqa: E402
+
+register_default_menu("context_generator", [
+    AgentMenuEntry(code="GC", description="Generate project context file", skill="context_generator"),
+    AgentMenuEntry(code="DI", description="Discover repo conventions", skill="context_generator"),
+])

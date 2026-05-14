@@ -1517,8 +1517,72 @@ class ElicitationOutput(BaseModel):
 
 # === MARKER BMAD15 MICROFILE ===
 
+
+class StepStatus(str, Enum):
+    PENDING = "pending"
+    RUNNING = "running"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    SKIPPED = "skipped"
+
+
+class StepRecord(BaseModel):
+    step_name: str
+    status: StepStatus = StepStatus.PENDING
+    started_at: str | None = None
+    finished_at: str | None = None
+    duration_ms: int = 0
+    error_type: str | None = None
+    output_summary: str = ""
+
+
+class StepRegistrySnapshot(BaseModel):
+    registry_name: str
+    steps: list[str] = Field(default_factory=list)
+    records: list[StepRecord] = Field(default_factory=list)
+
 # === MARKER BMAD16 HOOKS ===
+
+
+class ActivationStep(BaseModel):
+    name: str
+    description: str = ""
+    kind: str = "function"  # "function" / "shell" / "file-load"
+    params: dict = Field(default_factory=dict)
+
+
+class ActivationResult(BaseModel):
+    agent_name: str
+    success: bool = True
+    duration_ms: int = 0
+    prepend_steps_run: list[str] = Field(default_factory=list)
+    append_steps_run: list[str] = Field(default_factory=list)
+    result_summary: str = ""
+    errors: list[str] = Field(default_factory=list)
+
 
 # === MARKER BMAD17 AGENT-MENU ===
 
+
+class AgentMenuEntry(BaseModel):
+    code: str  # short code like "CU" or "create-prd"
+    description: str
+    skill: str | None = None  # registered skill name
+    prompt: str | None = None  # inline prompt text
+    icon: str = ""
+
+
+class AgentMenuSnapshot(BaseModel):
+    agent_name: str
+    menu: list[AgentMenuEntry] = Field(default_factory=list)
+
+
 # === MARKER BMAD18 SKILL-CUSTOMIZE ===
+
+
+class AgentCustomizeSnapshot(BaseModel):
+    agent_name: str
+    layers_loaded: list[str] = Field(default_factory=list)  # paths
+    effective_keys: list[str] = Field(default_factory=list)
+    persistent_facts: list[str] = Field(default_factory=list)
+    principles: list[str] = Field(default_factory=list)

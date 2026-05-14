@@ -24,3 +24,13 @@ class MilestonePlannerAgent:
         scale: Scale | None = None,
     ) -> list[Milestone]:
         return self.core.plan(architecture=architecture, languages=languages, max_milestones=max_milestones, scale=scale)
+
+
+# BMAD-17: register agent menu at module load time
+from ._menu import register_default_menu  # noqa: E402
+from ..schemas import AgentMenuEntry  # noqa: E402
+
+register_default_menu("milestone_planner", [
+    AgentMenuEntry(code="PM", description="Plan milestones from architecture", skill="milestone_planner"),
+    AgentMenuEntry(code="SM", description="Show milestone summary", skill="milestone_planner"),
+])

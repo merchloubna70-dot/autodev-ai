@@ -371,3 +371,13 @@ def _resolve_product_name(prd: PRD | None, brief: ProductBrief | None) -> str:
     if brief and brief.product_name:
         return brief.product_name
     return "Product"
+
+
+# BMAD-17: register agent menu at module load time
+from ._menu import register_default_menu  # noqa: E402
+from ..schemas import AgentMenuEntry  # noqa: E402
+
+register_default_menu("ux_designer", [
+    AgentMenuEntry(code="UX", description="Generate UX design spec", skill="ux_designer"),
+    AgentMenuEntry(code="JM", description="Create user journey map", skill="ux_designer"),
+])

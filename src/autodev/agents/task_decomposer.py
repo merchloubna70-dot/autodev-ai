@@ -37,3 +37,13 @@ class TaskDecomposerAgent:
             skip_m0_redundant_arch=skip_m0_redundant_arch,
             scale=scale,
         )
+
+
+# BMAD-17: register agent menu at module load time
+from ._menu import register_default_menu  # noqa: E402
+from ..schemas import AgentMenuEntry  # noqa: E402
+
+register_default_menu("task_decomposer", [
+    AgentMenuEntry(code="DT", description="Decompose milestones into tasks", skill="task_decomposer"),
+    AgentMenuEntry(code="RT", description="Review task readiness", skill="task_decomposer"),
+])

@@ -672,3 +672,13 @@ class DocumentProjectAgent:
             title="Commit History Patterns",
             body_markdown="\n".join(lines),
         )
+
+
+# BMAD-17: register agent menu at module load time
+from ._menu import register_default_menu  # noqa: E402
+from ..schemas import AgentMenuEntry  # noqa: E402
+
+register_default_menu("document_project", [
+    AgentMenuEntry(code="DP", description="Document existing brownfield project", skill="document_project"),
+    AgentMenuEntry(code="ES", description="Export section docs", skill="document_project"),
+])

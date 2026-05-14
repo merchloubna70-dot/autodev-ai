@@ -62,3 +62,14 @@ class ProductManagerAgent:
     def _first_match(self, text: str, pattern: str) -> str | None:
         m = re.search(pattern, text, re.IGNORECASE)
         return m.group(1).strip() if m else None
+
+
+# BMAD-17: register agent menu at module load time
+from ._menu import register_default_menu  # noqa: E402
+from ..schemas import AgentMenuEntry  # noqa: E402
+
+register_default_menu("product_manager", [
+    AgentMenuEntry(code="CB", description="Create product brief", skill="product_manager"),
+    AgentMenuEntry(code="GB", description="Generate goals from text", skill="product_manager"),
+    AgentMenuEntry(code="NGL", description="Identify non-goals", skill="product_manager"),
+])

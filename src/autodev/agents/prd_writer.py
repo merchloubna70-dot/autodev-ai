@@ -170,3 +170,14 @@ class PRDWriterAgent:
             availability=availability,
             faqs=faqs,
         )
+
+
+# BMAD-17: register agent menu at module load time
+from ._menu import register_default_menu  # noqa: E402
+from ..schemas import AgentMenuEntry  # noqa: E402
+
+register_default_menu("prd_writer", [
+    AgentMenuEntry(code="WP", description="Write PRD document", skill="prd_writer"),
+    AgentMenuEntry(code="PF", description="Generate PRFAQ", skill="prd_writer"),
+    AgentMenuEntry(code="EP", description="Export PRD to JSON", skill="prd_writer"),
+])

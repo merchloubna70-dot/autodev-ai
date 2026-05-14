@@ -383,3 +383,14 @@ class InvestigatorAgent:
                 snippet="[case file not readable]",
             ))
         return entries
+
+
+# BMAD-17: register agent menu at module load time
+from ._menu import register_default_menu  # noqa: E402
+from ..schemas import AgentMenuEntry  # noqa: E402
+
+register_default_menu("investigator", [
+    AgentMenuEntry(code="OC", description="Open investigation case", skill="investigator"),
+    AgentMenuEntry(code="CE", description="Collect evidence", skill="investigator"),
+    AgentMenuEntry(code="RS", description="Resume case from file", skill="investigator"),
+])
