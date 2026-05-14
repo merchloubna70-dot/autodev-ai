@@ -1,7 +1,12 @@
-# autodev
+# autodev-ai
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python ≥3.10](https://img.shields.io/badge/python-%E2%89%A53.10-blue)](https://www.python.org)
 
 A CrewAI + **Codex CLI** + **Claude Code CLI** software factory that supports
-two delivery modes against any Python / Rust / TypeScript repository:
+two delivery modes against any Python / Rust / TypeScript repository.
+
+PyPI distribution name: **`autodev-ai`** (CLI command: `autodev`, import: `from autodev import …`).
 
 - **Issue Mode** — turn a GitHub issue / local `issue.md` into a structured
   change with audit trail, gates, and PR-ready artifacts.
