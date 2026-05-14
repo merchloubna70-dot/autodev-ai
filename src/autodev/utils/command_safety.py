@@ -66,6 +66,18 @@ DEFAULT_DENYLIST: tuple[str, ...] = (
     "gh --force",
 )
 
+# Regex patterns applied *in addition to* (not instead of) DEFAULT_DENYLIST.
+# Use these for patterns where a URL or other argument may appear between the
+# command verb and the pipe target, making literal substring matching unreliable.
+# Each entry is a compiled regex; a match (re.search) on the *raw* command
+# string (before pipe-whitespace normalisation) signals a denial.
+DEFAULT_DENYLIST_REGEX: tuple[re.Pattern[str], ...] = (
+    # curl <any-args> | bash|sh|dash|zsh|python — real-world pipe-to-shell attack
+    re.compile(r"curl\b.*\|\s*(bash|sh|dash|zsh|python\d*)\b"),
+    # wget <any-args> | bash|sh|dash|zsh|python
+    re.compile(r"wget\b.*\|\s*(bash|sh|dash|zsh|python\d*)\b"),
+)
+
 
 @dataclass
 class SafetyVerdict:
@@ -104,11 +116,25 @@ def _normalize_pipe_whitespace(text: str) -> str:
     return re.sub(r"\s*\|\s*", " | ", text)
 
 
-def is_command_denied(command: str, denylist: tuple[str, ...] = DEFAULT_DENYLIST) -> SafetyVerdict:
+def is_command_denied(
+    command: str,
+    denylist: tuple[str, ...] = DEFAULT_DENYLIST,
+    denylist_regex: tuple[re.Pattern[str], ...] = DEFAULT_DENYLIST_REGEX,
+) -> SafetyVerdict:
+    # Check literal denylist against pipe-normalised command
     cmd = _normalize_pipe_whitespace(command)
     for rule in denylist:
         if rule in cmd:
             return SafetyVerdict(False, rule, f"matched denylist pattern: {rule!r}")
+    # Check regex patterns against the raw command (pre-normalisation) so that
+    # URL arguments between the verb and the pipe are correctly matched.
+    for pattern in denylist_regex:
+        if pattern.search(command):
+            return SafetyVerdict(
+                False,
+                pattern.pattern,
+                f"matched denylist regex: {pattern.pattern!r}",
+            )
     return SafetyVerdict(True, None, "no denylist match")
 
 
@@ -119,4 +145,8 @@ def scan_prompt_for_unsafe(prompt: str) -> list[str]:
     for rule in DEFAULT_DENYLIST:
         if rule in normalized:
             flags.append(f"prompt contains forbidden pattern: {rule!r}")
+    # Also check regex patterns against the raw prompt
+    for pattern in DEFAULT_DENYLIST_REGEX:
+        if pattern.search(prompt):
+            flags.append(f"prompt contains forbidden pattern: {pattern.pattern!r}")
     return flags

@@ -27,6 +27,14 @@ _EXACT_REJECT: frozenset[str] = frozenset(
         ".env",
         "credentials.json",
         "secrets.toml",
+        # SSH key files (no extension — not caught by *.key / *.pem globs)
+        "id_rsa",
+        "id_dsa",
+        "id_ecdsa",
+        "id_ed25519",
+        "id_xmss",
+        "authorized_keys",
+        "known_hosts",
     }
 )
 
@@ -42,6 +50,43 @@ _BASENAME_SUBSTRINGS: tuple[str, ...] = (
     "secret",
     "token",
     "credential",
+)
+
+# SSH key basename prefixes — blocks id_rsa.pub, id_ed25519.old, etc.
+_SSH_KEY_PREFIXES: tuple[str, ...] = (
+    "id_rsa",
+    "id_dsa",
+    "id_ecdsa",
+    "id_ed25519",
+    "id_xmss",
+)
+
+# Absolute path prefixes that are always off-limits for MCP operations.
+# These cover system-file locations that are never a legitimate project repo.
+# Paths under /tmp, /Users, /home, /var/folders etc. are still allowed
+# because they can legitimately host project directories.
+#
+# Note: on macOS /etc, /tmp, /var etc. are symlinks under /private/ —
+# include both the canonical symlink form and the /private/ resolved form so
+# that Path.resolve() and raw-string matching both work.
+_ABSOLUTE_REJECT_PREFIXES: tuple[str, ...] = (
+    "/etc/",
+    "/etc",           # bare /etc itself
+    "/private/etc/",  # macOS: /etc -> /private/etc
+    "/private/etc",
+    "/root/",
+    "/root",
+    "/private/root/",
+    "/private/root",
+    "/proc/",
+    "/proc",
+    "/sys/",
+    "/sys",
+    "/dev/",
+    "/dev",
+    "/boot/",
+    "/boot",
+    "/.ssh/",         # /home/.../.ssh handled by basename checks; block bare /.ssh
 )
 
 # ---------------------------------------------------------------------------
@@ -71,6 +116,19 @@ def _validate_safe_path(path: str | Path, *, role: str = "path") -> None:
 
     path_str = str(path)
 
+    # 0. Absolute path: reject if the resolved path starts with a protected
+    #    system-directory prefix.  Legitimate absolute project paths under
+    #    /tmp, /Users, /home, /var, etc. are still allowed; this only blocks
+    #    known system trees (/etc, /root, /proc, /sys, /dev, /boot).
+    if Path(path_str).is_absolute():
+        # Normalise with a trailing separator so prefix matching is exact.
+        resolved_str = str(Path(path_str).resolve())
+        for prefix in _ABSOLUTE_REJECT_PREFIXES:
+            if resolved_str == prefix.rstrip("/") or resolved_str.startswith(
+                prefix if prefix.endswith("/") else prefix + "/"
+            ):
+                raise MCPPathSafetyError(_REJECT_MSG)
+
     # 1. Path traversal
     try:
         parts = PurePosixPath(path_str).parts
@@ -79,7 +137,7 @@ def _validate_safe_path(path: str | Path, *, role: str = "path") -> None:
     if ".." in parts or ".." in path_str.split("/") or ".." in path_str.split("\\"):
         raise MCPPathSafetyError(_REJECT_MSG)
 
-    # 2 & 3 & 4: operate on the last component only to avoid false positives
+    # 2 & 3 & 4 & 5: operate on the last component only to avoid false positives
     #    like /Users/secret/dev/repo  (parent dir named "secret")
     basename = Path(path_str).name.lower()  # empty string for bare "/"
 
@@ -95,4 +153,9 @@ def _validate_safe_path(path: str | Path, *, role: str = "path") -> None:
     # 4. Substring in basename
     for substr in _BASENAME_SUBSTRINGS:
         if substr in basename:
+            raise MCPPathSafetyError(_REJECT_MSG)
+
+    # 5. SSH key basename prefix — catches id_rsa.pub, id_ed25519.old, etc.
+    for prefix in _SSH_KEY_PREFIXES:
+        if basename.startswith(prefix):
             raise MCPPathSafetyError(_REJECT_MSG)

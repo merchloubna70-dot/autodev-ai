@@ -108,6 +108,47 @@ class TestValidateSafePathRejects:
         with pytest.raises(MCPPathSafetyError):
             _validate_safe_path("/opt/app/credential_store.db")
 
+    # R8-F2: absolute system-path rejection (P1 fix)
+    def test_rejects_etc_passwd_absolute(self):
+        """Absolute /etc/passwd must be rejected (was: passed through before R8-F2)."""
+        with pytest.raises(MCPPathSafetyError):
+            _validate_safe_path("/etc/passwd")
+
+    def test_rejects_etc_shadow_absolute(self):
+        with pytest.raises(MCPPathSafetyError):
+            _validate_safe_path("/etc/shadow")
+
+    def test_rejects_etc_hosts_absolute(self):
+        with pytest.raises(MCPPathSafetyError):
+            _validate_safe_path("/etc/hosts")
+
+    # R8-F2: SSH key basename rejection (P1 fix)
+    def test_rejects_id_rsa_bare(self):
+        """id_rsa without extension must be rejected (was: passed through before R8-F2)."""
+        with pytest.raises(MCPPathSafetyError):
+            _validate_safe_path("id_rsa")
+
+    def test_rejects_id_rsa_absolute(self):
+        with pytest.raises(MCPPathSafetyError):
+            _validate_safe_path("/home/user/.ssh/id_rsa")
+
+    def test_rejects_id_rsa_pub(self):
+        """id_rsa.pub must be rejected — SSH key prefix match."""
+        with pytest.raises(MCPPathSafetyError):
+            _validate_safe_path("id_rsa.pub")
+
+    def test_rejects_id_ed25519(self):
+        with pytest.raises(MCPPathSafetyError):
+            _validate_safe_path("/Users/user/.ssh/id_ed25519")
+
+    def test_rejects_authorized_keys(self):
+        with pytest.raises(MCPPathSafetyError):
+            _validate_safe_path("authorized_keys")
+
+    def test_rejects_known_hosts(self):
+        with pytest.raises(MCPPathSafetyError):
+            _validate_safe_path("known_hosts")
+
 
 class TestValidateSafePathAllows:
     """_validate_safe_path does NOT raise for safe paths."""
