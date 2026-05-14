@@ -51,7 +51,70 @@ class ReplayFlow:
     def __init__(self, config: FactoryConfig | None = None):
         self.config = config or FactoryConfig()
 
-    def replay(self, run_id: str, repo_path: str, from_stage: str) -> RunState:
+    def replay(
+        self,
+        run_id: str,
+        repo_path: str,
+        from_stage: str = "planning",
+        *,
+        from_step: str | None = None,
+    ) -> RunState:
+        # ------------------------------------------------------------------
+        # Fine-grained step resume via StepRunner
+        # ------------------------------------------------------------------
+        if from_step is not None:
+            from .step_definitions.project_delivery_steps import PROJECT_DELIVERY_REGISTRY
+            from .step_runner import StepRunner
+            from .project_delivery_flow import ProjectDeliveryInput
+
+            run = RunState.load(repo_path, run_id)
+            state = run.state
+
+            languages: list[Language] = list(state.languages) if state.languages else [Language.PYTHON]
+            mode: PipelineMode = state.mode or PipelineMode.DRY_RUN
+
+            source_text = state.prd.overview if state.prd else ""
+            ctx: dict = {
+                "inp": ProjectDeliveryInput(
+                    repo_path=repo_path,
+                    prd_text=source_text,
+                    languages=languages,
+                    mode=mode,
+                    allow_mock=True,
+                ),
+                "run": run,
+                "config": self.config,
+                "languages": languages,
+                "source_text": source_text,
+                "scan_first": state.repo_scan,
+                "brief": state.product_brief,
+                "prd": state.prd,
+                "arch": state.architecture,
+                "milestones": state.milestone_plan.milestones if state.milestone_plan else None,
+                "resolved_scale": None,
+                "tasks": state.milestone_plan.tasks if state.milestone_plan else None,
+                "functional": None,
+                "nf": None,
+                "ac": None,
+                "any_milestone_failed": False,
+            }
+
+            from .project_delivery_microfile import _CtxStepRunner  # noqa: PLC0415
+            runner = _CtxStepRunner()
+            runner.run(
+                registry=PROJECT_DELIVERY_REGISTRY,
+                run_state=ctx,
+                from_step=from_step,
+            )
+
+            iso_ts = datetime.now(timezone.utc).isoformat()
+            run.state.errors.append(f"replayed from step {from_step} at {iso_ts}")
+            run.save()
+            return run
+
+        # ------------------------------------------------------------------
+        # Coarse-grained stage resume (existing behaviour)
+        # ------------------------------------------------------------------
         if from_stage not in STAGES:
             raise ValueError(
                 f"Unknown stage {from_stage!r}. Valid stages: {STAGES}"

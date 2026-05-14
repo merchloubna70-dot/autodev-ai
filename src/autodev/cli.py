@@ -326,10 +326,19 @@ def replay(
     run_id: str = typer.Option(..., "--run-id"),
     repo_path: str = typer.Option(".", "--repo-path"),
     from_stage: str = typer.Option("planning", "--from-stage"),
+    from_step: Optional[str] = typer.Option(None, "--from-step", help="Resume at a named micro-file step"),
 ) -> None:
     from .flows.replay_flow import ReplayFlow
-    run = ReplayFlow().replay(run_id=run_id, repo_path=repo_path, from_stage=from_stage)
-    typer.echo(f"run_id={run.run_id} stage={from_stage}")
+    run = ReplayFlow().replay(
+        run_id=run_id,
+        repo_path=repo_path,
+        from_stage=from_stage,
+        from_step=from_step,
+    )
+    if from_step:
+        typer.echo(f"run_id={run.run_id} step={from_step}")
+    else:
+        typer.echo(f"run_id={run.run_id} stage={from_stage}")
 
 
 # ---------------------------------------------------------------------------
