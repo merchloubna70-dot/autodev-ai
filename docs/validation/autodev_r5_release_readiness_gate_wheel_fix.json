@@ -1,0 +1,28 @@
+{
+  "gate": "r5_release_readiness_gate_wheel_fix",
+  "ran_at": "2026-05-14",
+  "verdict": "pass",
+  "refactor": {
+    "src_autodev_release_readiness_gate_before_loc": 25,
+    "src_autodev_release_readiness_gate_after_loc": 1375,
+    "scripts_release_readiness_gate_before_loc": 1334,
+    "scripts_release_readiness_gate_after_loc": 10,
+    "approach": "moved full implementation to src/autodev/release_readiness_gate.py; scripts/ is now a 10-line delegation wrapper"
+  },
+  "tests": {
+    "unit_tests_pass": 37,
+    "unit_tests_total": 37,
+    "new_integration_tests_pass": 3,
+    "new_integration_tests_total": 3,
+    "full_suite_pass": 1303,
+    "full_suite_fail_pre_existing": 8,
+    "full_suite_fail_introduced": 0
+  },
+  "gate_runs": {
+    "python_m_autodev_release_readiness_gate": "exit 0, 36 checks",
+    "python_scripts_release_readiness_gate_py": "exit 0, 36 checks",
+    "check_count_module": 36,
+    "check_count_script": 36,
+    "outputs_identical": true
+  }
+}

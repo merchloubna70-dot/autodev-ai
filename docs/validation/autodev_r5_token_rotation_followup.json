@@ -1,0 +1,40 @@
+{
+  "round": "r5_token_rotation_followup",
+  "status": "checklist_verified_rotation_not_executed",
+  "audit_date": "2026-05-14",
+  "checklist_path": "docs/release/pypi_token_rotation_checklist.md",
+  "checklist_complete": true,
+  "checklist_covers_all_required_steps": [
+    "1. PyPI: create new project-scoped token (scope: Project: autodev-ai)",
+    "2. GitHub: gh secret set PYPI_API_TOKEN via stdin pipe (printf '%s' | gh secret set; no argv, no echo, no file write)",
+    "3. PyPI: revoke OLD token (burns the chat-leaked credential)",
+    "4. Verify on next tag push that twine upload uses new token (CI gate)"
+  ],
+  "checklist_anti_patterns_documented": [
+    "Do NOT paste new token into chat",
+    "Do NOT write token to any file",
+    "Do NOT use gh secret set --body '<token>' (token in argv briefly)",
+    "Do NOT echo $PYPI_TOKEN > somewhere",
+    "Do NOT skip revocation of old token"
+  ],
+  "token_rotation": {
+    "recommended": true,
+    "completed": false,
+    "user_confirmed": false,
+    "reason": "PyPI token value was pasted in chat history once. R4.5-F audit confirmed zero token presence in git-tracked files. Chat exposure remains the only residual leak channel. Rotation eliminates it. Defense-in-depth recommendation; not blocking."
+  },
+  "current_token_status": {
+    "active": true,
+    "gh_secret_present": true,
+    "gh_secret_updated_at": "2026-05-14T07:44:23Z (when Opus set it via stdin pipe earlier in session — not a fresh rotation)",
+    "still_works_for_releases": true
+  },
+  "verification_method_for_rotation_completion": "After user runs the 4 steps in the checklist, the gh secret `updated_at` timestamp should change. Opus cannot tell from API alone whether the underlying token VALUE changed (API hides value); user confirmation required for `completed: true`.",
+  "what_this_round_does_not_do": [
+    "Does NOT execute token rotation",
+    "Does NOT request user paste new token",
+    "Does NOT read or print the current token value",
+    "Does NOT mark rotation as completed"
+  ],
+  "verdict": "checklist_complete_rotation_pending_user_action"
+}

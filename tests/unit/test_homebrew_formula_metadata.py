@@ -23,30 +23,42 @@ def test_formula_file_exists():
     assert FORMULA_PATH.exists(), f"Formula not found at {FORMULA_PATH}"
 
 
-def test_formula_url_contains_correct_org():
-    """homepage and url (top-level, not resource) must reference the correct GitHub org."""
+def test_formula_homepage_uses_correct_org():
+    """homepage must reference the correct GitHub org (merchloubna70-dot, not stale macworkers)."""
     text = _formula_text()
-    # Only check the top-level formula section — stop before the first 'resource' block
     preamble = text.split("  resource ")[0]
     homepage_match = re.search(r'^\s*homepage\s+"([^"]+)"', preamble, re.MULTILINE)
-    url_match = re.search(r'^\s*url\s+"([^"]+)"', preamble, re.MULTILINE)
     assert homepage_match, "No homepage line found in formula preamble"
-    assert url_match, "No top-level url line found in formula preamble"
-    for label, value in [("homepage", homepage_match.group(1)), ("url", url_match.group(1))]:
-        assert "macworkers/autodev-ai" not in value, (
-            f"BLOCKER-PKG-01: stale 'macworkers' org in formula {label}: {value!r}"
-        )
-        assert "merchloubna70-dot" in value, (
-            f"BLOCKER-PKG-01: expected 'merchloubna70-dot' org in formula {label}: {value!r}"
-        )
+    value = homepage_match.group(1)
+    assert "macworkers/autodev-ai" not in value, f"stale 'macworkers' org: {value!r}"
+    assert "merchloubna70-dot" in value, f"expected 'merchloubna70-dot' org: {value!r}"
 
 
-def test_formula_version_is_0_1_0a1():
-    """Formula must declare version 0.1.0a1 to match pyproject.toml."""
+def test_formula_url_points_at_canonical_source():
+    """Top-level url must point at either canonical PyPI (post-publish) or merchloubna70-dot GitHub Release (pre-publish)."""
     text = _formula_text()
-    assert "0.1.0a1" in text, (
-        "BLOCKER-PKG-02: version '0.1.0a1' not found in formula — "
-        "must match pyproject.toml version"
+    preamble = text.split("  resource ")[0]
+    url_match = re.search(r'^\s*url\s+"([^"]+)"', preamble, re.MULTILINE)
+    assert url_match, "No top-level url in formula preamble"
+    value = url_match.group(1)
+    assert "macworkers/autodev-ai" not in value, f"stale 'macworkers' org: {value!r}"
+    # Post-publish: PyPI canonical; OR pre-publish: GitHub Release under correct org
+    is_pypi = "files.pythonhosted.org" in value
+    is_gh_release = "merchloubna70-dot/autodev-ai/releases" in value
+    assert is_pypi or is_gh_release, (
+        f"url must be canonical PyPI (post-publish) or merchloubna70-dot GitHub Release (pre-publish), got {value!r}"
+    )
+
+
+def test_formula_version_matches_pyproject_alpha_series():
+    """Formula version must be in the 0.1.0a* series (matches pyproject.toml). Post-publish allows 0.1.0a2."""
+    text = _formula_text()
+    preamble = text.split("  resource ")[0]
+    version_match = re.search(r'^\s*version\s+"([^"]+)"', preamble, re.MULTILINE)
+    assert version_match, "No version line in formula preamble"
+    actual = version_match.group(1)
+    assert re.match(r"^0\.1\.0a\d+$", actual), (
+        f"Formula version {actual!r} not in 0.1.0a* series — must match pyproject.toml current"
     )
 
 
@@ -73,12 +85,15 @@ def test_formula_license_is_mit():
     )
 
 
-def test_formula_has_pending_publish_warning():
-    """Formula must carry the STATUS comment warning against premature brew tap."""
+def test_formula_provenance_comment_present():
+    """Formula must carry a leading comment about its state: either pre-publish BLOCKED warning
+    OR post-publish backfilled provenance note (R4.5 backfill from real PyPI 0.1.0a2)."""
     text = _formula_text()
-    assert "pending PyPI publish" in text, (
-        "Formula must have a leading comment warning that brew tap is blocked "
-        "until PyPI 0.1.0a1 is live"
+    has_pre_publish_warning = "pending PyPI publish" in text or "BLOCKED for publish" in text
+    has_post_publish_backfill = "Backfilled" in text and "PyPI" in text
+    assert has_pre_publish_warning or has_post_publish_backfill, (
+        "Formula must have either a pre-publish BLOCKED comment OR a "
+        "post-publish backfill provenance note documenting state"
     )
 
 

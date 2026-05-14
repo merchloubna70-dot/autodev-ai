@@ -1,37 +1,18 @@
 """
-Unit tests for scripts/release_readiness_gate.py
+Unit tests for autodev.release_readiness_gate
 
 Uses unittest.mock to avoid running pytest/ruff/mypy/subprocess during testing.
 """
 
 from __future__ import annotations
 
-import importlib.util
 import json
-import types
 from pathlib import Path
 from unittest.mock import patch
 
 import pytest
 
-# ---------------------------------------------------------------------------
-# Dynamic import of the script (it lives under scripts/, not a package)
-# ---------------------------------------------------------------------------
-
-REPO_ROOT = Path(__file__).parent.parent.parent
-SCRIPT_PATH = REPO_ROOT / "scripts" / "release_readiness_gate.py"
-
-
-def _load_gate_module() -> types.ModuleType:
-    spec = importlib.util.spec_from_file_location("release_readiness_gate", SCRIPT_PATH)
-    assert spec and spec.loader
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)  # type: ignore[union-attr]
-    return mod
-
-
-gate = _load_gate_module()
-
+import autodev.release_readiness_gate as gate
 
 # ---------------------------------------------------------------------------
 # Fixtures

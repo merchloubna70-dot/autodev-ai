@@ -1,0 +1,25 @@
+{
+  "round": "r5_homebrew_resource_sha256",
+  "status": "completed",
+  "verdict": "all_9_resources_verified",
+  "audit_date": "2026-05-14",
+  "method": "Downloaded each transitive resource sdist from canonical PyPI URL via curl; computed sha256 via shasum -a 256; compared to formula value byte-for-byte",
+  "resources_count": 9,
+  "all_match": true,
+  "resources": [
+    {"name": "pydantic", "version": "2.13.4", "url": "https://files.pythonhosted.org/packages/18/a5/b60d21ac674192f8ab0ba4e9fd860690f9b4a6e51ca5df118733b487d8d6/pydantic-2.13.4.tar.gz", "expected": "c40756b57adaa8b1efeeced5c196f3f3b7c435f90e84ea7f443901bec8099ef6", "actual": "c40756b57adaa8b1efeeced5c196f3f3b7c435f90e84ea7f443901bec8099ef6", "match": true, "note": "first download attempt failed transient network; retry succeeded"},
+    {"name": "typer", "version": "0.25.1", "url": "https://files.pythonhosted.org/packages/e4/51/9aed62104cea109b820bbd6c14245af756112017d309da813ef107d42e7e/typer-0.25.1.tar.gz", "expected": "9616eb8853a09ffeabab1698952f33c6f29ffdbceb4eaeecf571880e8d7664cc", "actual": "9616eb8853a09ffeabab1698952f33c6f29ffdbceb4eaeecf571880e8d7664cc", "match": true},
+    {"name": "rich", "version": "15.0.0", "url": "https://files.pythonhosted.org/packages/c0/8f/0722ca900cc807c13a6a0c696dacf35430f72e0ec571c4275d2371fca3e9/rich-15.0.0.tar.gz", "expected": "edd07a4824c6b40189fb7ac9bc4c52536e9780fbbfbddf6f1e2502c31b068c36", "actual": "edd07a4824c6b40189fb7ac9bc4c52536e9780fbbfbddf6f1e2502c31b068c36", "match": true},
+    {"name": "pyyaml", "version": "6.0.3", "url": "https://files.pythonhosted.org/packages/05/8e/961c0007c59b8dd7729d542c61a4d537767a59645b82a0b521206e1e25c2/pyyaml-6.0.3.tar.gz", "expected": "d76623373421df22fb4cf8817020cbb7ef15c725b9d5e45f17e189bfc384190f", "actual": "d76623373421df22fb4cf8817020cbb7ef15c725b9d5e45f17e189bfc384190f", "match": true},
+    {"name": "jinja2", "version": "3.1.6", "url": "https://files.pythonhosted.org/packages/df/bf/f7da0350254c0ed7c72f3e33cef02e048281fec7ecec5f032d4aac52226b/jinja2-3.1.6.tar.gz", "expected": "0137fb05990d35f1275a587e9aee6d56da821fc83491a0fb838183be43f66d6d", "actual": "0137fb05990d35f1275a587e9aee6d56da821fc83491a0fb838183be43f66d6d", "match": true},
+    {"name": "click", "version": "8.3.3", "url": "https://files.pythonhosted.org/packages/bb/63/f9e1ea081ce35720d8b92acde70daaedace594dc93b693c869e0d5910718/click-8.3.3.tar.gz", "expected": "398329ad4837b2ff7cbe1dd166a4c0f8900c3ca3a218de04466f38f6497f18a2", "actual": "398329ad4837b2ff7cbe1dd166a4c0f8900c3ca3a218de04466f38f6497f18a2", "match": true},
+    {"name": "mdurl", "version": "0.1.2", "url": "https://files.pythonhosted.org/packages/d6/54/cfe61301667036ec958cb99bd3efefba235e65cdeb9c84d24a8293ba1d90/mdurl-0.1.2.tar.gz", "expected": "bb413d29f5eea38f31dd4754dd7377d4465116fb207585f97bf925588687c1ba", "actual": "bb413d29f5eea38f31dd4754dd7377d4465116fb207585f97bf925588687c1ba", "match": true},
+    {"name": "markdown-it-py", "version": "4.2.0", "url": "https://files.pythonhosted.org/packages/06/ff/7841249c247aa650a76b9ee4bbaeae59370dc8bfd2f6c01f3630c35eb134/markdown_it_py-4.2.0.tar.gz", "expected": "04a21681d6fbb623de53f6f364d352309d4094dd4194040a10fd51833e418d49", "actual": "04a21681d6fbb623de53f6f364d352309d4094dd4194040a10fd51833e418d49", "match": true},
+    {"name": "pygments", "version": "2.20.0", "url": "https://files.pythonhosted.org/packages/c3/b2/bc9c9196916376152d655522fdcebac55e66de6603a76a02bca1b6414f6c/pygments-2.20.0.tar.gz", "expected": "6757cd03768053ff99f3039c1a36d6c0aa0b263438fcab17520b30a303a82b5f", "actual": "6757cd03768053ff99f3039c1a36d6c0aa0b263438fcab17520b30a303a82b5f", "match": true},
+    {"name": "shellingham", "version": "1.5.4", "url": "https://files.pythonhosted.org/packages/58/15/8b3609fd3830ef7b27b655beb4b4e9c62313a4e8da8c676e142cc210d58e/shellingham-1.5.4.tar.gz", "expected": "8dbca0739d487e5bd35ab3ca4b36e11c4078f3a234bfce294b0a0291363404de", "actual": "8dbca0739d487e5bd35ab3ca4b36e11c4078f3a234bfce294b0a0291363404de", "match": true}
+  ],
+  "limitations": [
+    "Resources are pinned at specific minor versions captured at original draft. They may not be the LATEST PyPI versions of pydantic/typer/rich/etc. Homebrew's brew install will use exactly the versions in the formula, which is by design (reproducibility). When upstream releases new versions and we want to bump, we re-run homebrew-pypi-poet -f autodev-ai.",
+    "Pydantic resource is currently 2.13.4 but autodev-ai's [project].dependencies says >=2.5,<3.0; Homebrew formula will install 2.13.4 specifically which is fine but tighter than the abstract dep."
+  ]
+}

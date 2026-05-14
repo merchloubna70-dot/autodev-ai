@@ -1,0 +1,95 @@
+{
+  "round": "autodev_r5_quick_post_publish_fix_round",
+  "status": "completed",
+  "overall_result": "pass",
+  "audit_date": "2026-05-14",
+  "auditor": "Opus inline (A/C/D/E/F/G) + R5-B sonnet (gate refactor)",
+  "scope": "Quick post-publish hygiene + Homebrew tap PREP (no actual tap publish, no new version release)",
+  "typer_dependency_fix": "pass",
+  "release_readiness_gate_wheel_fix": "pass",
+  "homebrew_tap_prep": "pass",
+  "homebrew_resource_sha256": "pass",
+  "token_rotation": {
+    "recommended": true,
+    "completed": false,
+    "user_confirmed": false,
+    "reason": "User action required — checklist provided"
+  },
+  "release_readiness": {
+    "pypi_0_1_0a2": "published_verified",
+    "local_next_wheel": "verified — rebuilt + twine check PASSED + fresh-venv install + autodev --version = autodev-ai 0.1.0a2",
+    "homebrew": "tap_ready_pending_publish — formula state evolved to post-publish (real sha256, canonical PyPI url); tap repo not yet created",
+    "production_enterprise_use": "blocked (R5+ scope: SLSA/SBOM/cosign/per-caller MCP auth/macOS signing)"
+  },
+  "recommend_release": {
+    "v0_1_0a3": true,
+    "reason": "typer[all] deprecation warning fix + release_readiness_gate shim wheel-install fix are both pyproject/packaging-level improvements that ONLY take effect when a new wheel is built and published. The currently-published 0.1.0a2 still has the typer[all] warning + broken shim. Recommend bumping to v0.1.0a3, push tag, let release.yml + docker-publish.yml run, then verify PyPI 0.1.0a3 has no typer warning + `python -m autodev.release_readiness_gate` from PyPI install works.",
+    "blocking": false
+  },
+  "changes": {
+    "src": [
+      "pyproject.toml — typer[all]>=0.9 → typer>=0.12 + explicit shellingham>=1.5",
+      "src/autodev/release_readiness_gate.py — full 1375 LoC implementation (canonical, ships in wheel)",
+      "scripts/release_readiness_gate.py — 10 LoC delegation wrapper (was 1334 LoC)",
+      "src/autodev/release_readiness_gate.py::check_r3_homebrew_publish_time_blocker_clean — evolved to accept state A (pre-publish) OR state B (post-publish)"
+    ],
+    "tests": [
+      "tests/unit/test_release_readiness_gate.py — imports `autodev.release_readiness_gate as gate` (was dynamic loader)",
+      "tests/integration/test_release_readiness_gate_installed_wheel.py — new, 3 tests, verifies wheel-install module form works",
+      "tests/unit/test_homebrew_formula_metadata.py — evolved version assertion to accept 0.1.0a* alpha series; provenance check accepts BLOCKED or Backfilled marker",
+      "tests/unit/test_homebrew_publish_time_blocker.py — rewritten with state-aware semantics: pre-publish state A OR post-publish state B, internal consistency required"
+    ],
+    "packaging": [
+      "packaging/homebrew/tap/ — new staging dir mirroring canonical formula",
+      "packaging/homebrew/tap/Formula/autodev-ai.rb — identical mirror of canonical formula",
+      "packaging/homebrew/tap/README.md — tap-side README with brew tap install instructions"
+    ],
+    "docs": [
+      "docs/release/homebrew_tap_publish_checklist.md — 4-step user procedure for tap repo creation + publish",
+      "docs/validation/autodev_r5_typer_dependency_fix.{md,json}",
+      "docs/validation/autodev_r5_release_readiness_gate_wheel_fix.{md,json} (R5-B sonnet wrote)",
+      "docs/validation/autodev_r5_homebrew_tap_prep.{md,json}",
+      "docs/validation/autodev_r5_homebrew_resource_sha256.{md,json}",
+      "docs/validation/autodev_r5_token_rotation_followup.{md,json}",
+      "docs/validation/autodev_r5_quick_post_publish_fix_round.{md,json} (this aggregator)"
+    ]
+  },
+  "validation_commands_run": [
+    "ruff check .  →  All checks passed!",
+    "mypy src/autodev  →  Success: 0 issues / 174 files",
+    "pytest tests/  →  1312 passed, 0 failed",
+    "python -m autodev.release_readiness_gate  →  36 pass / 0 fail / 0 skip / exit 0",
+    "python scripts/release_readiness_gate.py --strict  →  exit 0",
+    "python scripts/release_readiness_gate.py --strict-rc  →  exit 0",
+    "rm -rf dist build && python -m build  →  autodev_ai-0.1.0a2 wheel + sdist",
+    "twine check dist/*  →  PASSED + PASSED",
+    "python3.12 -m venv /tmp/r5-wheel-smoke && pip install dist/*.whl  →  autodev-ai 0.1.0a2",
+    "/tmp/r5-wheel-smoke/bin/python -m autodev.release_readiness_gate  →  no traceback, exit 0, 31 pass + 5 honest fails (cwd has no Dockerfile/Formula etc; use --repo-path)",
+    "Curl + shasum -a 256 on 9 transitive resource tarballs  →  9/9 match formula"
+  ],
+  "evidence_files": [
+    "docs/validation/autodev_r5_typer_dependency_fix.{md,json}",
+    "docs/validation/autodev_r5_release_readiness_gate_wheel_fix.{md,json}",
+    "docs/validation/autodev_r5_homebrew_tap_prep.{md,json}",
+    "docs/validation/autodev_r5_homebrew_resource_sha256.{md,json}",
+    "docs/validation/autodev_r5_token_rotation_followup.{md,json}",
+    "docs/release/homebrew_tap_publish_checklist.md",
+    "docs/release/pypi_token_rotation_checklist.md",
+    "docs/validation/autodev_r5_quick_post_publish_fix_round.{md,json}"
+  ],
+  "remaining_blockers": [
+    "Homebrew tap repo (merchloubna70-dot/homebrew-autodev) not yet created — user action (3 commands; assets pre-staged at packaging/homebrew/tap/)",
+    "PyPI token rotation pending — user action (checklist provided)",
+    "Production enterprise readiness — R5+ scope (SLSA/SBOM/cosign/per-caller MCP auth/macOS Apple Dev ID signing/coverage lift)"
+  ],
+  "remaining_risks": [
+    "v0.1.0a2 (currently published on PyPI) still carries typer[all] deprecation warning + broken `python -m autodev.release_readiness_gate` shim. v0.1.0a3 would carry the fixes. Until then, users see one warning + one broken `python -m` invocation but the primary `autodev` CLI works correctly.",
+    "Homebrew formula state evolved to POST-publish. If user runs `brew install autodev-ai` from a not-yet-created tap, the tap_publish_checklist.md procedure must be followed first."
+  ],
+  "next_steps": [
+    "User runs `docs/release/pypi_token_rotation_checklist.md` 4 steps (~5 min) to rotate PyPI token (eliminates the chat-history exposure channel)",
+    "User runs `docs/release/homebrew_tap_publish_checklist.md` 4 steps (~10 min) to create tap repo + publish formula",
+    "User cuts v0.1.0a3 tag to push the typer[all] + release_readiness_gate fixes to PyPI",
+    "(Optional R5+) SLSA + SBOM + cosign on Docker; per-caller MCP auth; coverage lift on 5 aspirational modules"
+  ]
+}

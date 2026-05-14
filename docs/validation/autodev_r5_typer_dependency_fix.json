@@ -1,0 +1,29 @@
+{
+  "round": "r5_typer_dependency_fix",
+  "status": "completed",
+  "verdict": "pass",
+  "audit_date": "2026-05-14",
+  "issue": "typer 0.25.1 dropped the [all] extra; pyproject.toml had `typer[all]>=0.9`. pip install emitted: WARNING: typer 0.25.1 does not provide the extra 'all'.",
+  "fix_diff": {
+    "removed": ["\"typer[all]>=0.9\""],
+    "added": ["\"typer>=0.12\"", "\"shellingham>=1.5\""],
+    "explanation": "typer >=0.12 removed [all] because rich + shellingham are bundled directly. We pin >=0.12 to escape the legacy extra path. Also explicitly declare shellingham (was implicit via [all]) for forward compat in case typer ever unbundles it. `rich>=13.7` was already explicit."
+  },
+  "verification": {
+    "pip_install_warning_count_before": 1,
+    "pip_install_warning_count_after": 0,
+    "autodev_version_still_works": "autodev-ai 0.1.0a2",
+    "targeted_tests_pass": 42,
+    "targeted_test_files": ["test_version_consistency", "test_cli_help_surface"]
+  },
+  "compatibility": {
+    "typer_dropped_all_extra_in": "~0.12 (per typer changelog; exact minor uncertain — the >= bound is conservative)",
+    "shellingham_was_implied_by": "typer[all]; now explicit so we don't break if typer ever removes the bundle",
+    "rich_was_already_explicit": true
+  },
+  "validation_commands": [
+    "pip install -e . --quiet  →  no `does not provide the extra 'all'` warning",
+    "autodev --version  →  autodev-ai 0.1.0a2",
+    "pytest tests/unit/test_version_consistency.py tests/unit/test_cli_help_surface.py -q  →  42 passed"
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "round": "r5_homebrew_tap_prep",
+  "status": "completed",
+  "verdict": "tap_assets_staged_user_action_pending",
+  "audit_date": "2026-05-14",
+  "tap_staging_dir": "packaging/homebrew/tap/",
+  "tap_staging_files": [
+    "packaging/homebrew/tap/Formula/autodev-ai.rb (mirror of canonical formula)",
+    "packaging/homebrew/tap/README.md (tap-side README with install instructions)"
+  ],
+  "formula_state": {
+    "version": "0.1.0a2",
+    "url_points_at": "canonical PyPI files.pythonhosted.org",
+    "sha256_verified": true,
+    "sha256_value": "246f5f60810c1832051f9219fd141fe63ce87bbafec0125412d18cea326c291d",
+    "transitive_resource_count": 9,
+    "transitive_resource_all_verified": true
+  },
+  "tap_publish_remaining_steps": [
+    "User: create public repo merchloubna70-dot/homebrew-autodev on github.com (5 min, web UI)",
+    "User: cd packaging/homebrew/tap && git init && git add . && git commit -m 'feat: initial tap with autodev-ai 0.1.0a2' && git remote add origin https://github.com/merchloubna70-dot/homebrew-autodev.git && git push -u origin main",
+    "User: brew tap merchloubna70-dot/autodev && brew install autodev-ai (smoke)",
+    "User: brew test autodev-ai (formula test block — runs autodev --help)"
+  ],
+  "tap_publish_checklist_path": "docs/release/homebrew_tap_publish_checklist.md",
+  "why_not_auto_creating_tap_repo": "Creating a public repo under user's namespace is a non-reversible, visible-to-others action. Per CLAUDE.md guidance, this requires explicit user action / confirmation. The 2 staged files mean user can copy-paste 3 commands when ready.",
+  "limitations": [
+    "Tap repo does NOT exist yet — `brew tap merchloubna70-dot/autodev` will fail until user runs the 4 steps above",
+    "Cannot run `brew install autodev-ai` smoke until tap exists",
+    "Formula's transitive resource sha256s verified (R5-D), but full brew install build not exercised this round (would require tap to exist)"
+  ],
+  "validation_commands": [
+    "ls -la packaging/homebrew/tap/",
+    "diff -q packaging/homebrew/Formula/autodev-ai.rb packaging/homebrew/tap/Formula/autodev-ai.rb  →  identical"
+  ]
+}

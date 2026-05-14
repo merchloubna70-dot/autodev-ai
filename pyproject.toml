@@ -14,8 +14,11 @@ license = { text = "MIT" }
 license-files = ["LICENSE"]
 dependencies = [
     "pydantic>=2.5,<3.0",
-    "typer[all]>=0.9",
-    "rich>=13.7",
+    # typer >= 0.12 dropped the [all] extra (rich + shellingham are bundled directly).
+    # Pin >=0.12 to avoid the legacy [all] resolution warning and keep behavior stable.
+    "typer>=0.12",
+    "rich>=13.7",  # explicit even though typer bundles it; we use rich directly
+    "shellingham>=1.5",  # explicit; was implied via typer[all]
     "PyYAML>=6.0",
     "jinja2>=3.1",
 ]
