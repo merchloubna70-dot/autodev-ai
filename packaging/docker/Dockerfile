@@ -4,11 +4,12 @@ FROM python@sha256:401f6e1a67dad31a1bd78e9ad22d0ee0a3b52154e6bd30e90be696bb6a3d7
 
 WORKDIR /build
 
-# Copy the pre-built wheel
-COPY dist/autodev_ai-0.1.0-py3-none-any.whl .
+# Copy the pre-built wheel. Glob pattern survives version bumps.
+COPY dist/autodev_ai-*.whl /tmp/wheels/
 
-# Install into isolated target directory (no venv overhead)
-RUN pip install --no-cache-dir --target /install autodev_ai-0.1.0-py3-none-any.whl
+# Install into isolated target directory (no venv overhead).
+RUN pip install --no-cache-dir --target /install /tmp/wheels/autodev_ai-*.whl \
+    && rm -rf /tmp/wheels
 
 # Stage 2: runtime — lean final image
 # Base image pinned by digest for reproducibility. Update: see packaging/docker/UPDATE.md
