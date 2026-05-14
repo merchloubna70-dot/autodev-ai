@@ -1,0 +1,154 @@
+{
+  "round": "autodev_post_publish_verification_round",
+  "status": "completed",
+  "overall_result": "pass_with_limitations",
+  "scope": "Path A — GitHub Release + Docker only; PyPI_API_TOKEN intentionally not set, PyPI upload auto-skipped via workflow gate",
+  "audit_date": "2026-05-14",
+  "auditor": "Opus autonomous (user authorized via 你自动处理，我授权给你)",
+  "tag": "v0.1.0a1",
+  "tag_commit": "1e2bf90",
+  "main_commit_at_publish": "1e2bf90 (Dockerfile glob fix)",
+  "pre_publish_blockers_found_and_fixed": [
+    {
+      "id": 1,
+      "commit": "f701139",
+      "blocker": "release.yml step-level `if: ${{ secrets.PYPI_API_TOKEN != '' }}` rejected by GitHub Actions schema validator",
+      "symptom": "Every push to main produced a 0s-failure run of release.yml (5 visible in history)",
+      "fix": "Replace step-level secrets-in-if with detector step that writes $GITHUB_OUTPUT, then upload gates on output"
+    },
+    {
+      "id": 2,
+      "commit": "f4cbb98",
+      "blocker": "tomllib import in R2-AB test files broke py3.10 collection",
+      "symptom": "test.yml matrix python 3.10 → ModuleNotFoundError: No module named 'tomllib'",
+      "fix": "Add sys.version_info check + tomli fallback; add tomli to dev extras for py<3.11"
+    },
+    {
+      "id": 3,
+      "commit": "83e870a",
+      "blocker": "tests/integration/test_wheel_cli_version_smoke.py asserts dist/ exists but CI doesn't pre-build",
+      "symptom": "test.yml fails wheel-existence check on Linux CI (dist/ empty)",
+      "fix": "Add skip_if_no_dist marker to all 6 tests in the file; release.yml's own build path covers post-build verification"
+    },
+    {
+      "id": 4,
+      "commit": "70a6e70",
+      "blocker": "mypy not in pyproject [project.optional-dependencies].dev",
+      "symptom": "release.yml test job: mypy: command not found, exit 127",
+      "fix": "Add mypy>=1.5 to dev extras"
+    },
+    {
+      "id": 5,
+      "commit": "1e2bf90",
+      "blocker": "Dockerfile hardcoded COPY dist/autodev_ai-0.1.0-py3-none-any.whl (old version)",
+      "symptom": "docker-publish.yml: 'not found' — wheel pattern mismatch after R2-AB version bump",
+      "fix": "Use glob pattern dist/autodev_ai-*.whl"
+    }
+  ],
+  "pypi": {
+    "status": "intentionally_skipped",
+    "version": "0.1.0a1",
+    "install_smoke": "n/a — published path not exercised this round",
+    "reason": "Path A: PYPI_API_TOKEN GitHub secret not set; release.yml's twine upload step correctly gated to skip when secret absent",
+    "artifact_urls": [],
+    "artifact_hashes": {
+      "wheel": null,
+      "sdist": null
+    },
+    "to_unblock": "User sets PYPI_API_TOKEN at https://github.com/merchloubna70-dot/autodev-ai/settings/secrets/actions, then re-tags as v0.1.0a2 (cannot reuse v0.1.0a1 since GitHub Release exists; semver-mutex on PyPI version)"
+  },
+  "github_release": {
+    "status": "published_verified",
+    "tag": "v0.1.0a1",
+    "url": "https://github.com/merchloubna70-dot/autodev-ai/releases/tag/v0.1.0a1",
+    "created_at": "2026-05-14T07:06:04Z",
+    "published_at": "2026-05-14T07:07:22Z",
+    "author": "github-actions[bot]",
+    "assets": [
+      {
+        "name": "autodev_ai-0.1.0a1-py3-none-any.whl",
+        "url": "https://github.com/merchloubna70-dot/autodev-ai/releases/download/v0.1.0a1/autodev_ai-0.1.0a1-py3-none-any.whl",
+        "sha256": "a405baf770034f99572179a18dbca8d2c9c3087b7f0ac51e326cdf526d7c9ebe"
+      },
+      {
+        "name": "autodev_ai-0.1.0a1.tar.gz",
+        "url": "https://github.com/merchloubna70-dot/autodev-ai/releases/download/v0.1.0a1/autodev_ai-0.1.0a1.tar.gz",
+        "sha256": "ffbc62c3b171718376fc421cffd140279c1f08803e3ecd301305b8a462759309"
+      }
+    ],
+    "install_smoke": "pass — fresh py3.12 venv + pip install <url>/wheel + autodev --version → 'autodev-ai 0.1.0a1'"
+  },
+  "docker": {
+    "status": "published_verified_with_limitations",
+    "registry": "ghcr.io/merchloubna70-dot/autodev-ai",
+    "tags_pushed": ["v0.1.0a1", "latest"],
+    "manifest_arch": ["linux/amd64", "linux/arm64"],
+    "digest_v0_1_0a1": "sha256:af0d824115a538077bb2211678cdb6061984c8038c52de3ea2f4b925f128eea8",
+    "anon_pull_works": true,
+    "smoke_test": "pass — docker run --rm ghcr.io/.../autodev-ai:v0.1.0a1 --version → autodev-ai 0.1.0a1",
+    "limitations": [
+      "v-prefix tag (v0.1.0a1) only; no naked-version (0.1.0a1) tag because docker/metadata-action's semver parser doesn't accept PEP 440 alpha format (0.1.0a1 not valid semver)",
+      ":latest is rolling; users wanting immutable refs should pin to v0.1.0a1 digest",
+      "No SLSA provenance, no SBOM, no signed image (R5 enterprise scope)"
+    ]
+  },
+  "homebrew": {
+    "status": "blocked_with_reason",
+    "sha256_backfilled": false,
+    "reason": "Formula still has TODO_PUBLISH_SHA256 placeholder + 'BLOCKED for publish' comment. Cannot compute real sha256 because PyPI is not published (no canonical PyPI sdist URL). When user does Path B (sets PYPI_API_TOKEN + re-tags as 0.1.0a2), THAT release will produce a PyPI sdist whose sha256 can be patched into the formula.",
+    "alternative_pre_pypi_path": "Could use GitHub Release sdist sha256 (ffbc62c3...) instead of PyPI sdist sha256, but this is non-standard for Homebrew taps. Defer to canonical PyPI form."
+  },
+  "release_readiness": {
+    "internal_dogfood": "allowed",
+    "public_beta": "allowed",
+    "pypi_0_1_0a1": "intentionally_skipped_path_a",
+    "docker": "published_verified_with_limitations",
+    "homebrew": "blocked_with_reason",
+    "production_enterprise_use": "blocked"
+  },
+  "release_readiness_changes_vs_pre_publish": {
+    "pypi_0_1_0a1": "go_after_user_action → intentionally_skipped_path_a (user chose dry-run path; no secret set)",
+    "github_release": "go_after_user_action → published_verified",
+    "docker": "allowed_with_limitations → published_verified_with_limitations",
+    "homebrew": "blocked_with_reason → blocked_with_reason (unchanged; awaits real PyPI publish)"
+  },
+  "verified": [
+    "git tag v0.1.0a1 exists locally and on remote",
+    "GitHub Release v0.1.0a1 created with 2 assets (wheel + sdist)",
+    "wheel sha256 a405baf770034f99572179a18dbca8d2c9c3087b7f0ac51e326cdf526d7c9ebe",
+    "sdist sha256 ffbc62c3b171718376fc421cffd140279c1f08803e3ecd301305b8a462759309",
+    "External pip install from Release URL succeeds in fresh py3.12 venv",
+    "autodev --version from installed wheel reports 'autodev-ai 0.1.0a1' exactly",
+    "python -m autodev.cli --version equivalent",
+    "Docker image ghcr.io/.../autodev-ai:v0.1.0a1 multi-arch (amd64+arm64) anon-pullable",
+    "Docker smoke: --version returns 'autodev-ai 0.1.0a1'",
+    "Docker :latest also updated to same digest as v0.1.0a1",
+    "All 5 pre-publish CI blockers found + fixed before they could damage publish"
+  ],
+  "blocked": [
+    "PyPI 0.1.0a1 publish — operationally blocked on user setting PYPI_API_TOKEN secret",
+    "Homebrew tap publish — blocked on PyPI publish + sha256 backfill",
+    "production_enterprise_use — R5 scope (SLSA / SBOM / per-caller MCP auth / signed Docker)"
+  ],
+  "remaining_risks": [
+    "Docker `:latest` is rolling, not digest-pinned for consumers (users wanting immutable refs should pin to v0.1.0a1 explicitly or use the digest)",
+    "GitHub-Actions-published wheel/sdist sha256 differs from RC prep build because CI rebuilds. The sha256 we recorded in pypi_0_1_0a1_rc_publish_prep.json (RC prep: 395e2102… / 0a84c81e…) was the LOCAL preflight; actual published is a405baf7… / ffbc62c3…. This is expected; PyPI/Homebrew should use the actual published hash, not the preflight.",
+    "Image manifest includes 2 'unknown/unknown' entries (buildx attestation manifests, not real platforms — informational only)",
+    "Tag form mismatch: ghcr image uses 'v0.1.0a1' (v-prefix); some Docker consumers expect '0.1.0a1' (no prefix). README documents the correct form."
+  ],
+  "validation_commands_run": [
+    "gh release view v0.1.0a1 --repo merchloubna70-dot/autodev-ai",
+    "gh release download v0.1.0a1 --repo merchloubna70-dot/autodev-ai && shasum -a 256 *",
+    "python3.12 -m venv /tmp/gh-release-smoke && pip install <gh-release-wheel-url> && autodev --version",
+    "docker logout ghcr.io && docker pull ghcr.io/merchloubna70-dot/autodev-ai:v0.1.0a1",
+    "docker run --rm ghcr.io/merchloubna70-dot/autodev-ai:v0.1.0a1 --version",
+    "docker manifest inspect ghcr.io/merchloubna70-dot/autodev-ai:v0.1.0a1",
+    "gh api /user/packages/container/autodev-ai/versions (verified tags ['v0.1.0a1','latest'])"
+  ],
+  "evidence_files": [
+    "docs/validation/autodev_post_publish_verification_round.{md,json}",
+    "https://github.com/merchloubna70-dot/autodev-ai/releases/tag/v0.1.0a1",
+    "ghcr.io/merchloubna70-dot/autodev-ai:v0.1.0a1 (sha256:af0d824115a5...)"
+  ],
+  "next_round_recommendation": "Either (a) user adds PYPI_API_TOKEN + cuts v0.1.0a2 tag for PyPI + Homebrew unblock, OR (b) R5 Enterprise Hardening (SLSA cosign, SBOM, per-caller MCP auth) on current released state. Both paths are valid; (a) unblocks the publish channel completeness; (b) prepares for production-enterprise readiness."
+}
