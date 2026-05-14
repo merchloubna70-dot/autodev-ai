@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Optional
 
 import typer
 
@@ -13,7 +12,6 @@ from .agents.product_manager import ProductManagerAgent
 from .agents.repo_explorer import RepoExplorerAgent
 from .agents.requirement_analyst import RequirementAnalystAgent
 from .agents.system_architect import SystemArchitectAgent
-from .agents.task_decomposer import TaskDecomposerAgent
 from .config import FactoryConfig
 from .flows.issue_pipeline_flow import IssuePipelineFlow, IssuePipelineInput
 from .flows.milestone_flow import MilestoneFlow, MilestoneFlowInput
@@ -22,8 +20,8 @@ from .flows.release_flow import ReleaseFlow
 from .reports.reporter import Reporter
 from .schemas import AgentCard, ExecutionBackend, Language, PipelineMode, Scale
 from .state import RunState
-from .utils.json_io import write_json
 from .utils.fs import write_text
+from .utils.json_io import write_json
 
 app = typer.Typer(help="CrewAI + Codex CLI + Claude Code CLI multi-CLI software factory")
 
@@ -59,7 +57,7 @@ def _parse_backend(s: str) -> ExecutionBackend:
         return ExecutionBackend.AUTO
 
 
-def _parse_tri_bool(s: Optional[str]) -> Optional[bool]:
+def _parse_tri_bool(s: str | None) -> bool | None:
     """Parse a tri-state flag accepting "true"/"false"/"" or None."""
     if s is None:
         return None
@@ -102,12 +100,12 @@ def _build_config(
 @app.command("run-issue")
 def run_issue(
     repo_path: str = typer.Option(".", "--repo-path"),
-    issue_file: Optional[str] = typer.Option(None, "--issue-file"),
-    issue_url: Optional[str] = typer.Option(None, "--issue-url"),
+    issue_file: str | None = typer.Option(None, "--issue-file"),
+    issue_url: str | None = typer.Option(None, "--issue-url"),
     languages: str = typer.Option("python", "--languages"),
     mode: str = typer.Option("dry-run", "--mode"),
     executor: str = typer.Option("auto", "--executor"),
-    allow_mock_executor: Optional[str] = typer.Option(None, "--allow-mock-executor"),
+    allow_mock_executor: str | None = typer.Option(None, "--allow-mock-executor"),
     claude_timeout: int = typer.Option(900, "--claude-timeout"),
     codex_timeout: int = typer.Option(600, "--codex-timeout"),
     concurrency: int = typer.Option(3, "--concurrency"),
@@ -146,14 +144,14 @@ def run_issue(
 @app.command("deliver-project")
 def deliver_project(
     repo_path: str = typer.Option(".", "--repo-path"),
-    project_brief: Optional[str] = typer.Option(None, "--project-brief"),
-    prd: Optional[str] = typer.Option(None, "--prd"),
-    project_name: Optional[str] = typer.Option(None, "--project-name"),
+    project_brief: str | None = typer.Option(None, "--project-brief"),
+    prd: str | None = typer.Option(None, "--prd"),
+    project_name: str | None = typer.Option(None, "--project-name"),
     languages: str = typer.Option("python", "--languages"),
     mode: str = typer.Option("dry-run", "--mode"),
     from_scratch: str = typer.Option("false", "--from-scratch"),
     executor: str = typer.Option("auto", "--executor"),
-    allow_mock_executor: Optional[str] = typer.Option(None, "--allow-mock-executor"),
+    allow_mock_executor: str | None = typer.Option(None, "--allow-mock-executor"),
     claude_timeout: int = typer.Option(900, "--claude-timeout"),
     codex_timeout: int = typer.Option(600, "--codex-timeout"),
     concurrency: int = typer.Option(3, "--concurrency"),
@@ -162,11 +160,10 @@ def deliver_project(
     commit: bool = typer.Option(False, "--commit"),
     push: bool = typer.Option(False, "--push"),
     tag: bool = typer.Option(False, "--tag"),
-    scale: Optional[str] = typer.Option(None, "--scale", help="Project scale: bug-fix|small|medium|enterprise (auto-inferred if not given)"),
+    scale: str | None = typer.Option(None, "--scale", help="Project scale: bug-fix|small|medium|enterprise (auto-inferred if not given)"),
     style: str = typer.Option("prd", "--style", help="Document style: prd (default) or prfaq (Amazon Working Backwards)"),
 ) -> None:
     """Run the Project Delivery Mode flow (brief / PRD / empty repo)."""
-    import sys
     pmode = _parse_mode(mode)
     langs = _parse_languages(languages)
     backend = _parse_backend(executor)
@@ -183,7 +180,7 @@ def deliver_project(
             resolved_scale = Scale(scale)
         except ValueError:
             typer.echo(f"[autodev] unknown scale '{scale}'; valid: bug-fix|small|medium|enterprise", err=True)
-            raise typer.Exit(1)
+            raise typer.Exit(1) from None
     else:
         typer.echo("[autodev] --scale not given; will auto-infer from PRD/brief", err=True)
     flow = ProjectDeliveryFlow(cfg)
@@ -289,7 +286,7 @@ def execute_milestone(
     repo_path: str = typer.Option(".", "--repo-path"),
     mode: str = typer.Option("dry-run", "--mode"),
     executor: str = typer.Option("auto", "--executor"),
-    allow_mock_executor: Optional[str] = typer.Option(None, "--allow-mock-executor"),
+    allow_mock_executor: str | None = typer.Option(None, "--allow-mock-executor"),
     concurrency: int = typer.Option(3, "--concurrency"),
     fail_fast: bool = typer.Option(True, "--fail-fast/--no-fail-fast"),
 ) -> None:
@@ -326,7 +323,7 @@ def replay(
     run_id: str = typer.Option(..., "--run-id"),
     repo_path: str = typer.Option(".", "--repo-path"),
     from_stage: str = typer.Option("planning", "--from-stage"),
-    from_step: Optional[str] = typer.Option(None, "--from-step", help="Resume at a named micro-file step"),
+    from_step: str | None = typer.Option(None, "--from-step", help="Resume at a named micro-file step"),
 ) -> None:
     from .flows.replay_flow import ReplayFlow
     run = ReplayFlow().replay(
@@ -404,8 +401,8 @@ def export_delivery(
 def push_cmd(
     run_id: str = typer.Option(..., "--run-id"),
     repo_path: str = typer.Option(".", "--repo-path"),
-    branch: Optional[str] = typer.Option(None, "--branch"),
-    enable: Optional[str] = typer.Option("false", "--enable"),
+    branch: str | None = typer.Option(None, "--branch"),
+    enable: str | None = typer.Option("false", "--enable"),
 ) -> None:
     """Push the current branch to origin.  Off by default; pass --enable true to activate."""
     from .agents.commit_agent import CommitAgent
@@ -428,14 +425,14 @@ def create_pr_cmd(
     run_id: str = typer.Option(..., "--run-id"),
     repo_path: str = typer.Option(".", "--repo-path"),
     base: str = typer.Option("main", "--base"),
-    enable: Optional[str] = typer.Option("false", "--enable"),
-    draft: Optional[str] = typer.Option("true", "--draft"),
+    enable: str | None = typer.Option("false", "--enable"),
+    draft: str | None = typer.Option("true", "--draft"),
 ) -> None:
     """Create a GitHub PR via gh CLI.  Off by default; pass --enable true to activate."""
     import json as _json
 
-    from .agents.commit_agent import CommitAgent, CommitArtifacts
     from .adapters.github_adapter import GitHubAdapter
+    from .agents.commit_agent import CommitAgent
     from .state import RunState
 
     enabled = _parse_tri_bool(enable) is True
@@ -453,7 +450,7 @@ def create_pr_cmd(
         run = RunState.load(repo_path, run_id)
     except Exception as exc:
         typer.echo(_json.dumps({"success": False, "reason": f"run-not-found: {exc}"}))
-        raise typer.Exit(code=2)
+        raise typer.Exit(code=2) from None
 
     agent = CommitAgent()
     artifacts = agent.build_artifacts(state=run.state, project_name=run_id)
@@ -473,7 +470,7 @@ def fix_bug(
     languages: str = typer.Option("python", "--languages"),
     mode: str = typer.Option("dry-run", "--mode"),
     executor: str = typer.Option("auto", "--executor"),
-    allow_mock_executor: Optional[str] = typer.Option(None, "--allow-mock-executor"),
+    allow_mock_executor: str | None = typer.Option(None, "--allow-mock-executor"),
 ) -> None:
     """Run the 4-stage bug-fix flow (reproduce → locate → patch → verify)."""
     from .flows.bug_fix_flow import BugFixFlow, BugFixInput
@@ -514,7 +511,7 @@ def multi_patch_fix_bug(
     repo_path: str = typer.Option(".", "--repo-path"),
     candidates: int = typer.Option(3, "--candidates", help="Number of patch candidates to generate"),
     mode: str = typer.Option("dry-run", "--mode"),
-    allow_mock_executor: Optional[str] = typer.Option(None, "--allow-mock-executor"),
+    allow_mock_executor: str | None = typer.Option(None, "--allow-mock-executor"),
     languages: str = typer.Option("python", "--languages"),
     executor: str = typer.Option("auto", "--executor"),
 ) -> None:
@@ -673,7 +670,7 @@ def a2a_serve(
 @app.command("a2a-register")
 def a2a_register(
     endpoint: str = typer.Option(..., "--endpoint", help="Base URL of the remote A2A agent"),
-    name: Optional[str] = typer.Option(None, "--name", help="Override agent name in roster"),
+    name: str | None = typer.Option(None, "--name", help="Override agent name in roster"),
     save_to: str = typer.Option("~/.autodev/a2a-roster.json", "--save-to", help="Roster file path"),
 ) -> None:
     """Discover an AgentCard from a remote A2A endpoint and append to the roster."""
@@ -805,13 +802,12 @@ def next_cmd(
 
 @app.command("design-ux")
 def design_ux_cmd(
-    project_brief: Optional[str] = typer.Option(None, "--project-brief"),
-    project_name: Optional[str] = typer.Option(None, "--project-name"),
+    project_brief: str | None = typer.Option(None, "--project-brief"),
+    project_name: str | None = typer.Option(None, "--project-name"),
     repo_path: str = typer.Option(".", "--repo-path"),
     languages: str = typer.Option("python", "--languages"),
 ) -> None:
     """Run BMAD-Sally-style UX design workflow (7 steps, deterministic)."""
-    import _json as _json_mod
 
     from .flows.ux_design_flow import UXDesignFlow
     from .schemas import Language, UXDesignInput
@@ -873,8 +869,8 @@ def investigate_cmd(
 @app.command("generate-context")
 def generate_context_cmd(
     repo_path: str = typer.Option(".", "--repo-path"),
-    project_brief: Optional[str] = typer.Option(None, "--project-brief"),
-    product_name: Optional[str] = typer.Option(None, "--product-name"),
+    project_brief: str | None = typer.Option(None, "--project-brief"),
+    product_name: str | None = typer.Option(None, "--product-name"),
 ) -> None:
     """Generate _autodev/project-context.md from repo + optional brief."""
     from .flows.project_context_flow import ProjectContextFlow, ProjectContextInput
@@ -950,7 +946,7 @@ def sprint_start_cmd(
 @app.command("sprint-status")
 def sprint_status_cmd(
     repo_path: str = typer.Option(".", "--repo-path", help="Repo / project root"),
-    sprint_id: Optional[str] = typer.Option(None, "--sprint-id", help="Sprint ID (e.g. sprint-001); defaults to latest"),
+    sprint_id: str | None = typer.Option(None, "--sprint-id", help="Sprint ID (e.g. sprint-001); defaults to latest"),
 ) -> None:
     """Report health metrics for the current or specified sprint."""
     from .flows.sprint_flow import SprintFlow
@@ -997,6 +993,27 @@ def sprint_correct_cmd(
 
 
 # --- END BMAD-7 SPRINT ---
+
+# ---------------------------------------------------------------------------
+# dashboard (optional textual TUI)
+# ---------------------------------------------------------------------------
+
+
+@app.command("dashboard")
+def dashboard_cmd(
+    root: str = typer.Option(".dev-factory", "--root", help="dev-factory root directory"),
+) -> None:
+    """Launch the Textual TUI dashboard (requires: pip install autodev-ai[tui])."""
+    try:
+        from .tui.dashboard import run as _run  # lazy import — textual is optional
+    except ImportError:
+        typer.echo(
+            "[autodev] Textual is not installed. Run: pip install autodev-ai[tui]",
+            err=True,
+        )
+        raise typer.Exit(code=1)
+    _run(root=root)
+
 
 if __name__ == "__main__":  # pragma: no cover
     app()
