@@ -103,7 +103,13 @@ def test_no_bypass_shortcuts_in_step_conditions():
 
 
 def test_pypi_upload_gated_on_secret():
-    """PyPI upload must only run when PYPI_API_TOKEN secret is set."""
+    """PyPI upload must only run when PYPI_API_TOKEN secret is set.
+
+    GitHub Actions rejects `secrets` context in step-level `if:` (workflow file
+    fails schema validation, runs 0s-fail). So the gate is now: a 'detect' step
+    reads `secrets.PYPI_API_TOKEN != ''` into an env var and writes it to
+    `$GITHUB_OUTPUT`, then the upload step's `if:` consumes that output.
+    """
     workflow = _load_workflow()
     jobs = workflow.get("jobs", {})
     publish_steps = jobs.get("publish", {}).get("steps", [])
@@ -111,11 +117,23 @@ def test_pypi_upload_gated_on_secret():
         s for s in publish_steps if "run" in s and "twine upload" in s.get("run", "")
     ]
     assert twine_upload_steps, "publish job must have a twine upload step"
+
+    # Locate the token-detection step (env-level secrets ref allowed).
+    has_detector_step = any(
+        "PYPI_API_TOKEN" in str(step.get("env", {}).get("HAS_PYPI_TOKEN", ""))
+        for step in publish_steps
+    )
+
     for step in twine_upload_steps:
         condition = str(step.get("if", ""))
-        assert "PYPI_API_TOKEN" in condition, (
-            f"twine upload step must be conditioned on PYPI_API_TOKEN secret, "
-            f"got `if: {condition!r}`"
+        gates_on_secret_directly = "PYPI_API_TOKEN" in condition  # legacy form
+        gates_on_detector_output = (
+            "pypi_token_check" in condition or "has_token" in condition
+        )
+        assert gates_on_secret_directly or (has_detector_step and gates_on_detector_output), (
+            f"twine upload step must be gated on PYPI_API_TOKEN — either directly "
+            f"in `if:` (deprecated, fails GH Actions schema) or via a detector "
+            f"step's output (preferred). Got `if: {condition!r}`"
         )
 
 
