@@ -5,7 +5,6 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-<<<<<<< HEAD
 ### Added
 
 - SBOM workflow (CycloneDX + SPDX on tag push) — `.github/workflows/sbom.yml`
@@ -13,14 +12,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   via `anchore/sbom-action` and attaches both as GitHub Release assets on every
   `v*.*.*` tag push and on manual dispatch. Supports EU CRA / US EO 14028
   compliance toolchains (grype, trivy, syft).
-
-||||||| parent of 52f2bfd (r6(cosign): keyless container image signing via Sigstore)
-=======
-### Added
-
 - cosign keyless image signing (Sigstore) on every tag push — `ghcr.io/merchloubna70-dot/autodev-ai` images now carry detached Fulcio OIDC signatures recorded in the Rekor transparency log; see `docs/release/cosign_verification.md`.
-
->>>>>>> 52f2bfd (r6(cosign): keyless container image signing via Sigstore)
 ---
 
 ## [0.1.0a3] — 2026-05-14 (Pre-Release)
