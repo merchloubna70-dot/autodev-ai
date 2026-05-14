@@ -10,6 +10,7 @@ The selection policy is the heart of the multi-CLI factory:
 """
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 
 from ..config import FactoryConfig
@@ -34,6 +35,17 @@ from .gemini_executor import GeminiExecutor
 from .mock_claude_executor import MockClaudeExecutor
 from .mock_codex_executor import MockCodexExecutor
 from .qwen_executor import QwenExecutor
+from .recording_executor import RecordingExecutorWrapper
+
+
+def _maybe_wrap(executor: BaseExecutor) -> BaseExecutor:
+    """Wrap *executor* with :class:`RecordingExecutorWrapper` when either
+    ``AUTODEV_RECORD_DIR`` or ``AUTODEV_REPLAY_DIR`` is set in the
+    environment.  Returns *executor* unchanged when both vars are absent.
+    """
+    if os.environ.get("AUTODEV_RECORD_DIR") or os.environ.get("AUTODEV_REPLAY_DIR"):
+        return RecordingExecutorWrapper(executor)
+    return executor
 
 
 @dataclass
@@ -75,14 +87,14 @@ class ExecutorRouter:
     ):
         self.config = config or FactoryConfig()
         self.policy: ExecutorSelectionPolicy = self.config.executor_policy
-        self.codex = codex or CodexCliExecutor(self.config.codex)
-        self.claude = claude or ClaudeCodeExecutor(self.config.claude_code)
-        self.mock_codex = mock_codex or MockCodexExecutor()
-        self.mock_claude = mock_claude or MockClaudeExecutor()
+        self.codex = _maybe_wrap(codex or CodexCliExecutor(self.config.codex))
+        self.claude = _maybe_wrap(claude or ClaudeCodeExecutor(self.config.claude_code))
+        self.mock_codex = _maybe_wrap(mock_codex or MockCodexExecutor())
+        self.mock_claude = _maybe_wrap(mock_claude or MockClaudeExecutor())
         # Opt-in adapters (not part of --executor auto routing)
-        self.gemini = gemini or GeminiExecutor()
-        self.qwen = qwen or QwenExecutor()
-        self.aider = aider or AiderExecutor()
+        self.gemini = _maybe_wrap(gemini or GeminiExecutor())
+        self.qwen = _maybe_wrap(qwen or QwenExecutor())
+        self.aider = _maybe_wrap(aider or AiderExecutor())
         self.allow_mock = self.config.allow_mock_executor if allow_mock is None else allow_mock
         self.metrics: RouterMetricsSummary = RouterMetricsSummary()
         self.budget: BudgetHint = BudgetHint()
