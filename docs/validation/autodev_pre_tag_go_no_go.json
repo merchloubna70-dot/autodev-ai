@@ -1,0 +1,110 @@
+{
+  "round": "autodev_pre_tag_go_no_go",
+  "version": "0.1.0a1",
+  "decision_date": "2026-05-14",
+  "auditor": "Opus aggregator (Agent N)",
+  "decision": "go_after_user_action",
+  "decision_rationale": "All 11 Pre-Tag sub-audits + Phase-1 build + Phase-1 gate runs confirm autodev-ai is technically ready for v0.1.0a1 tag push. No technical blocker remains. The only requirement before publishing to PyPI is operational: user must set the PYPI_API_TOKEN GitHub secret. Without it, tag push still publishes a GitHub Release and Docker image, but PyPI upload is skipped (workflow design).",
+  "tag_push_consequences": {
+    "without_pypi_api_token_set": {
+      "github_actions_workflows_triggered": ["test (ruff + mypy + pytest)", "publish (needs:test → build → twine check → GitHub Release attach)", "docker-publish (multi-arch amd64+arm64 → ghcr.io)"],
+      "expected_outcome": "GitHub Release v0.1.0a1 created with wheel+sdist attached + Docker image published to ghcr.io. PyPI upload skipped silently.",
+      "rollback_difficulty": "Easy: gh release delete + docker tag repoint. Tag remains as historical marker.",
+      "advice": "This is a SAFE dry-run if user wants to verify the workflow end-to-end before committing to PyPI."
+    },
+    "with_pypi_api_token_set": {
+      "additional_action": "twine upload publishes 0.1.0a1 to PyPI",
+      "expected_outcome": "PyPI 0.1.0a1 live; pip install --pre autodev-ai works; Homebrew unblocks (after manual sha256 update step)",
+      "rollback_difficulty": "PyPI yank only marks 'do not install' for new resolutions; existing pinned installs still work. Forward-only fix policy: any post-publish issue requires shipping 0.1.0a2."
+    }
+  },
+  "is_pypi_api_token_required_before_tag": false,
+  "is_pypi_api_token_required_for_pypi_publish": true,
+  "docker_release_expected_on_tag": true,
+  "homebrew_blocked": true,
+  "homebrew_blocked_reason": "Formula sha256 is TODO_PUBLISH_SHA256 placeholder; unblocks 5-min after PyPI publish per packaging/homebrew/PUBLISH_CHECKLIST.md",
+  "production_enterprise_blocked": true,
+  "production_enterprise_blocked_reason": "Scope-deferred to R4: SLSA provenance, SBOM, per-caller MCP auth, egress sandbox, signed Docker, cleanup TOCTOU mitigation",
+  "user_pre_tag_verifications": [
+    {
+      "step": 1,
+      "action": "Read docs/release_notes/v0.1.0a1.md end-to-end (~5 min)",
+      "purpose": "Verify the public-facing release statement matches your intent"
+    },
+    {
+      "step": 2,
+      "action": "Confirm git working tree is clean",
+      "command": "git status --short",
+      "expected": "empty"
+    },
+    {
+      "step": 3,
+      "action": "Confirm tag is not already used",
+      "command": "git tag -l v0.1.0a1",
+      "expected": "empty"
+    },
+    {
+      "step": 4,
+      "action": "Decide PyPI publish path",
+      "options": [
+        "A) Tag-only first (dry-run): push tag WITHOUT setting PYPI_API_TOKEN. Verify workflow + GitHub Release + Docker image. PyPI step auto-skips. Set secret later and re-tag 0.1.0a2 if needed (PyPI burned a1 in dry-run scenario means just publishing later).",
+        "B) Tag + publish: set PYPI_API_TOKEN first, then tag push. PyPI + GitHub Release + Docker all created from one push."
+      ]
+    },
+    {
+      "step": 5,
+      "action": "Execute publish per docs/release/pypi_0_1_0a1_publish_checklist.md Section B",
+      "commands": [
+        "git tag -a v0.1.0a1 -m 'autodev-ai v0.1.0a1 — first PyPI RC'",
+        "git push origin v0.1.0a1"
+      ]
+    }
+  ],
+  "release_readiness_matrix": {
+    "internal_dogfood": "allowed",
+    "public_beta": "allowed",
+    "pypi_0_1_0a1_rc": "allowed",
+    "pypi_actual_publish": "blocked_until_secret_or_user_tag",
+    "docker": "allowed_with_limitations",
+    "homebrew": "blocked_with_reason",
+    "production_enterprise_use": "blocked"
+  },
+  "remaining_minor_followups_for_r4": [
+    "Pre-Tag F discovered 1 STALE xfail (F-03 symlink): test annotation needs cleanup since R3-H actually fixed it",
+    "Pre-Tag G discovered 3 flows still untested: InvestigationFlow, BrownfieldDocFlow, ProjectContextFlow (R3-E's ProjectContextFlow closure claim was overstated; only schema-level coverage exists)",
+    "Pre-Tag I discovered .gitignore missed .env/credentials.json/secrets.toml — FIXED inline this round; verify clean commit",
+    "Sdist sha256 non-determinism: PKG-INFO timestamp differs per build (8be1cddf… this audit vs 0a84c81e… RC prep). Wheel sha256 IS deterministic (395e2102…). PyPI verifies the upload-time hash, so non-determinism is informational not blocking.",
+    "Earlier R1-G flow/agent counts (17 flows / 41 agents) were inflated; ground truth is 16 flows / 39 agents per Pre-Tag G actual file walk"
+  ],
+  "audit_evidence": [
+    "docs/validation/autodev_full_audit_metadata.{md,json}",
+    "docs/validation/autodev_full_audit_cli_surface.{md,json}",
+    "docs/validation/autodev_full_audit_mcp.{md,json}",
+    "docs/validation/autodev_full_audit_a2a.{md,json}",
+    "docs/validation/autodev_full_audit_executor_isolation.{md,json}",
+    "docs/validation/autodev_full_audit_flow_agent_coverage.{md,json}",
+    "docs/validation/autodev_full_audit_quality_ci.{md,json}",
+    "docs/validation/autodev_full_audit_security.{md,json}",
+    "docs/validation/autodev_full_audit_packaging.{md,json}",
+    "docs/validation/autodev_full_audit_docs_onboarding.{md,json}",
+    "docs/validation/autodev_full_audit_validation_reports.{md,json}",
+    "docs/validation/release_readiness_gate_run.json (Phase-1 gate run)",
+    "dist/autodev_ai-0.1.0a1-py3-none-any.whl sha256=395e2102e6eb80269de215bb716c1751d5169dcbb4b2ce42be22fca5a55e5b94",
+    "dist/autodev_ai-0.1.0a1.tar.gz (sha256 varies per build due to PKG-INFO timestamp)"
+  ],
+  "recommend_tag_now": false,
+  "recommend_tag_after_user_steps_1_through_4_above": true,
+  "audit_invariants_upheld": [
+    "Did NOT actually publish to PyPI",
+    "Did NOT create any real git tag",
+    "Did NOT push any tag to origin",
+    "Did NOT read or print PYPI_API_TOKEN value",
+    "Did NOT fabricate Homebrew readiness — still BLOCKED with honest placeholder",
+    "Did NOT fabricate production-enterprise readiness — still BLOCKED",
+    "Did NOT skip pytest (1062 passed verified)",
+    "Did NOT lower ruff/mypy/release gate (all 0/0/36-pass)",
+    "Did NOT delete any test",
+    "Did NOT promote mock results to real Codex/Claude output",
+    "Did NOT promote xfail to pass (4 xfail remain — 1 stale per Pre-Tag F finding)"
+  ]
+}

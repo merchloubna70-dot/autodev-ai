@@ -1,0 +1,57 @@
+{
+  "round": "full_audit_quality_ci",
+  "date": "2026-05-14",
+  "agent": "PreTag-H",
+  "ruff_errors": 0,
+  "mypy_errors": 0,
+  "mypy_source_files": 171,
+  "pytest_passed": 1062,
+  "pytest_xfailed": 4,
+  "pytest_failed": 0,
+  "pytest_runtime_s": 36.01,
+  "coverage_pct": 81,
+  "coverage_statements": 10884,
+  "coverage_missed": 2054,
+  "slow_tests_top5": [
+    {"name": "tests/integration/test_wheel_cli_version_smoke.py::test_wheel_installs_in_clean_venv", "phase": "setup", "duration_s": 6.59},
+    {"name": "tests/unit/test_a2a_http_transport.py::test_send_task_unreachable_returns_failed", "phase": "call", "duration_s": 2.99},
+    {"name": "tests/unit/test_human_review_gate.py::test_blocking_mode_timeout", "phase": "call", "duration_s": 1.01},
+    {"name": "tests/integration/test_wheel_cli_version_smoke.py::test_wheel_autodev_help_works", "phase": "call", "duration_s": 0.89},
+    {"name": "tests/unit/test_a2a_server.py::test_get_task_after_post", "phase": "call", "duration_s": 0.88}
+  ],
+  "lint_yml": {
+    "scans": ["src", "tests", "scripts"],
+    "runs_ruff": true,
+    "runs_mypy": true,
+    "python_version": "3.12",
+    "triggers": ["push", "pull_request"],
+    "branches": "**"
+  },
+  "test_yml": {
+    "python_versions": ["3.10", "3.11", "3.12"],
+    "matrix": true,
+    "fail_fast": false,
+    "coverage_report": true,
+    "coverage_artifact_upload": true
+  },
+  "release_yml": {
+    "test_then_publish": true,
+    "publish_needs_test": true,
+    "twine_upload_guarded_by_secret": true,
+    "secret_name": "PYPI_API_TOKEN",
+    "trigger": "tag v*.*.*",
+    "attaches_github_release": true,
+    "runs_ruff_in_test_job": true,
+    "runs_mypy_in_test_job": true
+  },
+  "precommit_hooks": [
+    {"id": "trailing-whitespace", "repo": "pre-commit-hooks", "rev": "v4.6.0", "stage": "commit"},
+    {"id": "end-of-file-fixer", "repo": "pre-commit-hooks", "rev": "v4.6.0", "stage": "commit"},
+    {"id": "check-toml", "repo": "pre-commit-hooks", "rev": "v4.6.0", "stage": "commit"},
+    {"id": "check-yaml", "repo": "pre-commit-hooks", "rev": "v4.6.0", "stage": "commit", "args": ["--allow-multiple-documents"]},
+    {"id": "ruff", "repo": "ruff-pre-commit", "rev": "v0.4.10", "stage": "commit", "args": ["--fix"]},
+    {"id": "pytest-collected-count", "repo": "local", "stage": "pre-push", "min_tests": 1}
+  ],
+  "diff_vs_r3_c": "no regression",
+  "verdict": "ci_quality_solid"
+}

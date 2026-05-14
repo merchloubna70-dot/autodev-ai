@@ -1,0 +1,52 @@
+{
+  "round": "full_audit_docs_onboarding",
+  "agent": "PreTag-K",
+  "date": "2026-05-14",
+  "doc_files_present": {
+    "README": true,
+    "CHANGELOG": true,
+    "configuration": true,
+    "troubleshooting": true,
+    "quickstart": true,
+    "architecture": true,
+    "faq": true,
+    "tutorials_count": 7,
+    "release_notes": true,
+    "publish_checklist": true,
+    "rollback_plan": true,
+    "examples_briefs": 10
+  },
+  "doc_detail": {
+    "README_pip_url_has_0_1_0a1": true,
+    "README_pre_flag_documented": true,
+    "CHANGELOG_prerelease_marker": "## [0.1.0a1] — 2026-05-14 (Pre-Release)",
+    "configuration_md_bytes": 9136,
+    "troubleshooting_md_bytes": 8746,
+    "release_notes_word_count": 1946,
+    "tutorials_files": ["01-bug-fix.md","02-rust-project.md","03-multi-cli-routing.md","04-sprint-mode.md","05-roundtable.md","06-mcp-server.md","07-a2a-server.md"]
+  },
+  "forbidden_phrase_hits": {
+    "production-ready": 0,
+    "enterprise-ready": 0,
+    "homebrew_tap_available": 0,
+    "available_on_pypi_now": 0,
+    "production-grade": 0,
+    "notes": "2 non-promotional occurrences of 'production-ready' found in quickstart.md:102 and faq.md:202; both are in explicitly negative/safeguard context describing what NotReleaseReady prevents, not a promotional claim. 2 occurrences of 'brew install autodev-ai' in troubleshooting.md and release_notes are diagnostic warnings (telling users it will fail), not promotional."
+  },
+  "required_phrase_present": {
+    "allow-mock-executor": true,
+    "FACTORY_FORCE_MOCK": true,
+    "AUTODEV_MCP_ALLOW_APPLY": true,
+    "dashboard_documented": true,
+    "mock_NotReleaseReady_warning": true,
+    "locations": {
+      "allow-mock-executor": "README.md lines 66, 116, 125",
+      "FACTORY_FORCE_MOCK": "docs/configuration.md lines 64, 71, 170",
+      "AUTODEV_MCP_ALLOW_APPLY": "docs/configuration.md lines 83, 219, 287",
+      "dashboard": "docs/troubleshooting.md section 11 (lines 258-260)",
+      "NotReleaseReady_warning": "README.md line 207; docs/quickstart.md lines 97-102; docs/faq.md Q13 (lines 200-208)"
+    }
+  },
+  "diff_vs_rc_d": "no regression; RC-D release notes intact at 1946 words; publish checklist and rollback plan unchanged; configuration and troubleshooting docs both substantially above 500-char minimum",
+  "verdict": "docs_tag_ready_honest"
+}

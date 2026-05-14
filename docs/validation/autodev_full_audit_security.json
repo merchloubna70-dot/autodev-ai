@@ -1,0 +1,241 @@
+{
+  "round": "full_audit_security",
+  "agent": "PreTag-I",
+  "timestamp": "2026-05-14",
+  "real_secret_leaks_count": 0,
+  "secret_pattern_hits_by_classification": {
+    "test_fixture": 1,
+    "doc_example": 5,
+    "safe_use": 2,
+    "suspect_leak": 0,
+    "true_leak": 0
+  },
+  "secret_pattern_detail": [
+    {
+      "file": "tests/unit/test_severity_findings_in_reviewers.py",
+      "line": 18,
+      "pattern": "AKIA[0-9A-Z]{16}",
+      "value_masked": "AKIA1234567890EXAMPLE (fake, literal test string written to tmp_path)",
+      "classification": "test_fixture",
+      "severity": "info",
+      "note": "Written to pytest tmp_path to exercise SecurityReviewerAgent detection. Never persisted."
+    },
+    {
+      "file": "docs/quickstart.md",
+      "line": 54,
+      "pattern": "OPENAI_API_KEY=",
+      "value_masked": "sk-... (placeholder only)",
+      "classification": "doc_example",
+      "severity": "info"
+    },
+    {
+      "file": "docs/quickstart.md",
+      "line": 60,
+      "pattern": "ANTHROPIC_API_KEY=",
+      "value_masked": "sk-ant-... (placeholder only)",
+      "classification": "doc_example",
+      "severity": "info"
+    },
+    {
+      "file": "docs/troubleshooting.md",
+      "line": 62,
+      "pattern": "ANTHROPIC_API_KEY=",
+      "value_masked": "sk-ant-... (placeholder only)",
+      "classification": "doc_example",
+      "severity": "info"
+    },
+    {
+      "file": "docs/faq.md",
+      "line": 56,
+      "pattern": "ANTHROPIC_API_KEY=",
+      "value_masked": "sk-ant-... (placeholder only)",
+      "classification": "doc_example",
+      "severity": "info"
+    },
+    {
+      "file": "docs/configuration.md",
+      "line": 143,
+      "pattern": "ANTHROPIC_API_KEY=",
+      "value_masked": "sk-ant-... (placeholder only)",
+      "classification": "doc_example",
+      "severity": "info"
+    },
+    {
+      "file": "src/autodev/agents/parallel_section_reviewer.py",
+      "line": 23,
+      "pattern": "-----BEGIN PRIVATE KEY",
+      "classification": "safe_use",
+      "severity": "info",
+      "note": "Pattern is a denylist string constant used for detection, not an actual key"
+    },
+    {
+      "file": "src/autodev/agents/security_reviewer.py",
+      "line": 35,
+      "pattern": "-----BEGIN PRIVATE KEY",
+      "classification": "safe_use",
+      "severity": "info",
+      "note": "Pattern is a denylist string constant used for detection, not an actual key"
+    }
+  ],
+  "dangerous_shell_hits": [
+    {
+      "file": "src/autodev/agents/adversarial_reviewer.py",
+      "lines": "38-45",
+      "patterns": ["subprocess.*shell=True", "eval(", "exec(", "os.system("],
+      "classification": "safe_use",
+      "severity": "info",
+      "note": "These are denylist pattern tuples used by AdversarialReviewer to flag dangerous code in submissions — not actual usage"
+    },
+    {
+      "file": "src/autodev/utils/command_safety.py",
+      "lines": "45-59",
+      "patterns": ["rm -rf", "sudo", "chmod 777", "curl | bash", "wget | bash", "eval", "exec ", "cat .env"],
+      "classification": "safe_use",
+      "severity": "info",
+      "note": "These are DEFAULT_DENYLIST entries used by ShellExecutor safety gate to BLOCK dangerous commands"
+    },
+    {
+      "file": "src/autodev/config.py",
+      "lines": "27-33",
+      "patterns": ["rm -rf", "sudo", "chmod 777", "curl | bash"],
+      "classification": "safe_use",
+      "severity": "info",
+      "note": "Denylist config mirroring command_safety.py constants"
+    },
+    {
+      "file": "tests/unit/test_adversarial_reviewer.py",
+      "line": 95,
+      "pattern": "eval(user_input)",
+      "classification": "test_fixture",
+      "severity": "info",
+      "note": "String literal inside test to exercise AdversarialReviewer detection"
+    },
+    {
+      "file": "tests/unit/test_adversarial_reviewer.py",
+      "line": 43,
+      "pattern": "subprocess.run(cmd, shell=True)",
+      "classification": "test_fixture",
+      "severity": "info",
+      "note": "String literal inside test to exercise AdversarialReviewer detection"
+    },
+    {
+      "file": "tests/integration/test_parallel_review_5sections.py",
+      "line": 48,
+      "pattern": "subprocess.run(cmd, shell=True)",
+      "classification": "test_fixture",
+      "severity": "info",
+      "note": "String literal inside test fixture code to exercise parallel section reviewer"
+    }
+  ],
+  "no_shell_true_in_src": true,
+  "no_os_system_in_src": true,
+  "no_eval_exec_in_src": true,
+  "no_tempfile_mktemp_in_src": true,
+  "env_vars_read_from_source": [
+    {
+      "var": "AUTODEV_MCP_ALLOW_APPLY",
+      "file": "src/autodev/mcp_server/tools.py",
+      "usage": "dual-gate env check, read from os.environ — no hardcoded value",
+      "severity": "info"
+    },
+    {
+      "var": "ANTHROPIC_API_KEY",
+      "files": ["docs/quickstart.md", "docs/faq.md", "docs/troubleshooting.md", "docs/configuration.md"],
+      "usage": "placeholder in documentation only — no real value",
+      "severity": "info"
+    },
+    {
+      "var": "OPENAI_API_KEY",
+      "files": ["docs/quickstart.md"],
+      "usage": "placeholder in documentation only — no real value",
+      "severity": "info"
+    },
+    {
+      "var": "PYPI_API_TOKEN",
+      "files": [".github/workflows/release.yml"],
+      "usage": "${{ secrets.PYPI_API_TOKEN }} — GitHub Actions secret reference, no hardcoded value",
+      "severity": "info"
+    }
+  ],
+  "ssrf_network_findings": [
+    {
+      "file": "src/autodev/adapters/a2a/transports/http.py",
+      "lines": "96-100",
+      "patterns": ["169.254.0.0/16", "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"],
+      "classification": "safe_use",
+      "severity": "info",
+      "note": "These are SSRF BLOCKLIST entries used by _validate_url to REJECT private IP requests"
+    },
+    {
+      "file": "src/autodev/cli.py",
+      "line": 678,
+      "pattern": "127.0.0.1",
+      "classification": "safe_use",
+      "severity": "info",
+      "note": "Default bind address for local server — restrictive (loopback-only), not SSRF risk"
+    },
+    {
+      "file": "src/autodev/schemas.py",
+      "line": 1045,
+      "pattern": "127.0.0.1",
+      "classification": "safe_use",
+      "severity": "info",
+      "note": "Default bind schema field — restrictive loopback default"
+    },
+    {
+      "file": "tests/*",
+      "pattern": "127.0.0.1 / localhost",
+      "classification": "test_fixture",
+      "severity": "info",
+      "note": "Test servers bound to loopback; conftest.py explicitly notes this is for integration tests only"
+    }
+  ],
+  "mitigations_present": {
+    "A2AHttpSSRFError": true,
+    "_resolve_and_pin_host": true,
+    "_PinnedHTTPHandler": true,
+    "_PinnedHTTPSHandler": true,
+    "WorkerIsolatorPathEscapeError": true,
+    "AUTODEV_MCP_ALLOW_APPLY": true,
+    "DEFAULT_DENYLIST_complete": true,
+    "DEFAULT_DENYLIST_entries_verified": ["rm -rf", "sudo", "chmod 777", "curl | bash", "wget | bash", "eval", "exec ", "cat .env"]
+  },
+  "gitignore_secret_paths": {
+    ".env": false,
+    "credentials.json": false,
+    "secrets.toml": false,
+    "note": "FINDING: .gitignore does NOT include .env, credentials.json, or secrets.toml. No such files currently exist in the repo, mitigating immediate risk, but the omission is a low-severity gap that should be patched before public release."
+  },
+  "files_at_repo_root": {
+    ".env": "absent",
+    "credentials.json": "absent",
+    "secrets.toml": "absent"
+  },
+  "high_severity_count": 0,
+  "critical_severity_count": 0,
+  "diff_vs_r1_j": "still 0 true leaks; R3-J fixes all carried forward; one new low finding: .gitignore missing .env/credentials.json/secrets.toml entries",
+  "top_3_findings": [
+    {
+      "rank": 1,
+      "severity": "low",
+      "title": ".gitignore missing .env / credentials.json / secrets.toml entries",
+      "detail": "The repo .gitignore (164 bytes) does not enumerate .env, credentials.json, or secrets.toml. None of these files currently exist in the working tree, so there is no active leak, but the absence creates a safety gap: a developer who creates one of these files locally could accidentally commit it. Remediation: add three lines to .gitignore before tagging.",
+      "file": "/Users/macworkers/autodev/.gitignore"
+    },
+    {
+      "rank": 2,
+      "severity": "info",
+      "title": "AKIA-pattern string in test fixture (expected)",
+      "detail": "tests/unit/test_severity_findings_in_reviewers.py:18 writes 'AKIA1234567890EXAMPLE' to pytest tmp_path to exercise SecurityReviewerAgent. This is intentional test infrastructure, not a credential leak.",
+      "file": "tests/unit/test_severity_findings_in_reviewers.py"
+    },
+    {
+      "rank": 3,
+      "severity": "info",
+      "title": "Docs use placeholder API key strings (expected)",
+      "detail": "Five documentation files use placeholder strings like 'sk-ant-...' and 'sk-...' in export examples. All are clearly marked as placeholders and contain no real key material.",
+      "files": ["docs/quickstart.md", "docs/faq.md", "docs/troubleshooting.md", "docs/configuration.md"]
+    }
+  ],
+  "verdict": "safe_to_tag"
+}

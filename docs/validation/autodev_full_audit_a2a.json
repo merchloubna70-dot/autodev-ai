@@ -1,0 +1,13 @@
+{
+  "round": "full_audit_a2a",
+  "a2a_tests_pass": 111,
+  "a2a_tests_xfail": 0,
+  "ssrf_symbols_present": ["A2AHttpSSRFError"],
+  "dns_rebinding_symbols_present": ["_resolve_and_pin_host", "_PinnedHTTPHandler", "_PinnedHTTPSHandler"],
+  "allow_private_networks_param": true,
+  "roundtable_party_mode_independent": true,
+  "card_task_mapping_is_dict": true,
+  "a2a_schemas_count": 6,
+  "diff_vs_r3_e": "no regression",
+  "verdict": "a2a_hardened_with_residual_egress_proxy"
+}

@@ -1,0 +1,46 @@
+{
+  "round": "full_audit_flow_agent_coverage",
+  "date": "2026-05-14",
+  "auditor": "PreTag-G",
+  "flow_count": 16,
+  "flow_count_expected": 17,
+  "flow_count_delta": -1,
+  "agent_count": 39,
+  "agent_count_expected": 41,
+  "agent_count_delta": -2,
+  "flows_with_tests": 11,
+  "flows_without_tests": [
+    "investigation_flow",
+    "brownfield_doc_flow",
+    "project_context_flow"
+  ],
+  "flow_test_matrix": {
+    "issue_pipeline_flow": "COVERED",
+    "project_delivery_flow": "COVERED",
+    "project_delivery_microfile": "COVERED",
+    "sprint_flow": "COVERED",
+    "bug_fix_flow": "COVERED",
+    "multi_patch_flow": "COVERED",
+    "investigation_flow": "MISSING",
+    "brownfield_doc_flow": "MISSING",
+    "ux_design_flow": "COVERED",
+    "project_context_flow": "MISSING",
+    "release_flow": "COVERED",
+    "milestone_flow": "COVERED",
+    "replay_flow": "COVERED",
+    "step_runner": "COVERED"
+  },
+  "milestone_flow_tests_pass": 8,
+  "release_flow_tests_pass": 7,
+  "milestone_release_total_pass": 15,
+  "bmad_markers": 18,
+  "r3_gap_closures_verified": [
+    "MilestoneFlow",
+    "ReleaseFlow"
+  ],
+  "r3_gap_closures_claimed_not_verified": [
+    "ProjectContextFlow"
+  ],
+  "diff_vs_r1_g": "MilestoneFlow + ReleaseFlow gaps now have tests (15 total passing). ProjectContextFlow still lacks dedicated test. Flow count -1 vs expected, agent count -2 vs expected.",
+  "verdict": "coverage_improved_with_gaps"
+}

@@ -1,0 +1,92 @@
+{
+  "round": "full_audit_validation_reports",
+  "agent": "PreTag-L",
+  "audit_date": "2026-05-14",
+  "scope": "self-audit of all docs/validation/ reports for parseability, pair completeness, cross-report consistency, and forbidden phrase absence",
+  "total_validation_files": 83,
+  "by_category": {
+    "r1": 24,
+    "r2": 12,
+    "r3": 18,
+    "rc": 10,
+    "pre_tag_so_far": 16,
+    "aggregators": 2,
+    "orphaned_json_no_md": 1
+  },
+  "category_detail": {
+    "r1_note": "24 files = 12 json + 12 md covering: a2a_protocol, ci_quality, cli_surface, documentation_onboarding, executor_boundary, flow_agent_coverage, installation, mcp_server, packaging_artifact, release_readiness_gate, release_topology, security_secret",
+    "r2_note": "12 files = 6 json + 6 md: a2a_http_ssrf_hardening, flow_test_coverage, homebrew_metadata_closure, pypi_release_blocker_closure, release_workflow_pytest_gate, wheel_version_smoke",
+    "r3_note": "18 files = 9 json + 9 md: a2a_dns_rebinding_hardening, docker_digest_pinning, documentation_minimum_closure, homebrew_publish_time_blocker, mcp_apply_guardrail, mypy_bridge_closure, pypi_rc_final_hardening, ruff_lint_closure, worker_isolator_symlink_hardening",
+    "rc_note": "10 files = 5 json + 5 md: pypi_rc_artifact_build, pypi_rc_metadata_freeze, pypi_rc_release_gate_final, pypi_rc_release_workflow_audit, pypi_0_1_0a1_rc_publish_prep",
+    "pre_tag_note": "16 files = 8 json + 8 md: full_audit_a2a, full_audit_cli_surface, full_audit_docs_onboarding, full_audit_executor_isolation, full_audit_flow_agent_coverage, full_audit_mcp, full_audit_metadata, full_audit_packaging",
+    "aggregators_note": "2 files = 1 json + 1 md: autodev_release_hardening_round",
+    "orphaned_note": "release_readiness_gate_run.json has no matching .md; machine-generated gate run output, not a human-authored report — treated as supporting evidence, not a standalone report"
+  },
+  "json_parse_status": {
+    "total_json": 42,
+    "parsed_ok": 42,
+    "parse_failed": []
+  },
+  "md_json_pair_complete": false,
+  "md_json_pair_detail": {
+    "md_without_json": [],
+    "json_without_md": ["release_readiness_gate_run.json"],
+    "assessment": "One JSON-only file (release_readiness_gate_run.json) is a machine-generated gate-run artifact. All 41 author-level .md reports have a matching .json. Not a defect — no .md is expected for a gate run output file."
+  },
+  "verdicts_consistent": true,
+  "verdict_cross_check": {
+    "r1_aggregator": "pass_with_limitations (autodev_release_hardening_round.json: overall_result=pass_with_limitations)",
+    "r2_sub_verdicts": "All R2 sub-reports record closed/hardened/corrected state with known residual risks; none claim full-pass. Consistent with R1 aggregator.",
+    "r3_sub_verdicts": "All R3 sub-reports record pass or closed or hardened_with_documented_residual_risk. No R3 sub-report claims Homebrew is unblocked.",
+    "rc_sub_verdicts": "RC reports: publishable / frozen / rc_ready_no_technical_blockers / ready_for_tag_push. No RC report claims PyPI is already published.",
+    "homebrew_consistency": "All rounds (R2, R3, RC, pre-tag) consistently record Homebrew as BLOCKED or blocked_with_reason. No round claims Homebrew is unblocked.",
+    "no_r3_homebrew_contradicts_aggregator": true
+  },
+  "forbidden_phrase_hits": {
+    "production-ready": {
+      "raw_file_hits": 4,
+      "false_positives_only": true,
+      "detail": "All 4 hits are in negation/audit-checklist context: 'Did NOT fabricate Docker production-ready', 'patterns_checked: [production-ready]', 'must not contain: production ready'. Zero instances claim production-ready status."
+    },
+    "enterprise-ready": {
+      "raw_file_hits": 2,
+      "false_positives_only": true,
+      "detail": "Both hits are in full_audit_metadata as items in the forbidden-phrase checklist being validated (patterns_checked list and table row showing 0 matches found). Zero instances claim enterprise-ready status."
+    },
+    "homebrew_ready": {
+      "raw_file_hits": 3,
+      "false_positives_only": true,
+      "detail": "All 3 hits appear in phrases that explicitly DENY the status: 'Did NOT fabricate Homebrew ready', 'NOT Homebrew ready — Homebrew remains blocked', 'Did NOT write Homebrew pending as Homebrew ready'. Zero instances claim Homebrew is ready."
+    }
+  },
+  "false_publish_claims": {
+    "count": 0,
+    "detail": "Two PyPI-publish-related hits found: (1) full_audit_metadata.json notes 'not yet published to PyPI' — accurate negation. (2) r2_release_workflow_pytest_gate.md states 'No code is published to PyPI until secret is set' — accurate description of gate semantics. Zero claims of completed PyPI publication."
+  },
+  "homebrew_status_consistently_blocked": true,
+  "homebrew_status_detail": {
+    "formula_sha256_actual": "TODO_PUBLISH_SHA256",
+    "formula_blocked_comment_present": true,
+    "blocked_comment_text": "This formula is BLOCKED for publish until PyPI 0.1.0a1 is live and sha256 is computed from PyPI metadata.",
+    "r2_homebrew_sha256_not_stale_check": "PASS — this check tests that old fabricated hash 744375fb... is absent, not that TODO_PUBLISH_SHA256 is absent. Semantically correct.",
+    "all_reports_agree": "R2 records 'homebrew_tap_publish_blocked: true'; R3 records 'homebrew_status: blocked_with_reason / verdict: honest_blocker_recorded'; RC records 'homebrew: blocked_with_reason'; pre-tag packaging records 'homebrew_publish_status: blocked_with_reason_pending_pypi_publish'. No contradiction."
+  },
+  "findings": [
+    {
+      "severity": "info",
+      "finding": "release_readiness_gate_run.json has no matching .md",
+      "assessment": "This is a machine-generated gate-run artifact (42 checks, overall: pass, strict_pass: true). No author-level .md is expected. Not a defect."
+    },
+    {
+      "severity": "info",
+      "finding": "All 'production-ready', 'enterprise-ready', 'Homebrew ready' phrase hits are false positives — appear only in negations, checklists-being-validated, or audit tables",
+      "assessment": "Zero actual forbidden-status claims. Clean."
+    },
+    {
+      "severity": "info",
+      "finding": "All 42 JSON files parse successfully with python -m json.tool",
+      "assessment": "No malformed JSON."
+    }
+  ],
+  "verdict": "validation_reports_self_consistent"
+}

@@ -1,0 +1,54 @@
+{
+  "round": "full_audit_packaging",
+  "date": "2026-05-14",
+  "agent": "PreTag-J",
+  "artifacts": {
+    "wheel": {
+      "present": true,
+      "path": "dist/autodev_ai-0.1.0a1-py3-none-any.whl",
+      "sha256": "395e2102e6eb80269de215bb716c1751d5169dcbb4b2ce42be22fca5a55e5b94"
+    },
+    "sdist": {
+      "present": true,
+      "path": "dist/autodev_ai-0.1.0a1.tar.gz",
+      "sha256": "8be1cddf0ed99538fb0bf418eef67946022a2f3fc2aa0767739fbbf3680a8d9c"
+    },
+    "docker_dockerfile_digest_pinned": true,
+    "docker_base_digest": "sha256:401f6e1a67dad31a1bd78e9ad22d0ee0a3b52154e6bd30e90be696bb6a3d7461",
+    "docker_base_image": "python@sha256:401f6e1a67dad31a1bd78e9ad22d0ee0a3b52154e6bd30e90be696bb6a3d7461",
+    "docker_both_from_lines_pinned": true,
+    "docker_update_md_present": true,
+    "docker_workflow_multi_arch": true,
+    "docker_workflow_platforms": "linux/amd64,linux/arm64",
+    "docker_workflow_tag_trigger": "v*.*.*",
+    "pyinstaller_spec_present": true,
+    "pyinstaller_entry_present": true,
+    "homebrew_formula_owner_correct": true,
+    "homebrew_formula_owner": "merchloubna70-dot",
+    "homebrew_sha256_is_placeholder": true,
+    "homebrew_sha256_value": "TODO_PUBLISH_SHA256",
+    "homebrew_blocked_comment_present": true,
+    "homebrew_blocked_comment_text": "This formula is BLOCKED for publish until PyPI 0.1.0a1 is live and sha256 is computed from PyPI metadata.",
+    "homebrew_publish_checklist_present": true,
+    "macos_info_plist_version": "0.1.0a1",
+    "macos_plist_key": "CFBundleShortVersionString"
+  },
+  "twine_check": {
+    "wheel": "PASSED",
+    "sdist": "PASSED"
+  },
+  "publishable": {
+    "pypi": true,
+    "docker_ghcr": true,
+    "homebrew": false
+  },
+  "homebrew_publish_status": "blocked_with_reason_pending_pypi_publish",
+  "notes": {
+    "wheel_hash_determinism": "wheel sha256 is deterministic (pure-Python, no compiled extension, reproducible build)",
+    "sdist_hash_determinism": "sdist sha256 may vary across rebuilds due to PKG-INFO timestamp embedding",
+    "docker_tag_trigger_match": "tag push to v0.1.0a1 matches pattern v*.*.* — workflow fires",
+    "homebrew_blocker": "sha256=TODO_PUBLISH_SHA256 + four leading BLOCKED comment lines — brew tap will fail as designed until PyPI is live"
+  },
+  "diff_vs_r3_f": "no regression; all R2-G + R3-D + R3-F fixes carried",
+  "verdict": "packaging_tag_ready_homebrew_still_blocked"
+}

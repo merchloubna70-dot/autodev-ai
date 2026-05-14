@@ -1,0 +1,30 @@
+{
+  "round": "full_audit_mcp",
+  "date": "2026-05-14",
+  "agent": "PreTag-D",
+  "mcp_smoke_test_pass": 10,
+  "mcp_apply_guardrail_test_pass": 19,
+  "total_test_pass": 29,
+  "total_test_fail": 0,
+  "tools_count": 9,
+  "tools_registered": [
+    "autodev_scan",
+    "autodev_classify_input",
+    "autodev_create_prd",
+    "autodev_deliver_project",
+    "autodev_run_issue",
+    "autodev_report",
+    "autodev_roundtable",
+    "autodev_release_check",
+    "autodev_list_runs"
+  ],
+  "allow_apply_param_present": true,
+  "allow_apply_deliver_project_default_false": true,
+  "allow_apply_run_issue_default_false": true,
+  "autodev_mcp_allow_apply_env_referenced": true,
+  "audit_log_referenced": true,
+  "autodev_mcp_audit_log_env_referenced": true,
+  "dual_gate_logic_present": true,
+  "diff_vs_r3_b": "no regression",
+  "verdict": "mcp_stable_with_dual_gate"
+}

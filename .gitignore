@@ -14,3 +14,11 @@ target/
 .autodev/
 _autodev/
 .coverage
+# Secret files (defense in depth — should never be in repo)
+.env
+.env.*
+!.env.example
+credentials.json
+secrets.toml
+*.pem
+*.key

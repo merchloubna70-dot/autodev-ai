@@ -1,0 +1,88 @@
+{
+  "round": "full_audit_executor_isolation",
+  "date": "2026-05-14",
+  "agent": "PreTag-F",
+  "executor_tests_pass": 35,
+  "executor_tests_xfail": 4,
+  "mock_smoke_exit_code": 0,
+  "mock_smoke_cmd": "FACTORY_FORCE_MOCK=1 python -m autodev.cli classify-input --input examples/01-mdlines/brief.md",
+  "mock_smoke_last_lines": [
+    "\"input_type\": \"project_brief\",",
+    "\"confidence\": 0.8,",
+    "\"rationale\": \"Reads like a project brief.\",",
+    "\"detected_languages\": [],",
+    "\"suggested_flow\": \"project_delivery_flow\",",
+    "\"source_path\": \"/Users/macworkers/autodev/examples/01-mdlines/brief.md\","
+  ],
+  "worker_isolator_defenses": [
+    "WorkerIsolatorPathEscapeError",
+    "resolve_strict",
+    "branch_name_validate",
+    "cleanup_within_root"
+  ],
+  "worker_isolator_defense_detail": {
+    "WorkerIsolatorPathEscapeError": "Dedicated exception class at src/autodev/executors/worker_isolator.py:52; raised by all four escape vectors",
+    "resolve_strict": "src.resolve(strict=True) called before each symlink; _assert_inside(resolved_src, resolved_parent) enforces is_relative_to boundary — line 301-302",
+    "branch_name_validate": "_validate_branch_name() rejects NUL bytes, '/', and '..' components before any subprocess call — lines 184-217",
+    "cleanup_within_root": "cleanup_worktree() resolves path and calls _assert_inside(resolved, resolved_root) before shutil.rmtree — lines 435-437"
+  },
+  "denylist_patterns_covered": [
+    "rm -rf",
+    "sudo",
+    "chmod 777",
+    "curl | bash",
+    "wget | bash",
+    "eval",
+    "exec ",
+    "cat .env"
+  ],
+  "denylist_also_covers": [
+    "source .env",
+    "printenv",
+    " env ",
+    "> /etc/",
+    "; rm ",
+    "&& rm ",
+    "| rm ",
+    "mkfs",
+    "--force",
+    "git push --force",
+    "gh --force"
+  ],
+  "executor_modes": ["auto", "codex", "claude", "mock"],
+  "executor_mode_detail": {
+    "auto": "ExecutionBackend.AUTO triggers _auto_route() — task_type/risk/language/file-count heuristics",
+    "codex": "ExecutionBackend.CODEX selected by request.backend or _auto_route; _maybe_mock falls back to MOCK_CODEX when binary absent + allow_mock=True",
+    "claude": "ExecutionBackend.CLAUDE_CODE selected by request.backend or _auto_route; _maybe_mock falls back to MOCK_CLAUDE when binary absent + allow_mock=True",
+    "mock": "MOCK_CODEX and MOCK_CLAUDE wired directly or via fallback; FACTORY_FORCE_MOCK=1 makes real executors report is_available()=False"
+  },
+  "factory_force_mock_honored": true,
+  "xfail_residual_risks": [
+    {
+      "id": "F-01a",
+      "test": "test_denylist_catches_curl_pipe_bash_no_space",
+      "description": "DEFAULT_DENYLIST entry is 'curl | bash' (with spaces); 'curl|bash' (no space) bypasses substring match in is_command_denied / scan_prompt_for_unsafe",
+      "mitigation_needed": "Add no-space variants or normalise whitespace before denylist scan"
+    },
+    {
+      "id": "F-01b",
+      "test": "test_denylist_catches_wget_pipe_bash_no_space",
+      "description": "Same gap as F-01a for 'wget|bash' (no space)",
+      "mitigation_needed": "Same fix as F-01a"
+    },
+    {
+      "id": "F-02",
+      "test": "test_factory_force_mock_overrides_apply_mode_fail_closed",
+      "description": "When CLI mode=apply and allow_mock=None, _build_config sets allow_mock_executor=False; combined with FACTORY_FORCE_MOCK=1 (both CLIs absent) the router fail-closes instead of routing to mock",
+      "mitigation_needed": "FactoryConfig.from_env() / _build_config() should honour FACTORY_FORCE_MOCK=1 by forcing allow_mock_executor=True regardless of mode"
+    },
+    {
+      "id": "F-03-stale-xfail",
+      "test": "test_worker_isolator_rejects_escaped_symlink_in_parent_home",
+      "description": "R3-H already fixed the escape: prepare_codex_home() now raises WorkerIsolatorPathEscapeError for out-of-parent symlinks. Test xfail reason is stale (written pre-fix). The test itself passes when run with --runxfail, confirming the fix works. xfail annotation should be updated to xpass or removed.",
+      "mitigation_needed": "Remove or invert the xfail marker — the fix is confirmed in place"
+    }
+  ],
+  "diff_vs_r3_h": "no regression — all 10 worker_isolator_symlink_hardening tests pass; executor_router 12 tests pass; F-03 code fix verified working",
+  "verdict": "executor_boundary_solid_with_4_documented_xfail"
+}

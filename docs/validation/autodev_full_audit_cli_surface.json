@@ -1,0 +1,22 @@
+{
+  "round": "full_audit_cli_surface",
+  "agent": "PreTag-C",
+  "date": "2026-05-14",
+  "test_cli_help_surface_pass": 37,
+  "test_cli_help_surface_total": 37,
+  "autodev_help_exit": 0,
+  "autodev_help_first_3_commands": [
+    "run-issue",
+    "deliver-project",
+    "classify-input"
+  ],
+  "autodev_version_output": "autodev-ai 0.1.0a1",
+  "module_form_works": true,
+  "module_form_version_output": "autodev-ai 0.1.0a1",
+  "command_count_pyproject": 1,
+  "command_count_source": 35,
+  "release_notes_cli_overview_present": true,
+  "failed_subcommands": [],
+  "diff_vs_r1_c": "no regression",
+  "verdict": "cli_surface_stable"
+}
