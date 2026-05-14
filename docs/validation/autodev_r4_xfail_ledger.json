@@ -1,0 +1,87 @@
+{
+  "round": "r4_xfail_ledger",
+  "audit_date": "2026-05-14",
+  "summary": {
+    "xfail_before_r4": 10,
+    "xfail_after_r4": 0,
+    "xfail_delta": -10,
+    "all_closed_via_real_fix": true,
+    "stale_xfails_remaining": 0
+  },
+  "closed_xfails": [
+    {
+      "id": "F-01a",
+      "test": "tests/unit/test_executor_boundary_smoke.py::test_denylist_catches_curl_pipe_bash_no_space",
+      "closure_round": "R3-Coverage Cov-G (this round preceded R4)",
+      "fix": "_normalize_pipe_whitespace in command_safety.py"
+    },
+    {
+      "id": "F-01b",
+      "test": "tests/unit/test_executor_boundary_smoke.py::test_denylist_catches_wget_pipe_bash_no_space",
+      "closure_round": "R3-Coverage Cov-G",
+      "fix": "same as F-01a"
+    },
+    {
+      "id": "F-02",
+      "test": "tests/unit/test_executor_boundary_smoke.py::test_factory_force_mock_overrides_apply_mode_fail_closed",
+      "closure_round": "R3-Coverage Cov-G",
+      "fix": "FactoryConfig.from_env now auto-sets allow_mock_executor=True when FACTORY_FORCE_MOCK=1"
+    },
+    {
+      "id": "F-03",
+      "test": "tests/unit/test_executor_boundary_smoke.py::test_worker_isolator_rejects_escaped_symlink_in_parent_home",
+      "closure_round": "R3-Coverage Cov-G",
+      "fix": "stale annotation; R3-H code was already correct (WorkerIsolatorPathEscapeError raised)"
+    },
+    {
+      "id": "TWINE-1..4",
+      "test": "tests/unit/test_release_workflow_twine_password_policy.py (4 tests)",
+      "closure_round": "R4-E",
+      "fix": "release.yml twine upload switched from -p flag to TWINE_PASSWORD env"
+    },
+    {
+      "id": "MCP-ENV-PATH",
+      "test": "tests/integration/test_security_p0_coverage.py::TestMCPPathArgDotEnvDenial::test_mcp_rejects_path_argument_containing_dot_env",
+      "closure_round": "R4-A",
+      "fix": "_validate_safe_path preflight added to 6 MCP handlers (path_safety.py)"
+    },
+    {
+      "id": "MCP-SCHEMA",
+      "test": "tests/unit/test_protocol_error_paths.py::test_mcp_tools_call_missing_required_param_returns_error",
+      "closure_round": "R4-D",
+      "fix": "_validate_required_params helper added pre-dispatch in mcp_server/server.py"
+    },
+    {
+      "id": "EXEC-REDACT-PYPI",
+      "test": "tests/integration/test_security_p0_coverage.py::TestExecutorSecretScrubbing::test_executor_result_does_not_leak_pypi_api_token_in_stderr",
+      "closure_round": "R4-B",
+      "fix": "secret_redaction.py + integration into 3 executors"
+    },
+    {
+      "id": "EXEC-REDACT-ANTHROPIC",
+      "test": "tests/integration/test_security_p0_coverage.py::TestExecutorSecretScrubbing::test_executor_result_does_not_leak_anthropic_api_key",
+      "closure_round": "R4-B",
+      "fix": "same as EXEC-REDACT-PYPI"
+    },
+    {
+      "id": "BRANCH-DOLLAR-PAREN",
+      "test": "tests/integration/test_security_p0_coverage.py::test_worker_isolator_branch_name_rejects_dollar_paren",
+      "closure_round": "R4-C",
+      "fix": "_validate_branch_name extended to reject $(, backtick, ;, &&, ||, |, >, <, newline, leading -"
+    },
+    {
+      "id": "BRANCH-BACKTICK",
+      "test": "tests/integration/test_security_p0_coverage.py::test_worker_isolator_branch_name_rejects_backtick",
+      "closure_round": "R4-C",
+      "fix": "same as BRANCH-DOLLAR-PAREN"
+    }
+  ],
+  "remaining_xfails": [],
+  "ledger_invariants_upheld": [
+    "No xfail was deleted without real code fix or genuine stale-annotation cleanup",
+    "No xfail was converted to pass without verifying behavior",
+    "All previously-failing tests now pass under normal pytest run (no xfail decorator)",
+    "Stale xfail count = 0"
+  ],
+  "verdict": "ledger_clean_all_known_xfails_closed_by_real_fix"
+}

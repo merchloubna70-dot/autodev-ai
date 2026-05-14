@@ -1,0 +1,120 @@
+{
+  "round": "autodev_r4_security_xfail_closure_round",
+  "status": "completed",
+  "overall_result": "pass",
+  "audit_date": "2026-05-14",
+  "auditor": "5-agent Phase-1 sonnets (R4-A/B/C/D/E) + Opus aggregator (F/J)",
+  "predecessor_rounds": [
+    "R1 release_hardening",
+    "R2 pypi_release_blocker_closure",
+    "R3 pypi_rc_final_hardening",
+    "RC pypi_0_1_0a1_publish_prep",
+    "PreTag full_pre_tag_audit_round",
+    "Coverage test_coverage_expansion_round"
+  ],
+  "xfail": {
+    "before": 10,
+    "after": 0,
+    "fixed": [
+      "F-01a curl|bash no-space denylist (Cov-G; closed before R4 but listed for ledger completeness)",
+      "F-01b wget|bash no-space denylist (Cov-G)",
+      "F-02 FACTORY_FORCE_MOCK fail-closed apply mode (Cov-G)",
+      "F-03 stale symlink escape annotation (Cov-G)",
+      "TWINE-1..4 release.yml twine -p flag (R4-E)",
+      "MCP-ENV-PATH MCP path arg .env denial (R4-A)",
+      "MCP-SCHEMA MCP required schema enforcement (R4-D)",
+      "EXEC-REDACT-PYPI executor PYPI_API_TOKEN stderr leak (R4-B)",
+      "EXEC-REDACT-ANTHROPIC executor ANTHROPIC_API_KEY leak (R4-B)",
+      "BRANCH-DOLLAR-PAREN branch name $() injection (R4-C)",
+      "BRANCH-BACKTICK branch name backtick injection (R4-C)"
+    ],
+    "remaining": []
+  },
+  "security_fixes": {
+    "mcp_env_path_denial": "pass",
+    "executor_secret_redaction": "pass",
+    "branch_injection_hardening": "pass",
+    "mcp_required_schema_enforcement": "pass",
+    "release_workflow_secret_handling": "pass"
+  },
+  "code_changes_per_agent": {
+    "R4-A_mcp_env_path_denial": [
+      "NEW src/autodev/mcp_server/path_safety.py (MCPPathSafetyError + _validate_safe_path)",
+      "MOD src/autodev/mcp_server/tools.py (preflight added to 6 handlers)",
+      "NEW tests/integration/test_mcp_path_secret_denial.py (30 tests)",
+      "MOD tests/integration/test_security_p0_coverage.py (1 xfail removed)"
+    ],
+    "R4-B_executor_secret_redaction": [
+      "NEW src/autodev/utils/secret_redaction.py (8 pattern classes + idempotent)",
+      "MOD src/autodev/executors/codex_cli_executor.py (redact stderr/stdout)",
+      "MOD src/autodev/executors/claude_code_executor.py (redact stderr/stdout)",
+      "MOD src/autodev/executors/mock_claude_executor.py (defense in depth)",
+      "NEW tests/unit/test_secret_redaction.py (16+ tests)",
+      "NEW tests/integration/test_executor_secret_redaction_integration.py (4+ tests)",
+      "MOD tests/integration/test_security_p0_coverage.py (2 xfails removed)"
+    ],
+    "R4-C_branch_injection_hardening": [
+      "MOD src/autodev/executors/worker_isolator.py (_validate_branch_name extended; BranchNameInjectionError subclass)",
+      "MOD src/autodev/adapters/git_adapter.py (_validate_branch propagated to push/checkout/create_branch)",
+      "NEW tests/unit/test_branch_name_hardening.py (26 tests)",
+      "MOD tests/integration/test_security_p0_coverage.py (2 xfails removed)",
+      "MOD tests/unit/test_worker_isolator_symlink_hardening.py (compat with new exception)"
+    ],
+    "R4-D_mcp_required_schema_enforcement": [
+      "MOD src/autodev/mcp_server/server.py (_validate_required_params pre-dispatch)",
+      "NEW tests/integration/test_mcp_required_schema_enforcement.py (24 tests)",
+      "MOD tests/unit/test_protocol_error_paths.py (1 xfail removed)"
+    ],
+    "R4-E_release_workflow_secret_handling": [
+      "MOD .github/workflows/release.yml (twine -p flag → TWINE_PASSWORD env)",
+      "MOD docs/release/pypi_0_1_0a1_publish_checklist.md (1-line note)",
+      "MOD tests/unit/test_release_workflow_twine_password_policy.py (4 xfails removed)"
+    ]
+  },
+  "coverage": {
+    "before_round": "80.4% line+branch / 81% line / 1191 tests / 10 xfail",
+    "after_round": "80.5% line+branch / 82% line / 1308 tests / 0 xfail",
+    "delta": "+0.1% combined, +1% line, +117 tests, -10 xfail",
+    "non_strict_gate": "pass",
+    "strict_gate": "fail (5 aspirational module gaps remain: cli 46% / mcp_server/server 72% / mcp_server/tools 76% / replay 61% / a2a/http 78%); 1 module crossed threshold this round"
+  },
+  "release_readiness_gate": "pass (36 pass / 0 fail / 0 skip; all 4 strict modes exit 0)",
+  "tag_readiness": "go_after_user_action",
+  "tag_readiness_unchanged_from_pretag_round": true,
+  "tag_readiness_rationale": "R4 closed 10 known xfails with real production fixes; no regression; pytest 1191 → 1308; ruff/mypy clean; release_readiness_gate 36/36 pass. Tag readiness preserved from Pre-Tag round.",
+  "validation_commands": [
+    "ruff check .",
+    "mypy src/autodev",
+    "pytest tests/",
+    "pytest tests/ --cov=autodev --cov-report=json:coverage.json --cov-branch",
+    "python scripts/coverage_gate.py",
+    "python scripts/coverage_gate.py --strict",
+    "python scripts/release_readiness_gate.py",
+    "python scripts/release_readiness_gate.py --strict",
+    "python scripts/release_readiness_gate.py --strict-r2",
+    "python scripts/release_readiness_gate.py --strict-r3",
+    "python scripts/release_readiness_gate.py --strict-rc",
+    "python -m autodev.release_readiness_gate",
+    "python -m autodev.coverage_gate"
+  ],
+  "evidence_files": [
+    "docs/validation/autodev_r4_mcp_env_path_denial.{md,json}",
+    "docs/validation/autodev_r4_executor_secret_redaction.{md,json}",
+    "docs/validation/autodev_r4_branch_injection_hardening.{md,json}",
+    "docs/validation/autodev_r4_mcp_schema_enforcement.{md,json}",
+    "docs/validation/autodev_r4_release_workflow_secret_handling.{md,json}",
+    "docs/validation/autodev_r4_xfail_ledger.{md,json}",
+    "docs/validation/autodev_r4_security_xfail_closure_round.{md,json}",
+    "docs/validation/release_readiness_gate_run.json",
+    "docs/validation/coverage_gate_run.json"
+  ],
+  "remaining_risks": [
+    "R4-A residual: symlink with innocuous filename pointing to secret target passes path check (would require Path.resolve() — R5)",
+    "R4-A residual: Unicode homoglyph filenames (full-width dot) not caught (low severity, requires deliberate encoding attack)",
+    "R4-B residual: pattern-based detection can miss novel token formats; not a content-aware DLP",
+    "R4-D residual: nested required-field validation depth limited to top-level (deeply-nested required not enforced — full jsonschema validator integration for R5)",
+    "R4-D residual: type checking is basic (str/int/bool/object/array); does NOT enforce JSON Schema format (uri/date-time)",
+    "Coverage strict gate still fails on 5 aspirational module thresholds (cli/mcp_server/replay/http); intentional aspirational targets, NOT release blockers"
+  ],
+  "recommended_next_round": "R5 Coverage Lift + Production-Enterprise Hardening: (1) coverage lift on 5 aspirational modules; (2) full jsonschema validator for MCP nested required; (3) Path.resolve() in path_safety; (4) SLSA provenance + SBOM (deferred from R3/R4); (5) per-caller MCP auth; (6) optional Unicode-normalize on path validator."
+}

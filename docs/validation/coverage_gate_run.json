@@ -1,17 +1,17 @@
 {
   "gate": "coverage_threshold",
-  "ran_at": "2026-05-14T05:45:16Z",
+  "ran_at": "2026-05-14T06:35:34Z",
   "thresholds": {
     "overall": 80.0,
     "release": 85.0,
     "security": 90.0
   },
-  "overall_pct": 80.4,
+  "overall_pct": 80.5,
   "checks": [
     {
       "name": "overall",
       "status": "pass",
-      "actual": 80.4,
+      "actual": 80.5,
       "threshold": 80.0,
       "detail": "line+branch combined coverage from coverage.json totals"
     },
@@ -32,14 +32,14 @@
     {
       "name": "release::src/autodev/mcp_server/server.py",
       "status": "fail",
-      "actual": 72.0,
+      "actual": 74.8,
       "threshold": 85.0,
       "detail": ""
     },
     {
       "name": "release::src/autodev/mcp_server/tools.py",
       "status": "fail",
-      "actual": 75.7,
+      "actual": 78.9,
       "threshold": 85.0,
       "detail": ""
     },
@@ -60,14 +60,14 @@
     {
       "name": "release::src/autodev/executors/executor_router.py",
       "status": "pass",
-      "actual": 87.3,
+      "actual": 88.3,
       "threshold": 85.0,
       "detail": ""
     },
     {
       "name": "release::src/autodev/executors/worker_isolator.py",
       "status": "pass",
-      "actual": 89.2,
+      "actual": 92.5,
       "threshold": 85.0,
       "detail": ""
     },
@@ -101,8 +101,8 @@
     },
     {
       "name": "security::src/autodev/executors/worker_isolator.py",
-      "status": "fail",
-      "actual": 89.2,
+      "status": "pass",
+      "actual": 92.5,
       "threshold": 90.0,
       "detail": ""
     },
@@ -115,8 +115,8 @@
     }
   ],
   "summary": {
-    "pass": 8,
-    "fail": 6,
+    "pass": 9,
+    "fail": 5,
     "exempt": 1,
     "missing": 0
   },

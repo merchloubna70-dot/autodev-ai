@@ -14,6 +14,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from .path_safety import MCPPathSafetyError, _validate_safe_path
+
 # ---------------------------------------------------------------------------
 # Apply-mode guardrail helpers
 # ---------------------------------------------------------------------------
@@ -119,6 +121,10 @@ def _force_mock() -> bool:
 
 def _handle_scan(args: dict[str, Any]) -> dict[str, Any]:
     repo_path = args.get("repo_path", ".")
+    try:
+        _validate_safe_path(repo_path, role="repo_path")
+    except MCPPathSafetyError as exc:
+        return {"isError": True, "content": [{"type": "text", "text": str(exc)}]}
     from ..agents.repo_explorer import RepoExplorerAgent
     result = RepoExplorerAgent().explore(repo_path)
     return json.loads(result.model_dump_json())
@@ -216,6 +222,12 @@ def _handle_deliver_project(args: dict[str, Any]) -> dict[str, Any]:
     languages_raw = args.get("languages", ["python"])
     from_scratch = bool(args.get("from_scratch", False))
     mode_str = args.get("mode", "dry-run")
+
+    # Preflight: validate repo_path before any file access
+    try:
+        _validate_safe_path(repo_path, role="repo_path")
+    except MCPPathSafetyError as exc:
+        return {"isError": True, "content": [{"type": "text", "text": str(exc)}]}
 
     # Validate mode value early
     if mode_str not in ("dry-run", "apply"):
@@ -339,6 +351,12 @@ def _handle_run_issue(args: dict[str, Any]) -> dict[str, Any]:
     languages_raw = args.get("languages", ["python"])
     mode_str = args.get("mode", "dry-run")
 
+    # Preflight: validate repo_path before any file access
+    try:
+        _validate_safe_path(repo_path, role="repo_path")
+    except MCPPathSafetyError as exc:
+        return {"isError": True, "content": [{"type": "text", "text": str(exc)}]}
+
     # Validate mode value early
     if mode_str not in ("dry-run", "apply"):
         return {
@@ -449,8 +467,12 @@ _tool_run_issue = Tool(
 # 6. autodev_report
 # ---------------------------------------------------------------------------
 
-def _handle_report(args: dict[str, Any]) -> str:
+def _handle_report(args: dict[str, Any]) -> str | dict[str, Any]:
     repo_path = args.get("repo_path", ".")
+    try:
+        _validate_safe_path(repo_path, role="repo_path")
+    except MCPPathSafetyError as exc:
+        return {"isError": True, "content": [{"type": "text", "text": str(exc)}]}
     run_id = args.get("run_id", "")
     from ..reports.reporter import Reporter
     from ..state import RunState
@@ -531,6 +553,10 @@ _tool_roundtable = Tool(
 
 def _handle_release_check(args: dict[str, Any]) -> dict[str, Any]:
     repo_path = args.get("repo_path", ".")
+    try:
+        _validate_safe_path(repo_path, role="repo_path")
+    except MCPPathSafetyError as exc:
+        return {"isError": True, "content": [{"type": "text", "text": str(exc)}]}
     run_id = args.get("run_id", "")
     from ..flows.release_flow import ReleaseFlow
     from ..state import RunState
@@ -558,8 +584,12 @@ _tool_release_check = Tool(
 # 9. autodev_list_runs
 # ---------------------------------------------------------------------------
 
-def _handle_list_runs(args: dict[str, Any]) -> list[dict[str, Any]]:
+def _handle_list_runs(args: dict[str, Any]) -> list[dict[str, Any]] | dict[str, Any]:
     repo_path = args.get("repo_path", ".")
+    try:
+        _validate_safe_path(repo_path, role="repo_path")
+    except MCPPathSafetyError as exc:
+        return {"isError": True, "content": [{"type": "text", "text": str(exc)}]}
     runs_root = Path(repo_path) / ".dev-factory" / "runs"
     if not runs_root.exists():
         return []

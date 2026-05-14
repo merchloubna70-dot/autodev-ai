@@ -1,0 +1,53 @@
+{
+  "round": "R4",
+  "agent": "R4-A",
+  "date": "2026-05-14",
+  "scope": "MCP preflight path-safety validator for secret-file pattern denial",
+  "verdict": "PASS",
+  "files_added": [
+    "src/autodev/mcp_server/path_safety.py",
+    "tests/integration/test_mcp_path_secret_denial.py"
+  ],
+  "files_modified": [
+    "src/autodev/mcp_server/tools.py",
+    "tests/integration/test_security_p0_coverage.py"
+  ],
+  "rejection_patterns": {
+    "exact_basenames": [".env", "credentials.json", "secrets.toml"],
+    "glob_patterns": [".env.*", "*.pem", "*.key"],
+    "basename_substrings": ["secret", "token", "credential"],
+    "path_traversal": [".. segments in path"]
+  },
+  "xfail_removed": [
+    {
+      "file": "tests/integration/test_security_p0_coverage.py",
+      "test": "TestMCPPathArgDotEnvDenial::test_mcp_rejects_path_argument_containing_dot_env",
+      "reason_was": "MCP path-arg .env denial not yet implemented"
+    }
+  ],
+  "test_counts": {
+    "new_tests_added": 30,
+    "new_tests_passed": 30,
+    "full_suite_passed": 1284,
+    "full_suite_failed_preexisting": 3,
+    "full_suite_regressions_introduced": 0
+  },
+  "static_analysis": {
+    "mypy": "0 errors",
+    "ruff_new_files": "0 errors"
+  },
+  "residual_risks": [
+    {
+      "id": "RR-1",
+      "title": "Symlink to secret file with innocuous link name",
+      "severity": "medium",
+      "description": "A symlink like /tmp/innocent-link -> /etc/.env would pass the validator. Mitigation: resolve symlinks in a future round."
+    },
+    {
+      "id": "RR-2",
+      "title": "Unicode homoglyph filenames",
+      "severity": "low",
+      "description": "Full-width dot or similar Unicode variants not caught. Requires deliberate encoding attack."
+    }
+  ]
+}

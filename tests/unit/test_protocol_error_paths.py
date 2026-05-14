@@ -157,10 +157,14 @@ def _dispatch(server, method: str, params: dict, req_id: int = 1) -> dict:
 
 
 def test_mcp_tool_internal_error_returns_is_error_true():
-    """When a registered tool handler raises, the response must have isError: true."""
+    """When a registered tool handler raises, the response must have isError: true.
+
+    Supply all required params so schema validation passes and the (patched) raising
+    handler is actually invoked.
+    """
     srv = _make_server()
-    # Patch a real tool's handler to raise RuntimeError
-    tool_name = next(iter(srv._tools))
+    # Use autodev_scan which requires repo_path (a string).
+    tool_name = "autodev_scan"
     original_handler = srv._tools[tool_name].handler
 
     def _raising_handler(args):
@@ -168,7 +172,11 @@ def test_mcp_tool_internal_error_returns_is_error_true():
 
     srv._tools[tool_name].handler = _raising_handler
     try:
-        resp = _dispatch(srv, "tools/call", {"name": tool_name, "arguments": {}})
+        # Provide the required field so schema validation passes, reaching the handler.
+        resp = _dispatch(srv, "tools/call", {
+            "name": tool_name,
+            "arguments": {"repo_path": "/tmp/nonexistent"},
+        })
     finally:
         srv._tools[tool_name].handler = original_handler
 
@@ -179,21 +187,11 @@ def test_mcp_tool_internal_error_returns_is_error_true():
     )
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "Gap: MCP server does not enforce 'required' JSON Schema fields — handlers use "
-        "args.get() with silent fallbacks, so missing required params succeed instead of "
-        "returning isError:true.  Tracked for future schema-validation middleware."
-    ),
-)
 def test_mcp_tools_call_missing_required_param_returns_error():
-    """Calling a tool without its required params should return isError:true.
+    """Calling a tool without its required params should return a JSON-RPC error -32602.
 
-    Current behavior: all handlers use args.get() with silent defaults, so missing
-    required params succeed (isError:false) rather than being rejected.  This test
-    documents the gap — it is expected to FAIL until server-side schema validation
-    is added.
+    The MCP server now enforces JSON Schema 'required' fields before dispatching to
+    the tool handler.  Missing required params return error code -32602 Invalid params.
     """
     srv = _make_server()
     # autodev_roundtable requires 'topic' and 'skills' — both listed in "required"
@@ -207,6 +205,13 @@ def test_mcp_tools_call_missing_required_param_returns_error():
     has_error = result.get("isError") is True or error_field is not None
     assert has_error, (
         f"Expected an error response when required params missing, got {resp!r}"
+    )
+    # The error must be a JSON-RPC level error (not just isError in result)
+    assert error_field is not None, (
+        f"Expected JSON-RPC error object, not tool-level isError: {resp!r}"
+    )
+    assert error_field["code"] == -32602, (
+        f"Expected -32602 Invalid params, got {error_field['code']}"
     )
 
 

@@ -17,11 +17,16 @@ The class is standalone: ``prepare_codex_home`` works purely with
 Failures in ``prepare_worktree`` are returned as structured errors rather than
 raised exceptions, so callers can decide how to surface them.
 
-Security hardening (R3-H)
---------------------------
+Security hardening (R3-H / R4-C)
+----------------------------------
 * Symlink targets are resolved with ``strict=True`` before creation; any target
   that resolves outside ``parent_home`` raises ``WorkerIsolatorPathEscapeError``.
-* Branch names are validated — ``..``, ``/``, and NUL bytes are rejected.
+* Branch names are validated — ``..`` traversal sequences and NUL bytes are
+  rejected.  Shell-injection metacharacters (``$(``, backtick, ``;``, ``&&``,
+  ``||``, ``|``, ``>``, ``<``, newlines / control chars) are also rejected to
+  prevent command injection if a branch name is ever interpolated into a shell
+  string.  Leading ``-`` and leading/trailing whitespace are rejected to prevent
+  git flag injection and accidental misuse.
 * Cleanup (``rmtree``) asserts the resolved path is inside the configured
   worktree root; out-of-root paths raise ``WorkerIsolatorPathEscapeError``.
 * CODEX_HOME env-var overrides pointing outside the allowed root are rejected.
@@ -57,6 +62,16 @@ class WorkerIsolatorPathEscapeError(Exception):
     * Branch names / path components containing traversal sequences.
     * Cleanup targets that resolve outside the configured worktree root.
     * CODEX_HOME env-var overrides pointing outside the allowed root.
+    """
+
+
+class BranchNameInjectionError(WorkerIsolatorPathEscapeError):
+    """Raised when a branch name contains shell-injection metacharacters or
+    other dangerous patterns that could lead to command injection or path
+    traversal if the name is interpolated into a shell command.
+
+    This is a subclass of ``WorkerIsolatorPathEscapeError`` so existing callers
+    that catch the parent class continue to work without modification.
     """
 
 
@@ -182,38 +197,77 @@ class WorkerIsolator:
 
     @staticmethod
     def _validate_branch_name(branch: str) -> None:
-        """Reject branch names that could cause path traversal.
+        """Reject branch names that could cause path traversal or shell injection.
 
-        Raises ``WorkerIsolatorPathEscapeError`` if the branch name contains
-        ``..``, a ``/`` component, or a NUL byte.
+        Raises ``BranchNameInjectionError`` if the branch name contains any
+        dangerous characters or patterns.
+
+        Allowed examples: ``feature/foo``, ``fix/issue-123``, ``main``,
+        ``release/v0.1.0a1``, ``chore/docs-update``.
+
+        Rejected patterns
+        -----------------
+        * NUL byte
+        * ``..`` path traversal (any ``/``-delimited component that is ``..``)
+        * ``$(`` or ``)`` — command substitution
+        * Backtick — alternative command substitution
+        * ``;`` — shell statement separator
+        * ``&&`` or ``||`` — shell logical operators
+        * ``|`` — pipe
+        * ``>`` or ``<`` — redirection (including ``>>`` / ``<<``)
+        * Newline (``\\n``) or carriage-return (``\\r``) or ASCII control chars (< 0x20)
+        * Leading ``-`` — would be interpreted as a git flag
+        * Leading or trailing whitespace
         """
+        # NUL byte
         if "\x00" in branch:
-            raise WorkerIsolatorPathEscapeError(
+            raise BranchNameInjectionError(
                 f"Branch name contains NUL byte: {branch!r}"
             )
-        # Reject embedded / (any component with slash — note: some valid git
-        # branch names use / as a namespace separator like "feat/foo", but we
-        # treat all / as unsafe to be conservative for security purposes)
-        if "/" in branch:
-            raise WorkerIsolatorPathEscapeError(
-                f"Branch name contains '/': {branch!r}"
+
+        # Leading/trailing whitespace
+        if branch != branch.strip():
+            raise BranchNameInjectionError(
+                f"Branch name has leading or trailing whitespace: {branch!r}"
             )
-        # Reject any component that is or starts with ..
-        if ".." in branch.split(os.sep):
-            raise WorkerIsolatorPathEscapeError(
-                f"Branch name contains '..': {branch!r}"
+
+        # Leading dash (git flag injection)
+        if branch.startswith("-"):
+            raise BranchNameInjectionError(
+                f"Branch name starts with '-' (would be interpreted as a git flag): {branch!r}"
             )
-        # Also catch a raw ".." string without sep
-        if branch == ".." or branch.startswith("../") or branch.endswith("/.."):
-            raise WorkerIsolatorPathEscapeError(
-                f"Branch name is a traversal sequence: {branch!r}"
-            )
-        # Catch ".." appearing anywhere as a path segment substitute
-        parts = branch.replace("\\", "/").split("/")
+
+        # Newline / carriage-return / ASCII control characters (< 0x20, excluding tab
+        # which is already caught by the whitespace check above, but we catch all < 0x20)
+        for ch in branch:
+            if ord(ch) < 0x20:
+                raise BranchNameInjectionError(
+                    f"Branch name contains control character (ord={ord(ch):#04x}): {branch!r}"
+                )
+
+        # Shell injection metacharacters
+        _SHELL_PATTERNS = (
+            ("$(", "command substitution '$('"),
+            ("`", "command substitution backtick '`'"),
+            (";", "shell statement separator ';'"),
+            ("&&", "shell logical operator '&&'"),
+            ("||", "shell logical operator '||'"),
+            ("|", "pipe '|'"),
+            (">", "redirection '>'"),
+            ("<", "redirection '<'"),
+        )
+        for pattern, description in _SHELL_PATTERNS:
+            if pattern in branch:
+                raise BranchNameInjectionError(
+                    f"Branch name contains {description}: {branch!r}"
+                )
+
+        # Path traversal: check each slash-delimited component for ".."
+        parts = branch.split("/")
         for part in parts:
             if part == "..":
-                raise WorkerIsolatorPathEscapeError(
-                    f"Branch name component is '..': {branch!r}"
+                raise BranchNameInjectionError(
+                    f"Branch name contains '..' path traversal component: {branch!r}"
                 )
 
     @staticmethod
@@ -333,9 +387,9 @@ class WorkerIsolator:
         Returns a ``WorktreeResult`` — never raises on git failure so callers
         can log / fall back without try/except.
 
-        Branch name validation is strict: ``..``, ``/``, and NUL bytes are
-        rejected with ``WorkerIsolatorPathEscapeError`` before any git
-        subprocess is spawned.
+        Branch name validation is strict: traversal sequences, NUL bytes, and
+        all shell-injection metacharacters are rejected with
+        ``BranchNameInjectionError`` before any git subprocess is spawned.
 
         Parameters
         ----------
@@ -352,8 +406,12 @@ class WorkerIsolator:
 
         Raises
         ------
-        WorkerIsolatorPathEscapeError
-            If ``branch`` contains ``..``, ``/``, or a NUL byte.
+        BranchNameInjectionError
+            If ``branch`` contains shell-injection metacharacters, path
+            traversal sequences, NUL bytes, leading ``-``, or leading/trailing
+            whitespace.  ``BranchNameInjectionError`` is a subclass of
+            ``WorkerIsolatorPathEscapeError`` so existing callers continue to
+            work.
         """
         repo = Path(repo)
         worker_root = Path(worker_root)

@@ -1,0 +1,40 @@
+{
+  "round": "r4_mcp_schema_enforcement",
+  "agent": "R4-D",
+  "audit_date": "2026-05-14",
+  "note": "Agent was disconnected (API socket close) before writing this report. Opus reconstructed it from the actual code/test state on disk.",
+  "status": "completed",
+  "strategy": "reject_missing_required_ignore_unknown_extras",
+  "strategy_detail": {
+    "missing_required_field": "rejected pre-dispatch with JSON-RPC -32602 Invalid params",
+    "unknown_extra_args": "ignored (handler uses what it knows; no rejection)",
+    "wrong_type": "rejected pre-dispatch with -32602 (basic type matching against JSON Schema)"
+  },
+  "code_changes": [
+    "src/autodev/mcp_server/server.py — _validate_required_params helper added; called pre-dispatch in tools/call handler"
+  ],
+  "tools_covered_by_required_field_check": [
+    "autodev_scan",
+    "autodev_classify_input",
+    "autodev_create_prd",
+    "autodev_deliver_project",
+    "autodev_run_issue",
+    "autodev_report",
+    "autodev_roundtable",
+    "autodev_release_check",
+    "autodev_list_runs"
+  ],
+  "new_tests": {
+    "file": "tests/integration/test_mcp_required_schema_enforcement.py",
+    "test_count": 24,
+    "all_pass": true
+  },
+  "xfails_removed": [
+    "tests/unit/test_protocol_error_paths.py::test_mcp_tools_call_missing_required_param_returns_error"
+  ],
+  "residual_risks": [
+    "Nested required-field depth: deeply-nested objects in schemas (3+ levels) are validated only at top level; if a tool exposes a deeply-nested required field this is not enforced. Future hardening: full jsonschema validator integration.",
+    "Type checking is basic (str/int/bool/object/array); does NOT enforce format strings (e.g. URI, date-time)."
+  ],
+  "verdict": "schema_enforcement_active_with_known_depth_limit"
+}

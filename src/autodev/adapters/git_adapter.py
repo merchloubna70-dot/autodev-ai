@@ -4,6 +4,17 @@ from __future__ import annotations
 from pathlib import Path
 
 from ..executors.shell_executor import ShellExecutor
+from ..executors.worker_isolator import WorkerIsolator
+
+
+def _validate_branch(branch: str) -> None:
+    """Validate *branch* before passing it to any git subprocess.
+
+    Delegates to :meth:`WorkerIsolator._validate_branch_name`, which raises
+    :class:`~autodev.executors.worker_isolator.BranchNameInjectionError`
+    (a subclass of ``WorkerIsolatorPathEscapeError``) on any dangerous input.
+    """
+    WorkerIsolator._validate_branch_name(branch)
 
 
 class GitAdapter:
@@ -49,6 +60,8 @@ class GitAdapter:
         assert remote != "--force" and (branch is None or branch != "--force"), "force-push is never allowed"
         if not enabled:
             return 0
+        if branch:
+            _validate_branch(branch)
         parts = ["git push"]
         if dry_run:
             parts.append("--dry-run")
@@ -56,3 +69,19 @@ class GitAdapter:
         if branch:
             parts.append(branch)
         return self.sh.run(" ".join(parts)).exit_code
+
+    def checkout(self, branch: str, *, create: bool = False) -> int:
+        """Check out *branch*; optionally create it with ``-b``.
+
+        Branch name is validated before the subprocess is invoked.
+        """
+        _validate_branch(branch)
+        flag = "-b " if create else ""
+        return self.sh.run(f"git checkout {flag}{branch}").exit_code
+
+    def create_branch(self, branch: str, start_point: str | None = None) -> int:
+        """Create a new branch.  Branch name is validated before invocation."""
+        _validate_branch(branch)
+        if start_point:
+            return self.sh.run(f"git branch {branch} {start_point}").exit_code
+        return self.sh.run(f"git branch {branch}").exit_code

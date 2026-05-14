@@ -1,0 +1,87 @@
+{
+  "report": "R4-C Branch Name Injection Hardening",
+  "agent": "R4-C",
+  "date": "2026-05-14",
+  "verdict": "PASS",
+  "rejection_patterns": {
+    "count": 11,
+    "patterns": [
+      {"id": 1, "pattern": "$(", "description": "command substitution (dollar-paren)", "example": "feat$(whoami)"},
+      {"id": 2, "pattern": "`", "description": "command substitution (backtick)", "example": "feat`whoami`"},
+      {"id": 3, "pattern": ";", "description": "shell statement separator", "example": "feat;rm"},
+      {"id": 4, "pattern": "&&", "description": "shell logical AND", "example": "feat&&malicious"},
+      {"id": 5, "pattern": "||", "description": "shell logical OR", "example": "feat||malicious"},
+      {"id": 6, "pattern": "|", "description": "pipe", "example": "feat|malicious"},
+      {"id": 7, "pattern": ">", "description": "output redirection (also >>)", "example": "feat>output"},
+      {"id": 8, "pattern": "<", "description": "input redirection (also <<)", "example": "feat<input"},
+      {"id": 9, "pattern": "\\n/\\r/ctrl", "description": "newline, carriage-return, ASCII control chars < 0x20", "example": "feat\\nrm"},
+      {"id": 10, "pattern": "leading -", "description": "leading dash causes git flag injection", "example": "-feat-leading-dash"},
+      {"id": 11, "pattern": "leading/trailing whitespace", "description": "whitespace at start or end", "example": " feat-space or feat-space "}
+    ]
+  },
+  "pre_existing_rejections": [
+    {"pattern": "NUL byte", "since": "R3-H"},
+    {"pattern": ".. traversal component", "since": "R3-H"},
+    {"pattern": "leading/trailing whitespace", "since": "R4-C"}
+  ],
+  "shell_true_audit": {
+    "git_paths_with_shell_true": 0,
+    "total_shell_true_in_src": 0,
+    "notes": "shell=True appears only as a detection rule string in adversarial_reviewer.py; no subprocess execution uses shell=True"
+  },
+  "subprocess_arg_list_confirmed": true,
+  "exception_class": {
+    "name": "BranchNameInjectionError",
+    "parent": "WorkerIsolatorPathEscapeError",
+    "module": "autodev.executors.worker_isolator"
+  },
+  "legitimate_branch_names_tested": [
+    "feature/foo",
+    "fix/issue-123",
+    "release/v0.1.0a1",
+    "chore/docs-update",
+    "main",
+    "develop",
+    "feat/m1-add-cli"
+  ],
+  "test_results": {
+    "new_unit_tests_pass_count": 26,
+    "integration_tests_pass_count": 14,
+    "xfails_removed": 2,
+    "xfails_removed_list": [
+      "test_worker_isolator_branch_name_rejects_dollar_paren",
+      "test_worker_isolator_branch_name_rejects_backtick"
+    ],
+    "full_suite_passed": 1308,
+    "full_suite_failed": 0,
+    "mypy_errors": 0,
+    "ruff_errors": 0
+  },
+  "files_changed": [
+    {
+      "path": "src/autodev/executors/worker_isolator.py",
+      "changes": "Added BranchNameInjectionError; rewrote _validate_branch_name() with 11 new rejection patterns; changed / from blanket-reject to allow namespace separator while blocking .. traversal"
+    },
+    {
+      "path": "src/autodev/adapters/git_adapter.py",
+      "changes": "Added _validate_branch() helper importing from worker_isolator; called in push(), checkout(), create_branch()"
+    },
+    {
+      "path": "tests/unit/test_branch_name_hardening.py",
+      "changes": "New file: 26 unit tests covering 11 rejection patterns + 7 allow cases"
+    },
+    {
+      "path": "tests/integration/test_security_p0_coverage.py",
+      "changes": "Removed xfail decorators from test_worker_isolator_branch_name_rejects_dollar_paren and test_worker_isolator_branch_name_rejects_backtick"
+    },
+    {
+      "path": "tests/unit/test_worker_isolator_symlink_hardening.py",
+      "changes": "Updated test_branch_name_with_slash_raises to reflect new policy: / alone is allowed as namespace separator; only .. traversal components are rejected"
+    }
+  ],
+  "residual_risk": [
+    "TOCTOU on shutil.rmtree cleanup path (pre-existing, documented in module docstring)",
+    "git_adapter.py uses string interpolation in some methods (add, tag) — these don't validate branch names but are not branch-name methods",
+    "slugify() used in CommitAgent; if bypassed, resulting names pass through git_adapter.push() which now validates"
+  ]
+}

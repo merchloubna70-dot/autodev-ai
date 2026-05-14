@@ -10,6 +10,7 @@ from pathlib import Path
 
 from ..schemas import ExecutionBackend, ExecutionRequest, ExecutionResult
 from ..utils.hashing import short_hash
+from ..utils.secret_redaction import redact_env_values, redact_secrets
 from .base_executor import BaseExecutor
 from .patch_executor import FilePatch, PatchExecutor
 
@@ -49,8 +50,11 @@ class MockClaudeExecutor(BaseExecutor):
             language=request.language,
             command=f"<mock-claude task={request.task_id}>",
             exit_code=0,
-            stdout=f"[mock-claude] simulated patch for {request.task_id}",
-            stderr="",
+            stdout=redact_env_values(
+                redact_secrets(f"[mock-claude] simulated patch for {request.task_id}"),
+                request.env,
+            ),
+            stderr=redact_env_values(redact_secrets(""), request.env),
             patch=diff,
             changed_files=changed,
             duration_ms=duration,

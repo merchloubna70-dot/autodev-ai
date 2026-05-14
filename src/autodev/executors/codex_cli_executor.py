@@ -10,6 +10,7 @@ from ..config import CodexCliExecutorConfig
 from ..schemas import CodexInnerStep, ExecutionBackend, ExecutionRequest, ExecutionResult, PipelineMode
 from ..utils.command_safety import scan_prompt_for_unsafe
 from ..utils.hashing import short_hash
+from ..utils.secret_redaction import redact_env_values, redact_secrets
 from ._fs_observer import diff_repo, snapshot_repo
 from .base_executor import BaseExecutor
 
@@ -192,7 +193,9 @@ class CodexCliExecutor(BaseExecutor):
                 timeout=timeout,
                 check=False,
             )
-            stdout, stderr, code = proc.stdout, proc.stderr, proc.returncode
+            stdout = redact_env_values(redact_secrets(proc.stdout), request.env)
+            stderr = redact_env_values(redact_secrets(proc.stderr), request.env)
+            code = proc.returncode
         except FileNotFoundError:
             return ExecutionResult(
                 task_id=request.task_id,

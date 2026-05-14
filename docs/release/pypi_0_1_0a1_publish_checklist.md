@@ -6,6 +6,8 @@
 **Prepared:** 2026-05-14
 **Status:** READY TO EXECUTE (release engineer sign-off required before each command)
 
+> **R4-E note (2026-05-14):** The release workflow now passes the PyPI token via `TWINE_PASSWORD` env var (not `-p` CLI flag) — see `.github/workflows/release.yml` publish step.
+
 > This checklist is single-use. Work through it top-to-bottom, one step at a time.
 > Mark each step `[x]` as you complete it. Do **not** skip ahead.
 

@@ -18,8 +18,6 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-import pytest
-
 _RELEASE_YML = Path(__file__).parents[2] / ".github" / "workflows" / "release.yml"
 
 
@@ -46,10 +44,6 @@ def test_release_yml_exists():
 # Policy tests (xfail until TWINE_PASSWORD migration lands in R4)
 # ---------------------------------------------------------------------------
 
-@pytest.mark.xfail(
-    reason="release.yml still uses -p flag; R4 to switch to TWINE_PASSWORD env",
-    strict=True,
-)
 def test_twine_upload_does_not_use_p_flag():
     """twine upload must NOT pass the token via the -p CLI flag.
 
@@ -67,10 +61,6 @@ def test_twine_upload_does_not_use_p_flag():
     )
 
 
-@pytest.mark.xfail(
-    reason="release.yml still uses -p flag; R4 to switch to TWINE_PASSWORD env",
-    strict=True,
-)
 def test_twine_upload_uses_twine_password_env():
     """The publish step must export TWINE_PASSWORD in the step env block."""
     content = _load_release_yml()
@@ -80,10 +70,6 @@ def test_twine_upload_uses_twine_password_env():
     )
 
 
-@pytest.mark.xfail(
-    reason="release.yml still uses -p flag; R4 to switch to TWINE_PASSWORD env",
-    strict=True,
-)
 def test_twine_upload_does_not_inline_secret_in_run():
     """The run: block for twine upload must not inline the secret token as a shell argument."""
     content = _load_release_yml()
@@ -96,10 +82,6 @@ def test_twine_upload_does_not_inline_secret_in_run():
     )
 
 
-@pytest.mark.xfail(
-    reason="release.yml still uses -p flag; R4 to switch to TWINE_PASSWORD env",
-    strict=True,
-)
 def test_twine_upload_command_is_minimal_without_auth_flags():
     """After migration, twine upload run line must not contain -u / -p / --password flags."""
     content = _load_release_yml()

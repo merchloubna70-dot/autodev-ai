@@ -1,9 +1,10 @@
-"""Tests for WorkerIsolator symlink-escape / path-traversal hardening (R3-H F-03).
+"""Tests for WorkerIsolator symlink-escape / path-traversal hardening (R3-H F-03 / R4-C).
 
 Attack vectors covered:
   1. Symlink target outside parent_home → WorkerIsolatorPathEscapeError
   2. Branch name with ".." rejected
-  3. Branch name with "/" in middle rejected
+  3. Branch name with ".." embedded via "/" traversal rejected (R4-C: "/" alone is
+     allowed as a namespace separator; only ".." traversal components are blocked)
   4. Branch name with NUL byte rejected
   5. Cleanup path outside worktree_root → WorkerIsolatorPathEscapeError
   6. Valid symlink target inside root → success
@@ -100,20 +101,35 @@ def test_branch_name_bare_dotdot_raises(tmp_path: Path) -> None:
 
 
 # ---------------------------------------------------------------------------
-# 3. Branch name with "/" in middle rejected
+# 3. Branch name with ".." component via "/" traversal rejected (R4-C update)
+#
+# R4-C changed the policy: "/" alone is now permitted as a namespace separator
+# (e.g. "feature/foo", "fix/issue-123").  Path traversal via ".." components
+# is still rejected.  This test was updated from the R3-H blanket "/" rejection
+# to reflect the new, more permissive-but-still-safe policy.
 # ---------------------------------------------------------------------------
 
 
 def test_branch_name_with_slash_raises(tmp_path: Path) -> None:
-    """Branch names containing '/' must raise WorkerIsolatorPathEscapeError."""
+    """Branch names with '..' path traversal via '/' must raise WorkerIsolatorPathEscapeError.
+
+    R4-C update: '/' as a namespace separator (e.g. 'feature/foo') is now
+    permitted.  Only '..' components in slash-delimited paths are rejected.
+    """
     isolator = WorkerIsolator(worktree_root=tmp_path)
 
-    with pytest.raises(WorkerIsolatorPathEscapeError, match="'/'"):
+    # ".." traversal embedded via slash still rejected
+    with pytest.raises(WorkerIsolatorPathEscapeError):
         isolator.prepare_worktree(
             repo=tmp_path,
             worker_root=tmp_path / "wt",
-            branch="feat/evil-branch",
+            branch="feat/../evil-branch",
         )
+
+    # Plain slash namespace separator is now ALLOWED (must NOT raise)
+    # We don't actually call prepare_worktree end-to-end (no git repo),
+    # but we can verify the validator directly.
+    WorkerIsolator._validate_branch_name("feat/evil-branch")  # must not raise
 
 
 # ---------------------------------------------------------------------------

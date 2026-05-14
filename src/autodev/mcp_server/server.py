@@ -15,6 +15,76 @@ from .tools import get_tools
 PROTOCOL_VERSION = "2024-11-05"
 SERVER_INFO = {"name": "autodev", "version": "1.0.0"}
 
+# JSON Schema type → Python types mapping for basic type checking
+_SCHEMA_TYPE_MAP: dict[str, tuple[type, ...]] = {
+    "string": (str,),
+    "number": (int, float),
+    "integer": (int,),
+    "boolean": (bool,),
+    "array": (list,),
+    "object": (dict,),
+    "null": (type(None),),
+}
+
+
+def _validate_required_params(
+    schema: dict[str, Any],
+    args: dict[str, Any],
+    tool_name: str,
+) -> str | None:
+    """Validate required fields and basic types against a JSON Schema object.
+
+    Strategy:
+    - REJECT missing required fields → return error detail string
+    - REJECT wrong type for required fields → return error detail string
+    - IGNORE unknown extra args (pass through to handler)
+
+    Returns None if valid, or an error message string if invalid.
+    """
+    if schema.get("type") != "object":
+        return None  # nothing to validate for non-object schemas
+
+    required: list[str] = schema.get("required", [])
+    properties: dict[str, Any] = schema.get("properties", {})
+
+    missing = [field for field in required if field not in args]
+    if missing:
+        return (
+            f"Tool {tool_name!r} missing required param(s): {missing}. "
+            f"Required: {required}"
+        )
+
+    # Type-check required fields that are present
+    type_errors: list[str] = []
+    for field in required:
+        if field not in args:
+            continue  # already caught above
+        prop_schema = properties.get(field, {})
+        expected_type = prop_schema.get("type")
+        if expected_type is None:
+            continue  # no type declared — skip
+        allowed_python_types = _SCHEMA_TYPE_MAP.get(expected_type)
+        if allowed_python_types is None:
+            continue  # unknown schema type — skip
+        value = args[field]
+        # Special case: bool is a subclass of int in Python; treat bool strictly
+        if expected_type in ("integer", "number") and isinstance(value, bool):
+            type_errors.append(
+                f"Field {field!r}: expected {expected_type}, got bool"
+            )
+        elif not isinstance(value, allowed_python_types):
+            actual = type(value).__name__
+            type_errors.append(
+                f"Field {field!r}: expected {expected_type}, got {actual}"
+            )
+
+    if type_errors:
+        return (
+            f"Tool {tool_name!r} invalid param type(s): {'; '.join(type_errors)}"
+        )
+
+    return None
+
 
 def _write(obj: dict[str, Any]) -> None:
     """Write a single JSON-RPC message to stdout followed by newline."""
@@ -104,6 +174,12 @@ class MCPServer:
             tool = self._tools.get(name)
             if tool is None:
                 return _error_response(req_id, -32601, f"Unknown tool: {name!r}")
+
+            # --- Pre-dispatch JSON Schema validation ---
+            schema_error = _validate_required_params(tool.input_schema, arguments, name)
+            if schema_error is not None:
+                return _error_response(req_id, -32602, schema_error)
+
             t0 = time.monotonic()
             try:
                 handler_result = tool.handler(arguments)

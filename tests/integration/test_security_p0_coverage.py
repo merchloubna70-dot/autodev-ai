@@ -4,7 +4,7 @@ Covers gaps identified by Cov-C:
 
   Group A — Audit log path / overridability
   Group B — Denylist completeness (cat .env, source .env, printenv)
-  Group C — MCP path-arg .env denial (xfail — gap, not yet implemented)
+  Group C — MCP path-arg .env denial (implemented in R4)
   Group D — Executor secret scrubbing (xfail — gap, not yet implemented)
   Group E — Executor is_mock attribute sanity
   Group F — WorkerIsolator branch name: shell injection ($(), backtick)
@@ -127,22 +127,17 @@ class TestDenylistCompleteness:
 
 
 # ===========================================================================
-# Group C — MCP path-arg .env denial (xfail — gap not yet implemented)
+# Group C — MCP path-arg .env denial (implemented in R4)
 # ===========================================================================
 
 
 class TestMCPPathArgDotEnvDenial:
     """MCP tools that accept a path argument should reject .env paths.
 
-    This guard does not yet exist in the production code, so tests are marked
-    xfail(strict=True) to document the gap without breaking the suite.
+    Preflight path-safety validation is now implemented in
+    ``autodev.mcp_server.path_safety._validate_safe_path``.
     """
 
-    @pytest.mark.xfail(
-        strict=True,
-        reason="MCP path-arg .env denial not yet implemented: "
-               "tools accept any repo_path without validating for .env component",
-    )
     def test_mcp_rejects_path_argument_containing_dot_env(self):
         """A repo_path ending in .env should be rejected by the MCP handler.
 
@@ -179,65 +174,83 @@ _FAKE_ANTHROPIC_KEY = "sk-ant-fake-anthropic-key-xyz789"
 class TestExecutorSecretScrubbing:
     """Executor results must not echo environment secrets back in stdout/stderr.
 
-    No scrubbing exists in the current codebase; tests are xfail(strict=True)
-    to document the gap and track it for R4 remediation.
+    Scrubbing is implemented via autodev.utils.secret_redaction in each
+    executor's execute() method.  These tests verify end-to-end through the
+    executor pipeline that secrets are masked before reaching ExecutionResult.
     """
 
-    @pytest.mark.xfail(
-        strict=True,
-        reason="Executor secret scrubbing not yet implemented for real executors: "
-               "ClaudeCodeExecutor passes env directly to subprocess without output scrubbing; "
-               "tokens set in env can appear verbatim in ExecutionResult.stderr if the "
-               "underlying CLI echoes them",
-    )
     def test_executor_result_does_not_leak_pypi_api_token_in_stderr(self, tmp_path: Path):
-        """Real executor output must have PYPI_API_TOKEN scrubbed from stderr.
+        """ClaudeCodeExecutor output must have PYPI_API_TOKEN scrubbed from stderr.
 
-        Tracks gap: ClaudeCodeExecutor.execute() passes request.env to subprocess.run
-        without any post-processing of stdout/stderr.  If the subprocess echoes the
-        PYPI_API_TOKEN (e.g. via error messages, debug output, or env dumping), the
-        raw secret appears in ExecutionResult.stderr verbatim.
-
-        This test uses a subprocess that explicitly echoes the token to stderr to
-        simulate that scenario.  It will xfail until scrubbing is implemented.
+        Exercises the redaction layer in ClaudeCodeExecutor.execute(): even if
+        the underlying subprocess echoes PYPI_API_TOKEN to stderr, the value
+        must be masked before it reaches ExecutionResult.stderr.
         """
-        import subprocess as _sp
-        # Directly simulate what a real executor would return: raw subprocess output
-        # that contains the secret.  This exercises the *absence* of scrubbing logic.
-        result = _sp.run(
-            ["sh", "-c", f"echo {_FAKE_PYPI_TOKEN} >&2; exit 1"],
-            capture_output=True,
-            text=True,
-            env={**os.environ, "PYPI_API_TOKEN": _FAKE_PYPI_TOKEN},
+        from unittest.mock import MagicMock, patch
+
+        from autodev.executors.claude_code_executor import ClaudeCodeExecutor
+        from autodev.schemas import ExecutionRequest, Language, PipelineMode, TaskType
+
+        request = ExecutionRequest(
+            task_id="p0-pypi-001",
+            repo_path=str(tmp_path),
+            prompt="echo hello",
+            language=Language.PYTHON,
+            mode=PipelineMode.DRY_RUN,
+            task_type=TaskType.FEATURE,
+            env={"PYPI_API_TOKEN": _FAKE_PYPI_TOKEN},
         )
-        # A scrubbing layer (if it existed) would replace the token in stderr.
-        # Since none exists, the token appears as-is — this assertion exposes the gap.
+
+        fake_proc = MagicMock()
+        fake_proc.stdout = ""
+        fake_proc.stderr = f"upload failed: token={_FAKE_PYPI_TOKEN}"
+        fake_proc.returncode = 1
+
+        executor = ClaudeCodeExecutor()
+        with patch.object(executor, "is_available", return_value=True), \
+             patch("subprocess.run", return_value=fake_proc):
+            result = executor.execute(request)
+
         assert _FAKE_PYPI_TOKEN not in result.stderr, (
-            "PYPI_API_TOKEN value leaked verbatim in subprocess stderr "
-            "(no scrubbing layer found between subprocess output and caller)"
+            "PYPI_API_TOKEN value leaked verbatim in ClaudeCodeExecutor stderr "
+            "(redaction layer not working correctly)"
         )
 
-    @pytest.mark.xfail(
-        strict=True,
-        reason="Executor secret scrubbing not yet implemented for real executors: "
-               "ANTHROPIC_API_KEY can appear verbatim in stderr when subprocess echoes env",
-    )
     def test_executor_result_does_not_leak_anthropic_api_key(self, tmp_path: Path):
-        """Same as above but for ANTHROPIC_API_KEY.
+        """ClaudeCodeExecutor output must have ANTHROPIC_API_KEY scrubbed from stderr.
 
-        Tracks gap: same root cause as PYPI_API_TOKEN — no scrubbing of subprocess
-        output in the executor pipeline.
+        Exercises the redaction layer in ClaudeCodeExecutor.execute(): even if
+        the underlying subprocess echoes ANTHROPIC_API_KEY to stderr, the value
+        must be masked before it reaches ExecutionResult.stderr.
         """
-        import subprocess as _sp
-        result = _sp.run(
-            ["sh", "-c", f"echo {_FAKE_ANTHROPIC_KEY} >&2; exit 1"],
-            capture_output=True,
-            text=True,
-            env={**os.environ, "ANTHROPIC_API_KEY": _FAKE_ANTHROPIC_KEY},
+        from unittest.mock import MagicMock, patch
+
+        from autodev.executors.claude_code_executor import ClaudeCodeExecutor
+        from autodev.schemas import ExecutionRequest, Language, PipelineMode, TaskType
+
+        request = ExecutionRequest(
+            task_id="p0-anthropic-001",
+            repo_path=str(tmp_path),
+            prompt="echo hello",
+            language=Language.PYTHON,
+            mode=PipelineMode.DRY_RUN,
+            task_type=TaskType.FEATURE,
+            env={"ANTHROPIC_API_KEY": _FAKE_ANTHROPIC_KEY},
         )
+
+        fake_proc = MagicMock()
+        fake_proc.stdout = ""
+        fake_proc.stderr = f"auth failed with key {_FAKE_ANTHROPIC_KEY}"
+        fake_proc.returncode = 1
+
+        executor = ClaudeCodeExecutor()
+        with patch.object(executor, "is_available", return_value=True), \
+             patch("subprocess.run", return_value=fake_proc):
+            result = executor.execute(request)
+
         assert _FAKE_ANTHROPIC_KEY not in result.stderr, (
-            "ANTHROPIC_API_KEY value leaked verbatim in subprocess stderr "
-            "(no scrubbing layer found between subprocess output and caller)"
+            "ANTHROPIC_API_KEY value leaked verbatim in ClaudeCodeExecutor stderr "
+            "(redaction layer not working correctly)"
         )
 
 
@@ -281,42 +294,27 @@ class TestExecutorIsMockAttribute:
 
 
 class TestWorkerIsolatorBranchNameInjection:
-    """Branch names containing shell meta-characters should be rejected.
+    """Branch names containing shell meta-characters must be rejected.
 
-    The current _validate_branch_name only rejects NUL, '/', and '..'.
-    Shell injection via $() and backticks is NOT caught — xfail(strict=True)
-    documents this gap for R4.
+    R4-C extended _validate_branch_name to reject $(), backtick, ;, &&, ||,
+    |, >, <, newlines, control chars, leading -, and leading/trailing whitespace.
+    These tests now pass without xfail.
     """
 
-    @pytest.mark.xfail(
-        strict=True,
-        reason="WorkerIsolator branch name $() injection not yet rejected: "
-               "_validate_branch_name only checks NUL, '/', and '..' sequences; "
-               "$() without a slash component passes validation undetected",
-    )
     def test_worker_isolator_branch_name_rejects_dollar_paren(self):
         """Branch name 'feat$(whoami)' must raise WorkerIsolatorPathEscapeError.
 
-        Tracks gap: _validate_branch_name rejects '/' characters, so
-        'feat$(rm -rf /)' is incidentally caught.  However, a $() substitution
-        WITHOUT a slash — e.g. 'feat$(whoami)' — passes validation silently.
-        If such a name reaches a shell-interpolated git command, the substitution
-        would execute.  The validator must explicitly reject '$(' to close this.
+        R4-C fix: _validate_branch_name now explicitly rejects '$(' to prevent
+        command substitution if the name reaches a shell-interpolated context.
         """
         isolator = WorkerIsolator()
         with pytest.raises(WorkerIsolatorPathEscapeError):
             isolator._validate_branch_name("feat$(whoami)")
 
-    @pytest.mark.xfail(
-        strict=True,
-        reason="WorkerIsolator branch name backtick injection not yet rejected: "
-               "_validate_branch_name only checks NUL, '/', and '..' sequences",
-    )
     def test_worker_isolator_branch_name_rejects_backtick(self):
         """Branch name with backtick command substitution must raise WorkerIsolatorPathEscapeError.
 
-        Tracks gap: same reasoning as dollar-paren above.  Backtick expansion
-        is a separate syntactic form that must also be caught.
+        R4-C fix: backtick expansion is now explicitly caught alongside $().
         """
         isolator = WorkerIsolator()
         with pytest.raises(WorkerIsolatorPathEscapeError):
