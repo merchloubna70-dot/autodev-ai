@@ -8,7 +8,6 @@ import pytest
 
 from autodev.flows.replay_diff_flow import ReplayDiff, ReplayDiffFlow
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -28,7 +27,7 @@ def _write_json(path: Path, data: object) -> None:
     path.write_text(json.dumps(data, indent=2), encoding="utf-8")
 
 
-def _make_flow(tmp_path: Path) -> "tuple[ReplayDiffFlow, Path]":
+def _make_flow(tmp_path: Path) -> tuple[ReplayDiffFlow, Path]:
     state_dir = ".dev-factory"
     (tmp_path / state_dir / "runs").mkdir(parents=True, exist_ok=True)
     flow = ReplayDiffFlow(state_dir=state_dir)
