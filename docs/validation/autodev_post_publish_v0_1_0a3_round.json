@@ -54,9 +54,16 @@
     "sha256_updated": true,
     "version_updated": true,
     "transitive_resources_unchanged": true,
-    "tap_repo_state": "pending_user_action",
-    "tap_repo_target": "merchloubna70-dot/homebrew-autodev",
-    "tap_publish_checklist": "docs/release/homebrew_tap_publish_checklist.md"
+    "tap_repo_state": "published_verified",
+    "tap_repo_url": "https://github.com/merchloubna70-dot/homebrew-autodev",
+    "tap_repo_visibility": "PUBLIC",
+    "tap_repo_commits": ["742bbd7", "04bf0b6"],
+    "tap_install_command": "brew tap merchloubna70-dot/autodev && brew install autodev-ai",
+    "brew_tap_smoke": "Tapped 1 formula (14 files, 12.2KB)",
+    "brew_info_smoke": "stable 0.1.0a3",
+    "brew_audit_strict_warnings": 1,
+    "brew_audit_strict_warning_accepted": "version 0.1.0a3 is redundant with version scanned from URL — explicit version retained for PEP 440 alpha defense + test_homebrew_*.py assertions (18/18 pass)",
+    "brew_install_local_status": "failed_unrelated_macos_env_issue: local python@3.12.13_2 bottle pyexpat.so missing _XML_SetAllocTrackerActivationThreshold symbol against system libexpat.1.dylib; not a formula bug; user runs `brew update && brew reinstall python@3.12` to resolve"
   },
   "publish_timeline_utc_2026_05_14": [
     {"time": "08:37", "event": "v0.1.0a3 bump merged on main (cc76f05)", "ci": "Test+Lint success"},
@@ -82,12 +89,6 @@
   },
   "remaining_blockers": [
     {
-      "id": "HOMEBREW-TAP-REPO",
-      "severity": "user_action",
-      "effort": "~10 min",
-      "what": "Create merchloubna70-dot/homebrew-autodev repo + push formula from packaging/homebrew/tap/Formula/autodev-ai.rb (now backfilled to 0.1.0a3)"
-    },
-    {
       "id": "PYPI-TOKEN-ROTATION",
       "severity": "user_action",
       "effort": "~5 min",
@@ -100,6 +101,17 @@
       "what": "SLSA + SBOM + cosign + per-caller MCP auth + macOS Apple Dev ID signing + coverage lift"
     }
   ],
+  "completed_this_round_user_authorized": {
+    "homebrew_tap_publish": {
+      "user_authorization": "explicit: 你新建一个merchloubna70-dot/homebrew-autodev",
+      "actions_taken": [
+        "gh repo create merchloubna70-dot/homebrew-autodev --public",
+        "git push tap content to main (commit 742bbd7)",
+        "fix: reorder version before sha256 per brew audit (commit 04bf0b6)"
+      ],
+      "result": "published; brew tap + brew info both confirm stable 0.1.0a3"
+    }
+  },
   "remaining_risks": [
     "PYPI_API_TOKEN was pasted in chat history earlier; the secret was set via stdin pipe (no argv, no file write, no echo) but rotation is recommended defense-in-depth and remains pending user action.",
     "Homebrew tap repo not yet created; users running `brew tap merchloubna70-dot/autodev` will get a 404 until user follows the tap-publish checklist."

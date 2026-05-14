@@ -8,8 +8,8 @@ class AutodevAi < Formula
   desc "AI-driven software factory: CrewAI + Codex CLI + Claude Code CLI"
   homepage "https://github.com/merchloubna70-dot/autodev-ai"
   url "https://files.pythonhosted.org/packages/d3/ac/9886ff77ddf66571a989a8438566871e45b65e2b8550c04a63855a45893b/autodev_ai-0.1.0a3.tar.gz"
-  sha256 "a137ba2c7f94727506f8d250f675ef5e6d4d4dd60718ef3e185d330c4d17d063"
   version "0.1.0a3"
+  sha256 "a137ba2c7f94727506f8d250f675ef5e6d4d4dd60718ef3e185d330c4d17d063"
   license "MIT"
 
   depends_on "python@3.12"

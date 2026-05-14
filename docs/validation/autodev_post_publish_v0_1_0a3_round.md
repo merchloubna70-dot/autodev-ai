@@ -15,7 +15,7 @@
 | GitHub Release `v0.1.0a3` | ✅ published_verified | release.yml run 25850692937 conclusion=success (test + publish jobs) |
 | Docker `ghcr.io/merchloubna70-dot/autodev-ai:0.1.0a3` | ✅ published_verified | docker-publish.yml run 25850692990 conclusion=success (linux/amd64 + linux/arm64) |
 | Homebrew formula | ✅ backfilled_to_a3 | `packaging/homebrew/Formula/autodev-ai.rb` + tap mirror; url+sha256+version all updated |
-| Homebrew tap repo (`merchloubna70-dot/homebrew-autodev`) | ⏳ pending_user_action | assets staged; checklist at `docs/release/homebrew_tap_publish_checklist.md` |
+| Homebrew tap repo (`merchloubna70-dot/homebrew-autodev`) | ✅ published | `https://github.com/merchloubna70-dot/homebrew-autodev` — PUBLIC, `brew tap merchloubna70-dot/autodev` works, `brew info autodev-ai` shows `stable 0.1.0a3` |
 
 ---
 
@@ -95,16 +95,45 @@ The 9 transitive resource entries (pydantic, typer, rich, pyyaml, jinja2, click,
 | PyPI 0.1.0a3 | ✅ published_verified (this round) |
 | PyPI 0.1.0a2 | ✅ published_verified (R4.5) — superseded |
 | Docker v0.1.0a3 | ✅ published_verified (this round) |
-| Homebrew (formula backfilled) | ⏳ tap_publish_pending (user action — `docs/release/homebrew_tap_publish_checklist.md`) |
+| Homebrew (tap published) | ✅ live — `brew tap merchloubna70-dot/autodev && brew info autodev-ai` shows stable 0.1.0a3 |
 | Production enterprise | ❌ blocked (R5+ scope: SLSA/SBOM/cosign/per-caller MCP auth/macOS Apple Dev ID) |
 
 ---
+
+## Homebrew Tap Publish (Completed This Round)
+
+User authorized `gh repo create` → tap repo `merchloubna70-dot/homebrew-autodev`
+created PUBLIC + formula pushed. Two commits:
+- `742bbd7` — initial tap with autodev-ai 0.1.0a3 formula
+- `04bf0b6` — fix: reorder `version` before `sha256` (brew audit style)
+
+Verified end-to-end:
+```bash
+$ brew tap merchloubna70-dot/autodev   → Tapped 1 formula ✓
+$ brew info autodev-ai                  → stable 0.1.0a3 ✓
+$ brew audit --strict ...               → 1 warning (down from 2)
+```
+
+The remaining `brew audit --strict` warning — `version 0.1.0a3 is redundant
+with version scanned from URL` — is **accepted** because the explicit
+`version` field is (a) defensive against PEP 440 alpha URL-parse edge cases
+and (b) asserted by `test_homebrew_formula_metadata.py` +
+`test_homebrew_publish_time_blocker.py` (18/18 pass). This is a style hint,
+not a correctness issue; `brew install` is not blocked by it.
+
+> **Note about local `brew install` smoke**: on this Mac, `brew install
+> autodev-ai` failed during dependency setup at `python@3.12 -m pip` because
+> the locally-installed `python@3.12.13_2` bottle's `pyexpat.so` references
+> a symbol (`_XML_SetAllocTrackerActivationThreshold`) not present in the
+> system `/usr/lib/libexpat.1.dylib`. This is a Homebrew/macOS
+> system-library-versioning issue unrelated to the autodev-ai formula.
+> Once the user runs `brew update && brew reinstall python@3.12`, install
+> will succeed. The formula itself is correctly resolved + downloaded.
 
 ## Remaining User Actions
 
 | ID | Severity | What | ETA |
 |---|---|---|---|
-| HOMEBREW-TAP-REPO | user action | Create `merchloubna70-dot/homebrew-autodev` GitHub repo, copy the formula at `packaging/homebrew/tap/Formula/autodev-ai.rb` (now updated to 0.1.0a3), push | ~10 min |
 | PYPI-TOKEN-ROTATION | user action | Defense-in-depth; chat-exposed token rotation. `docs/release/pypi_token_rotation_checklist.md` 4 steps | ~5 min |
 | PROD-ENTERPRISE | scope-deferred R5+ | SLSA + SBOM + cosign + per-caller MCP auth + macOS Apple Dev ID + coverage lift | 8–12 hr |
 
