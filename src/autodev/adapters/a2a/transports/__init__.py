@@ -3,3 +3,9 @@ from .base import BaseA2ATransport  # noqa: F401
 from .http import A2AHttpTransport  # noqa: F401
 from .local_shell import LocalShellTransport  # noqa: F401
 from .mock import MockTransport  # noqa: F401
+from .tailnet import (  # noqa: F401
+    DEFAULT_A2A_PORT,
+    PortConflict,
+    TailnetTransport,
+    TailnetUnavailable,
+)
