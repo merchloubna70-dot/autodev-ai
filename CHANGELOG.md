@@ -5,11 +5,20 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+<<<<<<< HEAD
 ### Added
 - Opt-in executor adapters for Gemini CLI (`--executor gemini`), Qwen Code CLI (`--executor qwen`), and Aider (`--executor aider`); these are NOT part of `--executor auto` routing and produce a clear install-hint error when the underlying binary is absent.
 - `autodev-x sprint-start --watch`: opt-in hot-reload of `.autodev/sprints/*.md` via `watchdog`; stays foreground and reloads in-memory sprint state on file create/modify (debounced 0.5 s). New `src/autodev/_watcher.py` with `SprintWatcher` class.
 - `autodev-x replay --diff <run-id-A> --diff <run-id-B>`: structured diff of two pipeline run artifact trees; emits per-stage JSON-Patch ops, highlights executor-choice changes, and compares token/cost when `execution/router_metrics.json` is present in both runs. New `src/autodev/flows/replay_diff_flow.py`.
 
+||||||| parent of 2486015 (feat: add autodev-x doctor subcommand and scripts/verify_release.sh)
+=======
+### Added
+
+- `autodev-x doctor` subcommand: prints a diagnostic status table covering Python version, PATH binaries (codex, claude), env vars, writable cwd, and git.
+- `scripts/verify_release.sh`: wraps `cosign verify` + optional `slsa-verifier` for supply-chain provenance checks on a tagged release.
+
+>>>>>>> 2486015 (feat: add autodev-x doctor subcommand and scripts/verify_release.sh)
 ## [0.1.0a6] — 2026-05-14 (Pre-Release, Docker fix for rename)
 
 ### Fixed

@@ -1156,5 +1156,19 @@ def dashboard_cmd(
     _run(root=root)
 
 
+# ---------------------------------------------------------------------------
+# doctor
+# ---------------------------------------------------------------------------
+
+
+@app.command("doctor")
+def doctor_cmd() -> None:
+    """Run environment diagnostics and print a status table. Always exits 0."""
+    from .doctor import print_table, run_checks
+
+    results = run_checks()
+    print_table(results)
+
+
 if __name__ == "__main__":  # pragma: no cover
     app()
