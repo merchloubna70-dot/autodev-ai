@@ -11,3 +11,5 @@ dist/
 .mypy_cache/
 node_modules/
 target/
+.autodev/
+_autodev/
