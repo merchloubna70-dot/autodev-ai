@@ -7,7 +7,50 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
-## [0.1.0a2] — 2026-05-14 (Pre-Release)
+## [0.1.0a3] — 2026-05-14 (Pre-Release)
+
+### Fixed
+
+- **typer dependency warning** — pyproject `typer[all]>=0.9` → `typer>=0.12` +
+  explicit `shellingham>=1.5`. Eliminates the
+  `WARNING: typer 0.25.1 does not provide the extra 'all'` from
+  `pip install` (typer dropped the `[all]` extra in ~0.12; rich+shellingham
+  are now bundled directly).
+- **`python -m autodev.release_readiness_gate` broken from PyPI install** —
+  refactored shim. `src/autodev/release_readiness_gate.py` now contains the
+  full 1375-LoC implementation (was a 25-LoC `spec.loader.exec_module` shim
+  that failed because `scripts/` is not shipped in the wheel).
+  `scripts/release_readiness_gate.py` is now a 10-LoC delegation wrapper
+  that imports from the package. Single source of truth.
+
+### Added
+
+- `packaging/homebrew/tap/` — staging directory mirroring the canonical
+  formula. Ready for tap publish via
+  `docs/release/homebrew_tap_publish_checklist.md` 4-step procedure.
+- `docs/release/homebrew_tap_publish_checklist.md` — user procedure for
+  creating `merchloubna70-dot/homebrew-autodev` tap repo + push.
+- `docs/release/pypi_token_rotation_checklist.md` — 4-step PyPI token
+  rotation procedure (recommended after publish flow).
+- `tests/integration/test_release_readiness_gate_installed_wheel.py` —
+  verifies the module-form gate works from a fresh wheel install.
+
+### Internal
+
+- Test count: 1308 → 1312 (+4 wheel-install integration tests).
+- 9 Homebrew transitive resource sha256s independently re-verified
+  (pydantic / typer / rich / pyyaml / jinja2 / click / mdurl /
+  markdown-it-py / pygments / shellingham — all match).
+- 8 stale R2-G/R3-F Homebrew tests EVOLVED to state-aware semantics
+  (accept pre-publish OR post-publish state with internal consistency check).
+  Test count preserved; behavior tightened.
+- gate check `r3_homebrew_publish_time_blocker_clean` accepts both
+  pre-publish (placeholder + BLOCKED) and post-publish (real sha256 +
+  PyPI url + Backfilled comment) states.
+
+---
+
+## [0.1.0a2] — 2026-05-14 (Pre-Release, first real PyPI publish)
 
 ### Fixed
 - 5 pre-publish CI blockers discovered and fixed during v0.1.0a1 tag push:
