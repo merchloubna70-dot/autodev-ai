@@ -51,6 +51,7 @@ dev = [
     "pytest-asyncio>=0.23",
     "pytest-cov>=4.1",
     "ruff>=0.4",
+    "mypy>=1.5",
     'tomli>=2.0; python_version < "3.11"',  # tomllib stdlib backport for py3.10
 ]
 
