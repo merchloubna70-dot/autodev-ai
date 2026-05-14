@@ -1,119 +1,221 @@
 {
   "gate": "release_readiness",
-  "schema_version": "1.0",
-  "generated_by": "Agent L — Release Hardening Audit",
-  "generated_at": "2026-05-14T03:11:00Z",
+  "schema_version": "2.0",
+  "generated_by": "Agent L (v1.0) + Agent R2-H (R2 P0 Blocker Closure, 2026-05-14)",
+  "generated_at": "2026-05-14T03:45:54Z",
   "repo": "autodev-ai",
-  "description": "12-check release readiness gate for autodev-ai. Run via: python scripts/release_readiness_gate.py",
+  "description": "24-check release readiness gate (12 base + 12 R2). Run via: python scripts/release_readiness_gate.py",
   "checks": [
     {
       "id": 1,
       "name": "package_metadata_valid",
       "category": "packaging",
       "description": "tomllib reads pyproject.toml; validates name, version, requires-python, autodev entry-point referencing autodev.cli:app",
-      "baseline_status": "pass",
-      "baseline_detail": "name=autodev-ai version=0.1.0 ep=autodev.cli:app"
+      "r2_status": "pass",
+      "r2_detail": "name=autodev-ai version=0.1.0a1 ep=autodev.cli:app"
     },
     {
       "id": 2,
       "name": "cli_help_works",
       "category": "cli",
       "description": "subprocess call `autodev --help` (or python -m autodev.cli --help) exits 0; skip if not on PATH",
-      "baseline_status": "pass",
-      "baseline_detail": "autodev CLI --help via python -m: exit 0"
+      "r2_status": "pass",
+      "r2_detail": "autodev CLI --help via python -m: exit 0"
     },
     {
       "id": 3,
       "name": "pytest_evidence",
       "category": "testing",
       "description": "Runs smoke subset pytest tests/unit/test_prfaq_style.py or detects .dev-factory/ test records",
-      "baseline_status": "pass",
-      "baseline_detail": "Smoke pytest passed"
+      "r2_status": "pass",
+      "r2_detail": "Smoke pytest passed"
     },
     {
       "id": 4,
       "name": "ruff_passes",
       "category": "linting",
       "description": "`ruff check .` exits 0; skip if ruff not on PATH",
-      "baseline_status": "skip",
-      "baseline_detail": "ruff not on PATH in venv activation context"
+      "r2_status": "skip",
+      "r2_detail": "ruff not on PATH"
     },
     {
       "id": 5,
       "name": "mypy_passes",
       "category": "types",
       "description": "`mypy src/autodev` exits 0; skip if mypy not on PATH",
-      "baseline_status": "fail",
-      "baseline_detail": "pydantic_ai_bridge.py:137 — Agent overload mismatch (pre-existing, not introduced by this gate)"
+      "r2_status": "fail",
+      "r2_detail": "pydantic_ai_bridge.py:137 — Agent overload mismatch (pre-existing R1 regression, not introduced by R2)"
     },
     {
       "id": 6,
       "name": "docs_exist",
       "category": "documentation",
       "description": "README.md present + at least 5 of: docs/quickstart.md, docs/architecture.md, docs/faq.md, docs/tutorials/, examples/README.md",
-      "baseline_status": "pass",
-      "baseline_detail": "All 5/5 doc paths present"
+      "r2_status": "pass",
+      "r2_detail": "All 5/5 doc paths present"
     },
     {
       "id": 7,
       "name": "mcp_smoke_path_exists",
       "category": "mcp",
       "description": "tests/integration/test_mcp_server_smoke.py exists OR src/autodev/mcp_server/ has a main entry",
-      "baseline_status": "pass",
-      "baseline_detail": "tests/integration/test_mcp_server_smoke.py exists"
+      "r2_status": "pass",
+      "r2_detail": "tests/integration/test_mcp_server_smoke.py exists"
     },
     {
       "id": 8,
       "name": "a2a_smoke_path_exists",
       "category": "a2a",
       "description": "tests/ containing a2a or roundtable in filename total >= 5",
-      "baseline_status": "pass",
-      "baseline_detail": "11 a2a/roundtable test files found"
+      "r2_status": "pass",
+      "r2_detail": "≥11 a2a/roundtable test files found"
     },
     {
       "id": 9,
       "name": "mock_executor_works",
       "category": "executor",
       "description": "FACTORY_FORCE_MOCK=1 autodev classify-input --input test exits 0; skip if not available",
-      "baseline_status": "skip",
-      "baseline_detail": "classify-input sub-command not available; gate-level skip"
+      "r2_status": "skip",
+      "r2_detail": "classify-input sub-command not available; gate-level skip"
     },
     {
       "id": 10,
       "name": "packaging_files_exist",
       "category": "packaging",
       "description": "packaging/docker/Dockerfile + packaging/pyinstaller/autodev.spec + packaging/homebrew/Formula/autodev-ai.rb all present",
-      "baseline_status": "pass",
-      "baseline_detail": "All 3 packaging files present"
+      "r2_status": "pass",
+      "r2_detail": "All 3 packaging files present"
     },
     {
       "id": 11,
       "name": "no_dangerous_release_claims",
       "category": "release",
       "description": "README.md must not contain: 'available on pypi now' / 'production ready' / 'enterprise certified'",
-      "baseline_status": "pass",
-      "baseline_detail": "No forbidden release claims found"
+      "r2_status": "pass",
+      "r2_detail": "No forbidden release claims found"
     },
     {
       "id": 12,
       "name": "release_blockers_recorded",
       "category": "release",
       "description": "docs/validation/ has a *release_hardening_round* aggregator, release_blockers.md, or autodev_release_readiness_gate.* file",
-      "baseline_status": "pass",
-      "baseline_detail": "This file (autodev_release_readiness_gate.json) satisfies the check"
+      "r2_status": "pass",
+      "r2_detail": "autodev_release_readiness_gate.json satisfies the check"
+    },
+    {
+      "id": 13,
+      "name": "r2_version_consistency",
+      "category": "r2_version",
+      "description": "pyproject.toml version starts with '0.1.0' AND autodev.__version__ matches pyproject version",
+      "r2_status": "pass",
+      "r2_detail": "version consistent: 0.1.0a1"
+    },
+    {
+      "id": 14,
+      "name": "r2_license_file_present",
+      "category": "r2_license",
+      "description": "LICENSE file exists at repo root with 'MIT License' or 'Permission is hereby granted'",
+      "r2_status": "pass",
+      "r2_detail": "LICENSE present with expected MIT content"
+    },
+    {
+      "id": 15,
+      "name": "r2_license_metadata_match",
+      "category": "r2_license",
+      "description": "[project] license field present in pyproject.toml",
+      "r2_status": "pass",
+      "r2_detail": "[project] license field present: {'text': 'MIT'}"
+    },
+    {
+      "id": 16,
+      "name": "r2_wheel_version_works",
+      "category": "r2_packaging",
+      "description": "dist/*.whl filename version segment matches pyproject version (PEP 440 normalized); skip if no dist/",
+      "r2_status": "pass",
+      "r2_detail": "wheel version '0.1.0a1' matches pyproject '0.1.0a1'"
+    },
+    {
+      "id": 17,
+      "name": "r2_a2a_http_ssrf_hardened",
+      "category": "r2_security",
+      "description": "http.py contains A2AHttpSSRFError AND test_a2a_http_ssrf_hardening.py exists with ≥10 test functions",
+      "r2_status": "pass",
+      "r2_detail": "A2AHttpSSRFError present; 13 SSRF test functions"
+    },
+    {
+      "id": 18,
+      "name": "r2_milestone_flow_tested",
+      "category": "r2_coverage",
+      "description": "tests/unit/test_milestone_flow.py exists with ≥4 def test_ definitions",
+      "r2_status": "pass",
+      "r2_detail": "test_milestone_flow.py exists with 8 test functions"
+    },
+    {
+      "id": 19,
+      "name": "r2_release_flow_tested",
+      "category": "r2_coverage",
+      "description": "tests/unit/test_release_flow.py exists with ≥4 def test_ definitions",
+      "r2_status": "pass",
+      "r2_detail": "test_release_flow.py exists with 7 test functions"
+    },
+    {
+      "id": 20,
+      "name": "r2_release_workflow_pytest_gate",
+      "category": "r2_ci",
+      "description": ".github/workflows/release.yml has pytest token AND needs: directive",
+      "r2_status": "pass",
+      "r2_detail": "release.yml contains pytest token AND needs: directive"
+    },
+    {
+      "id": 21,
+      "name": "r2_homebrew_metadata_owner_fixed",
+      "category": "r2_packaging",
+      "description": "Homebrew formula does NOT contain macworkers/autodev-ai; DOES contain merchloubna70-dot/autodev-ai",
+      "r2_status": "pass",
+      "r2_detail": "Homebrew formula owner is 'merchloubna70-dot/autodev-ai'"
+    },
+    {
+      "id": 22,
+      "name": "r2_homebrew_sha256_not_stale",
+      "category": "r2_packaging",
+      "description": "Homebrew formula does NOT contain stale placeholder sha256 '744375fb'",
+      "r2_status": "pass",
+      "r2_detail": "Formula does not contain stale sha256 placeholder"
+    },
+    {
+      "id": 23,
+      "name": "r2_macos_info_plist_version_match",
+      "category": "r2_packaging",
+      "description": "packaging/desktop/autodev-ai.app/Contents/Info.plist CFBundleShortVersionString contains '0.1.0'",
+      "r2_status": "pass",
+      "r2_detail": "CFBundleShortVersionString='0.1.0a1' contains '0.1.0'"
+    },
+    {
+      "id": 24,
+      "name": "r2_remaining_blockers_recorded",
+      "category": "r2_release",
+      "description": "docs/validation/autodev_r2_pypi_release_blocker_closure.json exists OR autodev_release_hardening_round.json has release_blockers array",
+      "r2_status": "pass",
+      "r2_detail": "autodev_release_hardening_round.json has release_blockers array (10 items)"
     }
   ],
-  "baseline_summary": {
-    "pass": 9,
+  "r2_run_summary": {
+    "ran_at": "2026-05-14T03:45:54Z",
+    "total_checks": 24,
+    "pass": 21,
     "fail": 1,
-    "skip": 2
+    "skip": 2,
+    "overall": "fail",
+    "r2_specific_pass": 12,
+    "r2_specific_fail": 0,
+    "r2_specific_skip": 0
   },
   "known_blockers": [
     {
       "check": "mypy_passes",
       "file": "src/autodev/adapters/pydantic_ai_bridge.py",
       "line": 137,
-      "issue": "No overload variant of Agent matches argument types — pre-existing mypy error, not introduced by this gate",
+      "issue": "No overload variant of Agent matches argument types — pre-existing R1 regression, not introduced by R2",
       "severity": "warning",
       "action_required": "Fix pydantic-ai Agent call signature before release"
     }

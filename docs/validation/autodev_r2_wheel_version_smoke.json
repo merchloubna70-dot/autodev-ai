@@ -1,0 +1,33 @@
+{
+  "finding_id": "HIGH-DIST-01",
+  "title": "Wheel/sdist rebuilt for v0.1.0a1 and CLI --version verified",
+  "date": "2026-05-14",
+  "verdict": "closed",
+  "artifacts": {
+    "wheel": {
+      "filename": "autodev_ai-0.1.0a1-py3-none-any.whl",
+      "sha256": "39c39f5ce680ebc5d66f6694ba52bdb457727ac72350b94d5a9d143d62f8cee7",
+      "size_bytes": 303493
+    },
+    "sdist": {
+      "filename": "autodev_ai-0.1.0a1.tar.gz",
+      "sha256": "4c2f73569377a92c634b7e112f08ce5a90896e077abf6aa48e5f8dc20c2e000e",
+      "size_bytes": 572978
+    }
+  },
+  "version_output": "autodev-ai 0.1.0a1",
+  "test_results": {
+    "test_wheel_file_exists": "PASS",
+    "test_sdist_file_exists": "PASS",
+    "test_wheel_installs_in_clean_venv": "PASS",
+    "test_wheel_autodev_help_works": "PASS",
+    "test_wheel_autodev_version_outputs_0_1_0a1": "PASS",
+    "test_wheel_module_form_version_works": "PASS"
+  },
+  "full_suite": {
+    "passed": 975,
+    "xfailed": 4,
+    "pre_existing_failures": 1,
+    "new_failures": 0
+  }
+}

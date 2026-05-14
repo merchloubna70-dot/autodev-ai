@@ -1,21 +1,23 @@
 #!/usr/bin/env python3
 """
-Release Readiness Gate — 12 read-only checks for autodev-ai.
+Release Readiness Gate — 24 read-only checks for autodev-ai (12 base + 12 R2).
 
 Usage:
     python scripts/release_readiness_gate.py [--repo-path .] \
-        [--output docs/validation/release_readiness_gate_run.json] [--strict]
+        [--output docs/validation/release_readiness_gate_run.json] [--strict] \
+        [--include-r2] [--strict-r2]
 
 Exit codes:
     0 — all checks pass (or only skips)
-    1 — one or more checks fail AND --strict is set
-    0 — failures present but --strict not set (gate still reports them)
+    1 — one or more checks fail AND --strict / --strict-r2 is set
+    0 — failures present but neither strict flag set (gate still reports them)
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 import sys
 import time
@@ -416,10 +418,500 @@ def check_release_blockers_recorded(repo: Path) -> CheckResult:
 
 
 # ---------------------------------------------------------------------------
+# R2 checks (12 new checks, prefix r2_)
+# ---------------------------------------------------------------------------
+
+
+def check_r2_version_consistency(repo: Path) -> CheckResult:
+    name = "r2_version_consistency"
+    t0 = time.monotonic()
+    toml_path = repo / "pyproject.toml"
+    if not toml_path.exists():
+        return _make(name, "fail", "pyproject.toml not found", (time.monotonic() - t0) * 1000)
+
+    try:
+        if sys.version_info >= (3, 11):
+            import tomllib  # type: ignore[import]
+        else:
+            try:
+                import tomllib  # type: ignore[import]
+            except ImportError:
+                import tomli as tomllib  # type: ignore[import,no-redef]
+
+        with open(toml_path, "rb") as fh:
+            data = tomllib.load(fh)
+
+        pyproject_ver = data.get("project", {}).get("version", "")
+        if not pyproject_ver.startswith("0.1.0"):
+            return _make(
+                name,
+                "fail",
+                f"pyproject.toml version '{pyproject_ver}' does not start with '0.1.0'",
+                (time.monotonic() - t0) * 1000,
+            )
+
+        # Try importing autodev to check __version__
+        rc, stdout, stderr = _run(
+            [sys.executable, "-c", "import autodev; print(autodev.__version__)"],
+            repo,
+            timeout=10,
+        )
+        if rc != 0:
+            return _make(
+                name,
+                "skip",
+                f"Cannot import autodev to check __version__: {stderr[:100]}",
+                (time.monotonic() - t0) * 1000,
+            )
+
+        module_ver = stdout.strip()
+        if module_ver != pyproject_ver:
+            return _make(
+                name,
+                "fail",
+                f"pyproject version '{pyproject_ver}' != module __version__ '{module_ver}'",
+                (time.monotonic() - t0) * 1000,
+                str(toml_path),
+            )
+
+        return _make(
+            name,
+            "pass",
+            f"version consistent: {pyproject_ver}",
+            (time.monotonic() - t0) * 1000,
+            str(toml_path),
+        )
+    except Exception as exc:  # noqa: BLE001
+        return _make(name, "fail", f"Parse error: {exc}", (time.monotonic() - t0) * 1000)
+
+
+def check_r2_license_file_present(repo: Path) -> CheckResult:
+    name = "r2_license_file_present"
+    t0 = time.monotonic()
+
+    license_path = repo / "LICENSE"
+    if not license_path.exists():
+        return _make(name, "fail", "LICENSE file not found at repo root", (time.monotonic() - t0) * 1000)
+
+    text = license_path.read_text(encoding="utf-8", errors="replace")
+    if "MIT License" in text or "Permission is hereby granted" in text:
+        return _make(
+            name,
+            "pass",
+            "LICENSE present with expected MIT content",
+            (time.monotonic() - t0) * 1000,
+            str(license_path),
+        )
+    return _make(
+        name,
+        "fail",
+        "LICENSE file present but does not contain 'MIT License' or 'Permission is hereby granted'",
+        (time.monotonic() - t0) * 1000,
+        str(license_path),
+    )
+
+
+def check_r2_license_metadata_match(repo: Path) -> CheckResult:
+    name = "r2_license_metadata_match"
+    t0 = time.monotonic()
+
+    toml_path = repo / "pyproject.toml"
+    if not toml_path.exists():
+        return _make(name, "fail", "pyproject.toml not found", (time.monotonic() - t0) * 1000)
+
+    try:
+        if sys.version_info >= (3, 11):
+            import tomllib  # type: ignore[import]
+        else:
+            try:
+                import tomllib  # type: ignore[import]
+            except ImportError:
+                import tomli as tomllib  # type: ignore[import,no-redef]
+
+        with open(toml_path, "rb") as fh:
+            data = tomllib.load(fh)
+
+        project = data.get("project", {})
+        license_field = project.get("license")
+        if license_field is None:
+            return _make(
+                name,
+                "fail",
+                "[project] license field missing from pyproject.toml",
+                (time.monotonic() - t0) * 1000,
+                str(toml_path),
+            )
+
+        return _make(
+            name,
+            "pass",
+            f"[project] license field present: {license_field!r}",
+            (time.monotonic() - t0) * 1000,
+            str(toml_path),
+        )
+    except Exception as exc:  # noqa: BLE001
+        return _make(name, "fail", f"Parse error: {exc}", (time.monotonic() - t0) * 1000)
+
+
+def check_r2_wheel_version_works(repo: Path) -> CheckResult:
+    name = "r2_wheel_version_works"
+    t0 = time.monotonic()
+
+    dist = repo / "dist"
+    if not dist.exists():
+        return _make(name, "skip", "no built wheel (dist/ not found)", (time.monotonic() - t0) * 1000)
+
+    wheels = list(dist.glob("*.whl"))
+    if not wheels:
+        return _make(name, "skip", "no built wheel (no *.whl in dist/)", (time.monotonic() - t0) * 1000)
+
+    # Parse pyproject version
+    try:
+        if sys.version_info >= (3, 11):
+            import tomllib  # type: ignore[import]
+        else:
+            try:
+                import tomllib  # type: ignore[import]
+            except ImportError:
+                import tomli as tomllib  # type: ignore[import,no-redef]
+
+        toml_path = repo / "pyproject.toml"
+        if not toml_path.exists():
+            return _make(name, "fail", "pyproject.toml not found", (time.monotonic() - t0) * 1000)
+
+        with open(toml_path, "rb") as fh:
+            data = tomllib.load(fh)
+        pyproject_ver = data.get("project", {}).get("version", "")
+    except Exception as exc:  # noqa: BLE001
+        return _make(name, "fail", f"Failed to read pyproject.toml: {exc}", (time.monotonic() - t0) * 1000)
+
+    # Wheel filename format: {dist}-{version}-{python}-{abi}-{platform}.whl
+    # Normalize version: PEP 427 uses underscores for dashes, e.g. 0.1.0a1
+    wheel = wheels[0]
+    parts = wheel.name.split("-")
+    if len(parts) < 2:
+        return _make(name, "fail", f"Cannot parse wheel filename: {wheel.name}", (time.monotonic() - t0) * 1000)
+
+    wheel_ver = parts[1]
+    # Normalize for comparison: PEP 440 normalization (lowercase, no separators diff)
+    def _norm(v: str) -> str:
+        return re.sub(r"[-_.]", "", v.lower())
+
+    if _norm(wheel_ver) == _norm(pyproject_ver):
+        return _make(
+            name,
+            "pass",
+            f"wheel version '{wheel_ver}' matches pyproject '{pyproject_ver}'",
+            (time.monotonic() - t0) * 1000,
+            str(wheel),
+        )
+    return _make(
+        name,
+        "fail",
+        f"wheel version '{wheel_ver}' does not match pyproject '{pyproject_ver}'",
+        (time.monotonic() - t0) * 1000,
+        str(wheel),
+    )
+
+
+def check_r2_a2a_http_ssrf_hardened(repo: Path) -> CheckResult:
+    name = "r2_a2a_http_ssrf_hardened"
+    t0 = time.monotonic()
+
+    http_transport = repo / "src" / "autodev" / "adapters" / "a2a" / "transports" / "http.py"
+    ssrf_test = repo / "tests" / "unit" / "test_a2a_http_ssrf_hardening.py"
+
+    missing = []
+    if not http_transport.exists():
+        missing.append(str(http_transport.relative_to(repo)))
+    if not ssrf_test.exists():
+        missing.append(str(ssrf_test.relative_to(repo)))
+
+    if missing:
+        return _make(name, "fail", f"Missing files: {missing}", (time.monotonic() - t0) * 1000)
+
+    # Check SSRF error class in transport
+    transport_text = http_transport.read_text(encoding="utf-8", errors="replace")
+    if "A2AHttpSSRFError" not in transport_text:
+        return _make(
+            name,
+            "fail",
+            "A2AHttpSSRFError not found in src/autodev/adapters/a2a/transports/http.py",
+            (time.monotonic() - t0) * 1000,
+            str(http_transport),
+        )
+
+    # Count test functions in ssrf test file
+    test_text = ssrf_test.read_text(encoding="utf-8", errors="replace")
+    test_count = len(re.findall(r"^\s*def test_", test_text, re.MULTILINE))
+    if test_count < 10:
+        return _make(
+            name,
+            "fail",
+            f"test_a2a_http_ssrf_hardening.py has only {test_count} test functions (need ≥10)",
+            (time.monotonic() - t0) * 1000,
+            str(ssrf_test),
+        )
+
+    return _make(
+        name,
+        "pass",
+        f"A2AHttpSSRFError present; {test_count} SSRF test functions",
+        (time.monotonic() - t0) * 1000,
+        str(ssrf_test),
+    )
+
+
+def check_r2_milestone_flow_tested(repo: Path) -> CheckResult:
+    name = "r2_milestone_flow_tested"
+    t0 = time.monotonic()
+
+    test_file = repo / "tests" / "unit" / "test_milestone_flow.py"
+    if not test_file.exists():
+        return _make(name, "fail", "tests/unit/test_milestone_flow.py not found", (time.monotonic() - t0) * 1000)
+
+    text = test_file.read_text(encoding="utf-8", errors="replace")
+    count = len(re.findall(r"^\s*def test_", text, re.MULTILINE))
+    if count < 4:
+        return _make(
+            name,
+            "fail",
+            f"test_milestone_flow.py has only {count} test functions (need ≥4)",
+            (time.monotonic() - t0) * 1000,
+            str(test_file),
+        )
+
+    return _make(
+        name,
+        "pass",
+        f"test_milestone_flow.py exists with {count} test functions",
+        (time.monotonic() - t0) * 1000,
+        str(test_file),
+    )
+
+
+def check_r2_release_flow_tested(repo: Path) -> CheckResult:
+    name = "r2_release_flow_tested"
+    t0 = time.monotonic()
+
+    test_file = repo / "tests" / "unit" / "test_release_flow.py"
+    if not test_file.exists():
+        return _make(name, "fail", "tests/unit/test_release_flow.py not found", (time.monotonic() - t0) * 1000)
+
+    text = test_file.read_text(encoding="utf-8", errors="replace")
+    count = len(re.findall(r"^\s*def test_", text, re.MULTILINE))
+    if count < 4:
+        return _make(
+            name,
+            "fail",
+            f"test_release_flow.py has only {count} test functions (need ≥4)",
+            (time.monotonic() - t0) * 1000,
+            str(test_file),
+        )
+
+    return _make(
+        name,
+        "pass",
+        f"test_release_flow.py exists with {count} test functions",
+        (time.monotonic() - t0) * 1000,
+        str(test_file),
+    )
+
+
+def check_r2_release_workflow_pytest_gate(repo: Path) -> CheckResult:
+    name = "r2_release_workflow_pytest_gate"
+    t0 = time.monotonic()
+
+    workflow = repo / ".github" / "workflows" / "release.yml"
+    if not workflow.exists():
+        return _make(name, "fail", ".github/workflows/release.yml not found", (time.monotonic() - t0) * 1000)
+
+    text = workflow.read_text(encoding="utf-8", errors="replace")
+
+    has_pytest = "pytest" in text
+    has_needs = bool(re.search(r"^\s+needs\s*:", text, re.MULTILINE))
+
+    if not has_pytest:
+        return _make(
+            name,
+            "fail",
+            ".github/workflows/release.yml does not contain 'pytest'",
+            (time.monotonic() - t0) * 1000,
+            str(workflow),
+        )
+    if not has_needs:
+        return _make(
+            name,
+            "fail",
+            ".github/workflows/release.yml does not contain a 'needs:' directive",
+            (time.monotonic() - t0) * 1000,
+            str(workflow),
+        )
+
+    return _make(
+        name,
+        "pass",
+        "release.yml contains pytest token AND needs: directive",
+        (time.monotonic() - t0) * 1000,
+        str(workflow),
+    )
+
+
+def check_r2_homebrew_metadata_owner_fixed(repo: Path) -> CheckResult:
+    name = "r2_homebrew_metadata_owner_fixed"
+    t0 = time.monotonic()
+
+    formula = repo / "packaging" / "homebrew" / "Formula" / "autodev-ai.rb"
+    if not formula.exists():
+        return _make(name, "fail", "Homebrew formula not found", (time.monotonic() - t0) * 1000)
+
+    text = formula.read_text(encoding="utf-8", errors="replace")
+
+    if "macworkers/autodev-ai" in text:
+        return _make(
+            name,
+            "fail",
+            "Formula still contains old owner 'macworkers/autodev-ai' (should be 'merchloubna70-dot/autodev-ai')",
+            (time.monotonic() - t0) * 1000,
+            str(formula),
+        )
+
+    if "merchloubna70-dot/autodev-ai" not in text:
+        return _make(
+            name,
+            "fail",
+            "Formula does not contain expected owner 'merchloubna70-dot/autodev-ai'",
+            (time.monotonic() - t0) * 1000,
+            str(formula),
+        )
+
+    return _make(
+        name,
+        "pass",
+        "Homebrew formula owner is 'merchloubna70-dot/autodev-ai' (correct)",
+        (time.monotonic() - t0) * 1000,
+        str(formula),
+    )
+
+
+def check_r2_homebrew_sha256_not_stale(repo: Path) -> CheckResult:
+    name = "r2_homebrew_sha256_not_stale"
+    t0 = time.monotonic()
+
+    formula = repo / "packaging" / "homebrew" / "Formula" / "autodev-ai.rb"
+    if not formula.exists():
+        return _make(name, "fail", "Homebrew formula not found", (time.monotonic() - t0) * 1000)
+
+    text = formula.read_text(encoding="utf-8", errors="replace")
+
+    stale_hash = "744375fb"
+    if stale_hash in text:
+        return _make(
+            name,
+            "fail",
+            f"Formula contains stale placeholder sha256 '{stale_hash}...' — must be updated before publish",
+            (time.monotonic() - t0) * 1000,
+            str(formula),
+        )
+
+    return _make(
+        name,
+        "pass",
+        "Homebrew formula does not contain stale sha256 placeholder",
+        (time.monotonic() - t0) * 1000,
+        str(formula),
+    )
+
+
+def check_r2_macos_info_plist_version_match(repo: Path) -> CheckResult:
+    name = "r2_macos_info_plist_version_match"
+    t0 = time.monotonic()
+
+    plist_path = repo / "packaging" / "desktop" / "autodev-ai.app" / "Contents" / "Info.plist"
+    if not plist_path.exists():
+        return _make(
+            name,
+            "skip",
+            f"Info.plist not found at {plist_path.relative_to(repo)}",
+            (time.monotonic() - t0) * 1000,
+        )
+
+    try:
+        import plistlib
+
+        with open(plist_path, "rb") as fh:
+            plist_data = plistlib.load(fh)
+
+        bundle_ver = plist_data.get("CFBundleShortVersionString", "")
+        if "0.1.0" in bundle_ver:
+            return _make(
+                name,
+                "pass",
+                f"Info.plist CFBundleShortVersionString='{bundle_ver}' contains '0.1.0'",
+                (time.monotonic() - t0) * 1000,
+                str(plist_path),
+            )
+        return _make(
+            name,
+            "fail",
+            f"Info.plist CFBundleShortVersionString='{bundle_ver}' does not contain '0.1.0'",
+            (time.monotonic() - t0) * 1000,
+            str(plist_path),
+        )
+    except Exception as exc:  # noqa: BLE001
+        return _make(name, "fail", f"Failed to parse Info.plist: {exc}", (time.monotonic() - t0) * 1000)
+
+
+def check_r2_remaining_blockers_recorded(repo: Path) -> CheckResult:
+    name = "r2_remaining_blockers_recorded"
+    t0 = time.monotonic()
+
+    val_dir = repo / "docs" / "validation"
+    if not val_dir.exists():
+        return _make(name, "fail", "docs/validation/ directory not found", (time.monotonic() - t0) * 1000)
+
+    # Check for autodev_r2_pypi_release_blocker_closure.json
+    r2_blocker_file = val_dir / "autodev_r2_pypi_release_blocker_closure.json"
+    if r2_blocker_file.exists():
+        return _make(
+            name,
+            "pass",
+            f"R2 blocker closure file found: {r2_blocker_file.name}",
+            (time.monotonic() - t0) * 1000,
+            str(r2_blocker_file),
+        )
+
+    # Fall back: check autodev_release_hardening_round.json has release_blockers array
+    hardening_file = val_dir / "autodev_release_hardening_round.json"
+    if hardening_file.exists():
+        try:
+            data = json.loads(hardening_file.read_text(encoding="utf-8"))
+            blockers = data.get("release_blockers")
+            if isinstance(blockers, list):
+                return _make(
+                    name,
+                    "pass",
+                    f"autodev_release_hardening_round.json has release_blockers array ({len(blockers)} items)",
+                    (time.monotonic() - t0) * 1000,
+                    str(hardening_file),
+                )
+        except Exception:  # noqa: BLE001
+            pass
+
+    return _make(
+        name,
+        "fail",
+        "No autodev_r2_pypi_release_blocker_closure.json found, and autodev_release_hardening_round.json "
+        "missing or lacks release_blockers array",
+        (time.monotonic() - t0) * 1000,
+    )
+
+
+# ---------------------------------------------------------------------------
 # Orchestrator
 # ---------------------------------------------------------------------------
 
-ALL_CHECKS = [
+BASE_CHECKS = [
     check_package_metadata_valid,
     check_cli_help_works,
     check_pytest_evidence,
@@ -434,10 +926,27 @@ ALL_CHECKS = [
     check_release_blockers_recorded,
 ]
 
+R2_CHECKS = [
+    check_r2_version_consistency,
+    check_r2_license_file_present,
+    check_r2_license_metadata_match,
+    check_r2_wheel_version_works,
+    check_r2_a2a_http_ssrf_hardened,
+    check_r2_milestone_flow_tested,
+    check_r2_release_flow_tested,
+    check_r2_release_workflow_pytest_gate,
+    check_r2_homebrew_metadata_owner_fixed,
+    check_r2_homebrew_sha256_not_stale,
+    check_r2_macos_info_plist_version_match,
+    check_r2_remaining_blockers_recorded,
+]
 
-def run_all_checks(repo: Path) -> list[CheckResult]:
+ALL_CHECKS = BASE_CHECKS + R2_CHECKS
+
+
+def run_checks(repo: Path, checks: list) -> list[CheckResult]:
     results = []
-    for fn in ALL_CHECKS:
+    for fn in checks:
         try:
             result = fn(repo)
         except Exception as exc:  # noqa: BLE001
@@ -446,8 +955,14 @@ def run_all_checks(repo: Path) -> list[CheckResult]:
     return results
 
 
-def build_report(repo: Path) -> dict[str, Any]:
-    checks = run_all_checks(repo)
+def run_all_checks(repo: Path) -> list[CheckResult]:
+    return run_checks(repo, ALL_CHECKS)
+
+
+def build_report(repo: Path, checks_to_run: list | None = None) -> dict[str, Any]:
+    if checks_to_run is None:
+        checks_to_run = ALL_CHECKS
+    checks = run_checks(repo, checks_to_run)
     counts: dict[str, int] = {"pass": 0, "fail": 0, "skip": 0}
     for c in checks:
         counts[c["status"]] = counts.get(c["status"], 0) + 1
@@ -472,7 +987,7 @@ def build_report(repo: Path) -> dict[str, Any]:
 
 
 def main(argv: list[str] | None = None) -> dict[str, Any]:
-    parser = argparse.ArgumentParser(description="autodev-ai Release Readiness Gate")
+    parser = argparse.ArgumentParser(description="autodev-ai Release Readiness Gate (24 checks)")
     parser.add_argument("--repo-path", default=".", help="Path to the repository root")
     parser.add_argument(
         "--output",
@@ -482,12 +997,41 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
     parser.add_argument(
         "--strict",
         action="store_true",
-        help="Exit 1 if any check fails",
+        help="Exit 1 if any check fails (all 24 checks)",
+    )
+    parser.add_argument(
+        "--include-r2",
+        action="store_true",
+        default=False,
+        help="Run only the 12 R2-specific checks (skip base 12)",
+    )
+    parser.add_argument(
+        "--strict-r2",
+        action="store_true",
+        help="Exit 1 if any R2 check fails (implies --include-r2 scope for exit code)",
     )
     args = parser.parse_args(argv)
 
     repo = Path(args.repo_path).resolve()
-    report = build_report(repo)
+
+    # Determine which checks to run
+    if args.include_r2:
+        checks_to_run = R2_CHECKS
+    else:
+        checks_to_run = ALL_CHECKS
+
+    report = build_report(repo, checks_to_run)
+
+    # Determine strict failure scope
+    strict_fail = False
+    if args.strict and not report["strict_pass"]:
+        strict_fail = True
+    if args.strict_r2:
+        # Check only R2 checks for strict exit
+        r2_results = [c for c in report["checks"] if c["name"].startswith("r2_")]
+        r2_fails = sum(1 for c in r2_results if c["status"] == "fail")
+        if r2_fails > 0:
+            strict_fail = True
 
     # Resolve output path
     out_path = Path(args.output)
@@ -513,7 +1057,7 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
         if c["status"] in ("fail", "skip"):
             print(f"         {c['detail'][:120]}")
 
-    if args.strict and not report["strict_pass"]:
+    if strict_fail:
         sys.exit(1)
 
     return report

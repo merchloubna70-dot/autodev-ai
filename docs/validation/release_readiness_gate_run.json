@@ -1,0 +1,181 @@
+{
+  "gate": "release_readiness",
+  "ran_at": "2026-05-14T03:50:50+00:00",
+  "overall": "fail",
+  "checks": [
+    {
+      "name": "package_metadata_valid",
+      "status": "pass",
+      "detail": "name=autodev-ai version=0.1.0a1 ep=autodev.cli:app",
+      "duration_ms": 1.8,
+      "evidence": "/Users/macworkers/autodev/pyproject.toml"
+    },
+    {
+      "name": "cli_help_works",
+      "status": "pass",
+      "detail": "autodev CLI --help via python -m: exit 0",
+      "duration_ms": 214.5,
+      "evidence": ""
+    },
+    {
+      "name": "pytest_evidence",
+      "status": "pass",
+      "detail": "Smoke pytest passed:\n........                                                                 [100%]\n",
+      "duration_ms": 331.4,
+      "evidence": "/Users/macworkers/autodev/tests/unit/test_prfaq_style.py"
+    },
+    {
+      "name": "ruff_passes",
+      "status": "skip",
+      "detail": "ruff not on PATH",
+      "duration_ms": 1.8,
+      "evidence": ""
+    },
+    {
+      "name": "mypy_passes",
+      "status": "fail",
+      "detail": "mypy exit 1:\nsrc/autodev/adapters/a2a/transports/http.py:136: error: Argument 1 to \"_is_private_address\" has incompatible type \"str | int\"; expected \"str\"  [arg-type]\nsrc/autodev/adapters/pydantic_ai_bridge.py:137: error: No overload variant of \"Agent\" matches argument types \"str\", \"type[InputClassification]\", \"str\"  [call-overload]\nsrc/autodev/adapters/pydantic_ai_bridge.py:137: note: Possible overload varian",
+      "duration_ms": 613.5,
+      "evidence": ""
+    },
+    {
+      "name": "docs_exist",
+      "status": "pass",
+      "detail": "README + 5/5 doc paths present",
+      "duration_ms": 0.1,
+      "evidence": "/Users/macworkers/autodev/docs/quickstart.md, /Users/macworkers/autodev/docs/architecture.md, /Users/macworkers/autodev/docs/faq.md, /Users/macworkers/autodev/docs/tutorials, /Users/macworkers/autodev/examples/README.md"
+    },
+    {
+      "name": "mcp_smoke_path_exists",
+      "status": "pass",
+      "detail": "MCP smoke test exists: /Users/macworkers/autodev/tests/integration/test_mcp_server_smoke.py",
+      "duration_ms": 0.0,
+      "evidence": "/Users/macworkers/autodev/tests/integration/test_mcp_server_smoke.py"
+    },
+    {
+      "name": "a2a_smoke_path_exists",
+      "status": "pass",
+      "detail": "12 a2a/roundtable test files found",
+      "duration_ms": 2.1,
+      "evidence": "tests/integration/test_a2a_http_roundtrip.py, tests/integration/test_a2a_roundtable_e2e.py, tests/integration/test_a2a_server_cli.py, tests/integration/test_cli_roundtable.py, tests/integration/test_parallel_review_via_roundtable.py"
+    },
+    {
+      "name": "mock_executor_works",
+      "status": "skip",
+      "detail": "autodev not on PATH or classify-input not available; skipping mock executor check",
+      "duration_ms": 278.2,
+      "evidence": ""
+    },
+    {
+      "name": "packaging_files_exist",
+      "status": "pass",
+      "detail": "All 3 packaging files present",
+      "duration_ms": 0.2,
+      "evidence": "packaging/docker/Dockerfile, packaging/pyinstaller/autodev.spec, packaging/homebrew/Formula/autodev-ai.rb"
+    },
+    {
+      "name": "no_dangerous_release_claims",
+      "status": "pass",
+      "detail": "No forbidden release claims found in README.md",
+      "duration_ms": 0.1,
+      "evidence": "/Users/macworkers/autodev/README.md"
+    },
+    {
+      "name": "release_blockers_recorded",
+      "status": "pass",
+      "detail": "Release evidence files found: ['autodev_release_hardening_round.md', 'autodev_release_hardening_round.json', 'autodev_release_readiness_gate.json', 'autodev_release_readiness_gate.md']",
+      "duration_ms": 0.4,
+      "evidence": "/Users/macworkers/autodev/docs/validation/autodev_release_hardening_round.md"
+    },
+    {
+      "name": "r2_version_consistency",
+      "status": "pass",
+      "detail": "version consistent: 0.1.0a1",
+      "duration_ms": 41.7,
+      "evidence": "/Users/macworkers/autodev/pyproject.toml"
+    },
+    {
+      "name": "r2_license_file_present",
+      "status": "pass",
+      "detail": "LICENSE present with expected MIT content",
+      "duration_ms": 0.1,
+      "evidence": "/Users/macworkers/autodev/LICENSE"
+    },
+    {
+      "name": "r2_license_metadata_match",
+      "status": "pass",
+      "detail": "[project] license field present: {'text': 'MIT'}",
+      "duration_ms": 0.2,
+      "evidence": "/Users/macworkers/autodev/pyproject.toml"
+    },
+    {
+      "name": "r2_wheel_version_works",
+      "status": "pass",
+      "detail": "wheel version '0.1.0a1' matches pyproject '0.1.0a1'",
+      "duration_ms": 0.3,
+      "evidence": "/Users/macworkers/autodev/dist/autodev_ai-0.1.0a1-py3-none-any.whl"
+    },
+    {
+      "name": "r2_a2a_http_ssrf_hardened",
+      "status": "pass",
+      "detail": "A2AHttpSSRFError present; 13 SSRF test functions",
+      "duration_ms": 0.2,
+      "evidence": "/Users/macworkers/autodev/tests/unit/test_a2a_http_ssrf_hardening.py"
+    },
+    {
+      "name": "r2_milestone_flow_tested",
+      "status": "pass",
+      "detail": "test_milestone_flow.py exists with 8 test functions",
+      "duration_ms": 0.1,
+      "evidence": "/Users/macworkers/autodev/tests/unit/test_milestone_flow.py"
+    },
+    {
+      "name": "r2_release_flow_tested",
+      "status": "pass",
+      "detail": "test_release_flow.py exists with 7 test functions",
+      "duration_ms": 1.0,
+      "evidence": "/Users/macworkers/autodev/tests/unit/test_release_flow.py"
+    },
+    {
+      "name": "r2_release_workflow_pytest_gate",
+      "status": "pass",
+      "detail": "release.yml contains pytest token AND needs: directive",
+      "duration_ms": 0.1,
+      "evidence": "/Users/macworkers/autodev/.github/workflows/release.yml"
+    },
+    {
+      "name": "r2_homebrew_metadata_owner_fixed",
+      "status": "pass",
+      "detail": "Homebrew formula owner is 'merchloubna70-dot/autodev-ai' (correct)",
+      "duration_ms": 0.0,
+      "evidence": "/Users/macworkers/autodev/packaging/homebrew/Formula/autodev-ai.rb"
+    },
+    {
+      "name": "r2_homebrew_sha256_not_stale",
+      "status": "pass",
+      "detail": "Homebrew formula does not contain stale sha256 placeholder",
+      "duration_ms": 0.0,
+      "evidence": "/Users/macworkers/autodev/packaging/homebrew/Formula/autodev-ai.rb"
+    },
+    {
+      "name": "r2_macos_info_plist_version_match",
+      "status": "pass",
+      "detail": "Info.plist CFBundleShortVersionString='0.1.0a1' contains '0.1.0'",
+      "duration_ms": 2.8,
+      "evidence": "/Users/macworkers/autodev/packaging/desktop/autodev-ai.app/Contents/Info.plist"
+    },
+    {
+      "name": "r2_remaining_blockers_recorded",
+      "status": "pass",
+      "detail": "autodev_release_hardening_round.json has release_blockers array (10 items)",
+      "duration_ms": 0.3,
+      "evidence": "/Users/macworkers/autodev/docs/validation/autodev_release_hardening_round.json"
+    }
+  ],
+  "strict_pass": false,
+  "summary": {
+    "pass": 21,
+    "fail": 1,
+    "skip": 2
+  }
+}

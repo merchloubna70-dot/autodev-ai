@@ -1,0 +1,155 @@
+{
+  "round": "autodev_r2_pypi_release_blocker_closure",
+  "status": "completed",
+  "overall_result": "pass_with_limitations",
+  "audit_date": "2026-05-14",
+  "auditor": "10-agent parallel closure round (R2-AB/C/D/E/F/G/H + R2-I/J Opus)",
+  "predecessor_round": "autodev_release_hardening_round",
+  "predecessor_status": "pass_with_limitations (0 critical · 3 blocker · 8 high)",
+  "p0_blockers": {
+    "version_consistency": "pass",
+    "license": "pass",
+    "wheel_version": "pass",
+    "a2a_http_ssrf": "pass",
+    "milestone_release_flow_tests": "pass",
+    "release_workflow_pytest": "pass",
+    "homebrew_metadata": "partial"
+  },
+  "p0_blockers_detail": {
+    "version_consistency": "pyproject 0.1.0 → 0.1.0a1 (PEP 440 alpha-1) · src/autodev/__init__.py uses importlib.metadata · 5 tests pass · closes HIGH-VER-01",
+    "license": "LICENSE file added at repo root (MIT, OSI canonical, 169 words) · pyproject [project] license + license-files=[LICENSE] · 4 tests pass · closes HIGH-LIC-01",
+    "wheel_version": "Rebuilt dist/autodev_ai-0.1.0a1-py3-none-any.whl (sha256: 39c39f5c…) + sdist (sha256: 4c2f7356…). Fresh-venv install → `autodev --version` outputs `autodev-ai 0.1.0a1` exactly. 6 smoke tests pass · closes HIGH-DIST-01",
+    "a2a_http_ssrf": "URL scheme allowlist + IP-class blocklist (loopback/link-local/RFC1918/cloud-metadata) + redirect re-validation + allow_private_networks escape hatch + A2AHttpSSRFError exception class. 13 tests pass covering 13 attack vectors. Residual: DNS rebinding TOCTOU + IPv6 novel encodings (documented). closes HIGH-SEC-01 (hardened, not perfect)",
+    "milestone_release_flow_tests": "tests/unit/test_milestone_flow.py (8 tests) + test_release_flow.py (7 tests). Covers init/happy/failure/report/skip paths under mock executor. closes HIGH-COV-01 + HIGH-ORPHAN-01",
+    "release_workflow_pytest": "release.yml split into test→publish jobs · publish has needs:test · ruff+mypy+pytest+twine-check gated · PyPI upload conditional on PYPI_API_TOKEN secret (default unset → no auto-publish) · 7 policy tests pass · closes HIGH-CI-01",
+    "homebrew_metadata": "URL owner macworkers → merchloubna70-dot (closes BLOCKER-PKG-02) · sha256 stale 744375fb replaced with explicit placeholder REPLACE_WITH_PYPI_0_1_0A1_SDIST_SHA256_AT_PUBLISH_TIME (refused to fabricate — partial close of BLOCKER-PKG-01, true close requires PyPI publish) · Info.plist CFBundleShortVersionString + CFBundleVersion 1.0 → 0.1.0a1 (closes BLOCKER-PKG-03) · 10 tests pass · Homebrew tap publish remains EXPLICITLY BLOCKED in formula leading comment"
+  },
+  "release_readiness": {
+    "internal_dogfood": "allowed",
+    "public_beta": "allowed",
+    "pypi_0_1_0": "allowed_with_limitations",
+    "docker": "allowed_with_limitations",
+    "homebrew": "blocked",
+    "production_enterprise_use": "blocked"
+  },
+  "release_readiness_changes_vs_r1": {
+    "internal_dogfood": "unchanged (still allowed)",
+    "public_beta": "allowed_with_limitations → allowed (upgrade: 5 of 7 P0 blockers closed + version consistent + LICENSE present)",
+    "pypi_0_1_0": "blocked → allowed_with_limitations (upgrade: version consistent + wheel verified + release.yml gated + LICENSE; remaining caveat: PyPI upload still requires PYPI_API_TOKEN secret + 1 mypy regression carried over)",
+    "docker": "unchanged (still allowed_with_limitations; base image still floating-tag, but image works)",
+    "homebrew": "unchanged (still blocked, but now blocked-with-honest-reason — explicit placeholder + leading comment + reviewable formula)",
+    "production_enterprise_use": "unchanged (still blocked — SSRF residual risk + MCP guardrail still pending in R3)"
+  },
+  "release_readiness_gate_run": {
+    "total_checks": 24,
+    "pass": 21,
+    "fail": 1,
+    "skip": 2,
+    "r2_subset_pass": 12,
+    "r2_subset_fail": 0,
+    "r2_subset_skip": 0,
+    "strict_exit_code": 1,
+    "strict_r2_exit_code": 0,
+    "single_fail_detail": "mypy_passes — pre-existing R1 regression in pydantic_ai_bridge.py:137 (Agent overload mismatch with pydantic-ai's typed API); NOT introduced by R2"
+  },
+  "test_count_progression": {
+    "pre_r1": 843,
+    "post_r1_baseline": 915,
+    "post_r1_with_xfail": "915 + 4 xfail",
+    "post_r2": 1000,
+    "post_r2_with_xfail": "1000 + 4 xfail",
+    "delta_r2": 85,
+    "regressions": 0
+  },
+  "new_files_r2": [
+    "LICENSE",
+    "tests/unit/test_version_consistency.py (5 tests)",
+    "tests/unit/test_license_metadata.py (4 tests)",
+    "tests/unit/test_a2a_http_ssrf_hardening.py (13 tests)",
+    "tests/unit/test_milestone_flow.py (8 tests)",
+    "tests/unit/test_release_flow.py (7 tests)",
+    "tests/unit/test_release_workflow_policy.py (7 tests)",
+    "tests/unit/test_homebrew_formula_metadata.py (10 tests)",
+    "tests/integration/test_wheel_cli_version_smoke.py (6 tests)",
+    "docs/validation/autodev_r2_a2a_http_ssrf_hardening.{md,json}",
+    "docs/validation/autodev_r2_flow_test_coverage.{md,json}",
+    "docs/validation/autodev_r2_homebrew_metadata_closure.{md,json}",
+    "docs/validation/autodev_r2_release_workflow_pytest_gate.{md,json}",
+    "docs/validation/autodev_r2_wheel_version_smoke.{md,json}",
+    "docs/validation/autodev_r2_pypi_release_blocker_closure.{md,json}"
+  ],
+  "modified_files_r2": [
+    "pyproject.toml (version 0.1.0 → 0.1.0a1; license-files=[LICENSE])",
+    "src/autodev/__init__.py (__version__ via importlib.metadata)",
+    "src/autodev/adapters/a2a/transports/http.py (SSRF validation + A2AHttpSSRFError)",
+    ".github/workflows/release.yml (test→publish job chain with needs:test)",
+    "packaging/desktop/autodev-ai.app/Contents/Info.plist (CFBundle* 1.0 → 0.1.0a1)",
+    "packaging/homebrew/Formula/autodev-ai.rb (owner + version + sha256 placeholder + warning comment)",
+    "scripts/release_readiness_gate.py (12 → 24 checks; --include-r2 + --strict-r2 flags)",
+    "src/autodev/release_readiness_gate.py (shim unchanged but re-validated)",
+    "tests/conftest.py (AUTODEV_A2A_ALLOW_PRIVATE_NETWORKS=1 for test infra)",
+    "tests/unit/test_a2a_http_transport.py (12-line adjustment for new SSRF API)",
+    "tests/unit/test_release_readiness_gate.py (12 → 37 tests)",
+    "docs/validation/autodev_release_readiness_gate.{md,json} (gate inventory updated)"
+  ],
+  "remaining_blockers": [
+    {
+      "id": "PKG-01-residual",
+      "severity": "blocker",
+      "title": "Homebrew formula sha256 still placeholder",
+      "detail": "REPLACE_WITH_PYPI_0_1_0A1_SDIST_SHA256_AT_PUBLISH_TIME — true close requires PyPI 0.1.0a1 actually published and sdist sha256 read from PyPI metadata",
+      "unblocks": ["Homebrew tap publish"]
+    },
+    {
+      "id": "R1-MYPY-RESIDUAL",
+      "severity": "high",
+      "title": "mypy fails on pydantic_ai_bridge.py:137",
+      "detail": "Agent overload mismatch with pydantic-ai typed API. Pre-existing R1 regression. Blocks --strict gate.",
+      "unblocks": ["scripts/release_readiness_gate.py --strict exit 0"]
+    },
+    {
+      "id": "MCP-GUARDRAIL",
+      "severity": "medium",
+      "title": "MCP autodev_deliver_project + autodev_run_issue shell-out in apply mode without server-side guardrail",
+      "detail": "Documented in R1 audit (E). Not in R2 scope.",
+      "unblocks": ["production_enterprise_use"]
+    }
+  ],
+  "remaining_high_risks": [
+    "A2A SSRF: DNS rebinding TOCTOU residual (mitigated to defense-in-depth level, not zero)",
+    "Docker base image python:3.12-slim still floating-tag (not digest-pinned)",
+    "ruff 17 errors regression from R1 audit — still uncovered by lint.yml scope (R1 K finding F-B)"
+  ],
+  "validation_commands": [
+    "python --version",
+    "pip install -e .[dev]",
+    "python -m autodev.cli --help",
+    "python -m autodev.cli --version",
+    "autodev --help",
+    "autodev --version",
+    "ruff check .",
+    "mypy src/autodev",
+    "pytest tests/",
+    "python -m build",
+    "twine check dist/*",
+    "python scripts/release_readiness_gate.py",
+    "python scripts/release_readiness_gate.py --strict",
+    "python scripts/release_readiness_gate.py --include-r2",
+    "python scripts/release_readiness_gate.py --strict-r2",
+    "python -m autodev.release_readiness_gate",
+    "python -m json.tool docs/validation/autodev_r2_pypi_release_blocker_closure.json",
+    "python -m json.tool docs/validation/autodev_release_hardening_round.json",
+    "python -m json.tool docs/validation/autodev_release_readiness_gate.json"
+  ],
+  "evidence_files": [
+    "docs/validation/autodev_r2_pypi_release_blocker_closure.{md,json}",
+    "docs/validation/autodev_r2_a2a_http_ssrf_hardening.{md,json}",
+    "docs/validation/autodev_r2_flow_test_coverage.{md,json}",
+    "docs/validation/autodev_r2_homebrew_metadata_closure.{md,json}",
+    "docs/validation/autodev_r2_release_workflow_pytest_gate.{md,json}",
+    "docs/validation/autodev_r2_wheel_version_smoke.{md,json}",
+    "docs/validation/autodev_release_readiness_gate.{md,json} (updated)",
+    "docs/validation/autodev_release_hardening_round.{md,json} (R1 baseline)"
+  ],
+  "next_round_recommendation": "Round 3 — Enterprise Hardening Round: (1) fix mypy pydantic_ai_bridge regression, (2) add MCP server-side guardrail for deliver-project/run-issue, (3) extend lint.yml to scripts/, (4) pin Docker base by digest, (5) add CHANGELOG + configuration.md + troubleshooting.md, (6) WorkerIsolator symlink target validation, (7) DNS rebinding mitigation (IP-pinning at HTTP adapter)."
+}

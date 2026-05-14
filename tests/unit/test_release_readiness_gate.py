@@ -41,15 +41,23 @@ gate = _load_gate_module()
 
 @pytest.fixture()
 def repo(tmp_path: Path) -> Path:
-    """Minimal fake repo with the required structure."""
-    # pyproject.toml
+    """Minimal fake repo with the required structure (base + R2 prerequisites)."""
+    # pyproject.toml — version starts with 0.1.0, has license field
     (tmp_path / "pyproject.toml").write_text(
         '[project]\nname = "autodev-ai"\nversion = "0.1.0"\nrequires-python = ">=3.10"\n'
+        'license = {text = "MIT"}\n'
         '[project.scripts]\nautodev = "autodev.cli:app"\n',
         encoding="utf-8",
     )
     # README
     (tmp_path / "README.md").write_text("# autodev-ai\n", encoding="utf-8")
+
+    # LICENSE file with MIT content
+    (tmp_path / "LICENSE").write_text(
+        "MIT License\n\nCopyright (c) 2026 autodev-ai contributors\n"
+        "\nPermission is hereby granted, free of charge...\n",
+        encoding="utf-8",
+    )
 
     # docs
     docs = tmp_path / "docs"
@@ -69,6 +77,9 @@ def repo(tmp_path: Path) -> Path:
     val = docs / "validation"
     val.mkdir()
     (val / "autodev_release_readiness_gate.json").write_text("{}", encoding="utf-8")
+    (val / "autodev_release_hardening_round.json").write_text(
+        '{"release_blockers": []}', encoding="utf-8"
+    )
 
     # tests/integration/test_mcp_server_smoke.py
     integration = tmp_path / "tests" / "integration"
@@ -81,6 +92,18 @@ def repo(tmp_path: Path) -> Path:
     for i in range(6):
         (unit / f"test_a2a_check_{i}.py").write_text("", encoding="utf-8")
 
+    # R2: SSRF test file (≥10 test functions)
+    ssrf_funcs = "\n".join(f"def test_ssrf_{i}(): pass" for i in range(12))
+    (unit / "test_a2a_http_ssrf_hardening.py").write_text(ssrf_funcs + "\n", encoding="utf-8")
+
+    # R2: milestone_flow test (≥4)
+    milestone_funcs = "\n".join(f"def test_milestone_{i}(): pass" for i in range(5))
+    (unit / "test_milestone_flow.py").write_text(milestone_funcs + "\n", encoding="utf-8")
+
+    # R2: release_flow test (≥4)
+    release_funcs = "\n".join(f"def test_release_{i}(): pass" for i in range(5))
+    (unit / "test_release_flow.py").write_text(release_funcs + "\n", encoding="utf-8")
+
     # packaging files
     docker = tmp_path / "packaging" / "docker"
     docker.mkdir(parents=True)
@@ -90,9 +113,42 @@ def repo(tmp_path: Path) -> Path:
     pyinst.mkdir(parents=True)
     (pyinst / "autodev.spec").write_text("# spec\n", encoding="utf-8")
 
-    formula = tmp_path / "packaging" / "homebrew" / "Formula"
-    formula.mkdir(parents=True)
-    (formula / "autodev-ai.rb").write_text("# rb\n", encoding="utf-8")
+    formula_dir = tmp_path / "packaging" / "homebrew" / "Formula"
+    formula_dir.mkdir(parents=True)
+    (formula_dir / "autodev-ai.rb").write_text(
+        'url "https://github.com/merchloubna70-dot/autodev-ai/releases/..."\n'
+        'sha256 "abcdef1234567890"\n',
+        encoding="utf-8",
+    )
+
+    # R2: A2A SSRF transport
+    transport_dir = tmp_path / "src" / "autodev" / "adapters" / "a2a" / "transports"
+    transport_dir.mkdir(parents=True)
+    (transport_dir / "http.py").write_text(
+        "class A2AHttpSSRFError(ValueError): pass\n", encoding="utf-8"
+    )
+
+    # R2: macOS Info.plist
+    plist_dir = tmp_path / "packaging" / "desktop" / "autodev-ai.app" / "Contents"
+    plist_dir.mkdir(parents=True)
+    (plist_dir / "Info.plist").write_text(
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" '
+        '"http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n'
+        "<plist version=\"1.0\"><dict>"
+        "<key>CFBundleShortVersionString</key><string>0.1.0a1</string>"
+        "</dict></plist>\n",
+        encoding="utf-8",
+    )
+
+    # R2: GitHub Actions release.yml with pytest + needs:
+    gh_dir = tmp_path / ".github" / "workflows"
+    gh_dir.mkdir(parents=True)
+    (gh_dir / "release.yml").write_text(
+        "jobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - run: pytest\n"
+        "  publish:\n    needs: test\n    runs-on: ubuntu-latest\n",
+        encoding="utf-8",
+    )
 
     return tmp_path
 
@@ -136,14 +192,22 @@ def test_each_check_has_required_fields(repo: Path) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Test 4: exactly 12 checks are run
+# Test 4: exactly 24 checks are run by default
 # ---------------------------------------------------------------------------
 
 
-def test_exactly_12_checks(repo: Path) -> None:
+def test_exactly_24_checks(repo: Path) -> None:
     with patch.object(gate, "_run", return_value=(0, "", "")):
         result = gate.main(["--repo-path", str(repo), "--output", str(repo / "rrgate_test.json")])
+    assert len(result["checks"]) == 24
+
+
+def test_exactly_12_checks_include_r2_only(repo: Path) -> None:
+    with patch.object(gate, "_run", return_value=(0, "", "")):
+        result = gate.main(["--repo-path", str(repo), "--output", str(repo / "rrgate_test.json"), "--include-r2"])
     assert len(result["checks"]) == 12
+    # All check names should start with r2_
+    assert all(c["name"].startswith("r2_") for c in result["checks"])
 
 
 # ---------------------------------------------------------------------------
@@ -166,7 +230,9 @@ def test_strict_exits_1_on_fail(repo: Path) -> None:
 
 
 def test_overall_pass_when_all_pass(repo: Path) -> None:
-    with patch.object(gate, "_run", return_value=(0, "", "")):
+    # _run is used by cli_help, ruff, mypy, and r2_version_consistency (which calls python -c to get __version__)
+    # r2_version_consistency reads pyproject version "0.1.0" and expects _run to return same via module import
+    with patch.object(gate, "_run", return_value=(0, "0.1.0\n", "")):
         result = gate.main(["--repo-path", str(repo), "--output", str(repo / "rrgate_test.json")])
     # Some checks may skip (e.g. cli_help if not on PATH in mock env), so accept pass or pass_with_skips
     assert result["overall"] in ("pass", "pass_with_skips")
@@ -246,3 +312,296 @@ def test_output_json_written_to_disk(repo: Path) -> None:
     data = json.loads(out.read_text(encoding="utf-8"))
     assert data["gate"] == "release_readiness"
     assert "checks" in data
+
+
+# ---------------------------------------------------------------------------
+# R2 Tests (13–24)
+# ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# Test 13: r2_version_consistency — fails when pyproject version ≠ "0.1.0..."
+# ---------------------------------------------------------------------------
+
+
+def test_r2_version_consistency_fails_on_wrong_version(tmp_path: Path) -> None:
+    (tmp_path / "pyproject.toml").write_text(
+        '[project]\nname = "autodev-ai"\nversion = "1.2.3"\nrequires-python = ">=3.10"\n',
+        encoding="utf-8",
+    )
+    with patch.object(gate, "_run", return_value=(0, "1.2.3", "")):
+        result = gate.check_r2_version_consistency(tmp_path)
+    assert result["status"] == "fail"
+    assert "0.1.0" in result["detail"]
+
+
+def test_r2_version_consistency_passes_when_consistent(tmp_path: Path) -> None:
+    (tmp_path / "pyproject.toml").write_text(
+        '[project]\nname = "autodev-ai"\nversion = "0.1.0a1"\nrequires-python = ">=3.10"\n',
+        encoding="utf-8",
+    )
+    with patch.object(gate, "_run", return_value=(0, "0.1.0a1\n", "")):
+        result = gate.check_r2_version_consistency(tmp_path)
+    assert result["status"] == "pass"
+
+
+# ---------------------------------------------------------------------------
+# Test 14: r2_license_file_present
+# ---------------------------------------------------------------------------
+
+
+def test_r2_license_file_present_fails_when_missing(tmp_path: Path) -> None:
+    result = gate.check_r2_license_file_present(tmp_path)
+    assert result["status"] == "fail"
+    assert "LICENSE" in result["detail"]
+
+
+def test_r2_license_file_present_passes_with_mit(tmp_path: Path) -> None:
+    (tmp_path / "LICENSE").write_text(
+        "MIT License\n\nPermission is hereby granted...\n", encoding="utf-8"
+    )
+    result = gate.check_r2_license_file_present(tmp_path)
+    assert result["status"] == "pass"
+
+
+# ---------------------------------------------------------------------------
+# Test 15: r2_license_metadata_match
+# ---------------------------------------------------------------------------
+
+
+def test_r2_license_metadata_match_fails_when_missing(tmp_path: Path) -> None:
+    (tmp_path / "pyproject.toml").write_text(
+        '[project]\nname = "autodev-ai"\nversion = "0.1.0"\nrequires-python = ">=3.10"\n',
+        encoding="utf-8",
+    )
+    result = gate.check_r2_license_metadata_match(tmp_path)
+    assert result["status"] == "fail"
+    assert "license" in result["detail"].lower()
+
+
+def test_r2_license_metadata_match_passes_with_field(tmp_path: Path) -> None:
+    (tmp_path / "pyproject.toml").write_text(
+        '[project]\nname = "autodev-ai"\nversion = "0.1.0"\n'
+        'requires-python = ">=3.10"\nlicense = {text = "MIT"}\n',
+        encoding="utf-8",
+    )
+    result = gate.check_r2_license_metadata_match(tmp_path)
+    assert result["status"] == "pass"
+
+
+# ---------------------------------------------------------------------------
+# Test 16: r2_wheel_version_works
+# ---------------------------------------------------------------------------
+
+
+def test_r2_wheel_version_works_skips_when_no_dist(tmp_path: Path) -> None:
+    result = gate.check_r2_wheel_version_works(tmp_path)
+    assert result["status"] == "skip"
+    assert "no built wheel" in result["detail"]
+
+
+def test_r2_wheel_version_works_passes_when_matching(tmp_path: Path) -> None:
+    dist = tmp_path / "dist"
+    dist.mkdir()
+    (dist / "autodev_ai-0.1.0a1-py3-none-any.whl").write_text("", encoding="utf-8")
+    (tmp_path / "pyproject.toml").write_text(
+        '[project]\nname = "autodev-ai"\nversion = "0.1.0a1"\nrequires-python = ">=3.10"\n',
+        encoding="utf-8",
+    )
+    result = gate.check_r2_wheel_version_works(tmp_path)
+    assert result["status"] == "pass"
+
+
+# ---------------------------------------------------------------------------
+# Test 17: r2_a2a_http_ssrf_hardened
+# ---------------------------------------------------------------------------
+
+
+def test_r2_a2a_http_ssrf_hardened_fails_when_no_error_class(tmp_path: Path) -> None:
+    transport_dir = tmp_path / "src" / "autodev" / "adapters" / "a2a" / "transports"
+    transport_dir.mkdir(parents=True)
+    (transport_dir / "http.py").write_text("# no ssrf\n", encoding="utf-8")
+    test_dir = tmp_path / "tests" / "unit"
+    test_dir.mkdir(parents=True)
+    ssrf_funcs = "\n".join(f"def test_ssrf_{i}(): pass" for i in range(12))
+    (test_dir / "test_a2a_http_ssrf_hardening.py").write_text(ssrf_funcs, encoding="utf-8")
+    result = gate.check_r2_a2a_http_ssrf_hardened(tmp_path)
+    assert result["status"] == "fail"
+    assert "A2AHttpSSRFError" in result["detail"]
+
+
+def test_r2_a2a_http_ssrf_hardened_fails_when_too_few_tests(tmp_path: Path) -> None:
+    transport_dir = tmp_path / "src" / "autodev" / "adapters" / "a2a" / "transports"
+    transport_dir.mkdir(parents=True)
+    (transport_dir / "http.py").write_text(
+        "class A2AHttpSSRFError(ValueError): pass\n", encoding="utf-8"
+    )
+    test_dir = tmp_path / "tests" / "unit"
+    test_dir.mkdir(parents=True)
+    # Only 3 test functions — below threshold of 10
+    (test_dir / "test_a2a_http_ssrf_hardening.py").write_text(
+        "def test_a(): pass\ndef test_b(): pass\ndef test_c(): pass\n", encoding="utf-8"
+    )
+    result = gate.check_r2_a2a_http_ssrf_hardened(tmp_path)
+    assert result["status"] == "fail"
+    assert "3" in result["detail"]
+
+
+# ---------------------------------------------------------------------------
+# Test 18: r2_milestone_flow_tested
+# ---------------------------------------------------------------------------
+
+
+def test_r2_milestone_flow_tested_fails_when_missing(tmp_path: Path) -> None:
+    result = gate.check_r2_milestone_flow_tested(tmp_path)
+    assert result["status"] == "fail"
+
+
+def test_r2_milestone_flow_tested_passes_with_4_tests(tmp_path: Path) -> None:
+    unit = tmp_path / "tests" / "unit"
+    unit.mkdir(parents=True)
+    funcs = "\n".join(f"def test_m_{i}(): pass" for i in range(4))
+    (unit / "test_milestone_flow.py").write_text(funcs + "\n", encoding="utf-8")
+    result = gate.check_r2_milestone_flow_tested(tmp_path)
+    assert result["status"] == "pass"
+
+
+# ---------------------------------------------------------------------------
+# Test 19: r2_release_flow_tested
+# ---------------------------------------------------------------------------
+
+
+def test_r2_release_flow_tested_fails_when_missing(tmp_path: Path) -> None:
+    result = gate.check_r2_release_flow_tested(tmp_path)
+    assert result["status"] == "fail"
+
+
+def test_r2_release_flow_tested_passes_with_4_tests(tmp_path: Path) -> None:
+    unit = tmp_path / "tests" / "unit"
+    unit.mkdir(parents=True)
+    funcs = "\n".join(f"def test_r_{i}(): pass" for i in range(4))
+    (unit / "test_release_flow.py").write_text(funcs + "\n", encoding="utf-8")
+    result = gate.check_r2_release_flow_tested(tmp_path)
+    assert result["status"] == "pass"
+
+
+# ---------------------------------------------------------------------------
+# Test 20: r2_release_workflow_pytest_gate
+# ---------------------------------------------------------------------------
+
+
+def test_r2_release_workflow_pytest_gate_fails_when_no_pytest(tmp_path: Path) -> None:
+    gh_dir = tmp_path / ".github" / "workflows"
+    gh_dir.mkdir(parents=True)
+    (gh_dir / "release.yml").write_text(
+        "jobs:\n  publish:\n    needs: test\n    runs-on: ubuntu-latest\n",
+        encoding="utf-8",
+    )
+    result = gate.check_r2_release_workflow_pytest_gate(tmp_path)
+    assert result["status"] == "fail"
+    assert "pytest" in result["detail"]
+
+
+def test_r2_release_workflow_pytest_gate_passes(tmp_path: Path) -> None:
+    gh_dir = tmp_path / ".github" / "workflows"
+    gh_dir.mkdir(parents=True)
+    (gh_dir / "release.yml").write_text(
+        "jobs:\n  test:\n    steps:\n      - run: pytest\n"
+        "  publish:\n    needs: test\n",
+        encoding="utf-8",
+    )
+    result = gate.check_r2_release_workflow_pytest_gate(tmp_path)
+    assert result["status"] == "pass"
+
+
+# ---------------------------------------------------------------------------
+# Test 21: r2_homebrew_metadata_owner_fixed
+# ---------------------------------------------------------------------------
+
+
+def test_r2_homebrew_metadata_owner_fixed_fails_on_old_owner(tmp_path: Path) -> None:
+    formula_dir = tmp_path / "packaging" / "homebrew" / "Formula"
+    formula_dir.mkdir(parents=True)
+    (formula_dir / "autodev-ai.rb").write_text(
+        'url "https://github.com/macworkers/autodev-ai/releases/..."\n', encoding="utf-8"
+    )
+    result = gate.check_r2_homebrew_metadata_owner_fixed(tmp_path)
+    assert result["status"] == "fail"
+    assert "macworkers" in result["detail"]
+
+
+def test_r2_homebrew_metadata_owner_fixed_passes_with_correct_owner(tmp_path: Path) -> None:
+    formula_dir = tmp_path / "packaging" / "homebrew" / "Formula"
+    formula_dir.mkdir(parents=True)
+    (formula_dir / "autodev-ai.rb").write_text(
+        'url "https://github.com/merchloubna70-dot/autodev-ai/releases/..."\n', encoding="utf-8"
+    )
+    result = gate.check_r2_homebrew_metadata_owner_fixed(tmp_path)
+    assert result["status"] == "pass"
+
+
+# ---------------------------------------------------------------------------
+# Test 22: r2_homebrew_sha256_not_stale
+# ---------------------------------------------------------------------------
+
+
+def test_r2_homebrew_sha256_not_stale_fails_on_stale_hash(tmp_path: Path) -> None:
+    formula_dir = tmp_path / "packaging" / "homebrew" / "Formula"
+    formula_dir.mkdir(parents=True)
+    (formula_dir / "autodev-ai.rb").write_text(
+        'sha256 "744375fb0bad1234567890abcdef"\n', encoding="utf-8"
+    )
+    result = gate.check_r2_homebrew_sha256_not_stale(tmp_path)
+    assert result["status"] == "fail"
+    assert "744375fb" in result["detail"]
+
+
+def test_r2_homebrew_sha256_not_stale_passes_with_fresh_hash(tmp_path: Path) -> None:
+    formula_dir = tmp_path / "packaging" / "homebrew" / "Formula"
+    formula_dir.mkdir(parents=True)
+    (formula_dir / "autodev-ai.rb").write_text(
+        'sha256 "abcdef1234567890goodhash"\n', encoding="utf-8"
+    )
+    result = gate.check_r2_homebrew_sha256_not_stale(tmp_path)
+    assert result["status"] == "pass"
+
+
+# ---------------------------------------------------------------------------
+# Test 23: r2_macos_info_plist_version_match
+# ---------------------------------------------------------------------------
+
+
+def test_r2_macos_info_plist_version_match_skips_when_missing(tmp_path: Path) -> None:
+    result = gate.check_r2_macos_info_plist_version_match(tmp_path)
+    assert result["status"] == "skip"
+
+
+def test_r2_macos_info_plist_version_match_passes_with_correct_version(tmp_path: Path) -> None:
+    plist_dir = tmp_path / "packaging" / "desktop" / "autodev-ai.app" / "Contents"
+    plist_dir.mkdir(parents=True)
+    import plistlib
+    plist_data = {"CFBundleShortVersionString": "0.1.0a1"}
+    with open(plist_dir / "Info.plist", "wb") as fh:
+        plistlib.dump(plist_data, fh)
+    result = gate.check_r2_macos_info_plist_version_match(tmp_path)
+    assert result["status"] == "pass"
+
+
+# ---------------------------------------------------------------------------
+# Test 24: r2_remaining_blockers_recorded
+# ---------------------------------------------------------------------------
+
+
+def test_r2_remaining_blockers_recorded_fails_when_missing(tmp_path: Path) -> None:
+    result = gate.check_r2_remaining_blockers_recorded(tmp_path)
+    assert result["status"] == "fail"
+
+
+def test_r2_remaining_blockers_recorded_passes_with_hardening_json(tmp_path: Path) -> None:
+    val_dir = tmp_path / "docs" / "validation"
+    val_dir.mkdir(parents=True)
+    (val_dir / "autodev_release_hardening_round.json").write_text(
+        '{"release_blockers": [{"id": "B-01"}]}', encoding="utf-8"
+    )
+    result = gate.check_r2_remaining_blockers_recorded(tmp_path)
+    assert result["status"] == "pass"
+    assert "1 items" in result["detail"]
