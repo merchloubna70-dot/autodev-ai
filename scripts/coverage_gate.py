@@ -84,10 +84,6 @@ EXEMPTIONS: dict[str, str] = {
     "src/autodev/tasks/security_tasks.py": "crewai optional dep not installed",
     "src/autodev/tasks/test_tasks.py": "crewai optional dep not installed",
     "src/autodev/tasks/verification_tasks.py": "crewai optional dep not installed",
-    "src/autodev/tui/dashboard.py": "textual optional dep not installed",
-    "src/autodev/tui/widgets.py": "textual optional dep not installed",
-    # release_readiness_gate.py is a thin shim — covered by tests of scripts/release_readiness_gate.py
-    "src/autodev/release_readiness_gate.py": "thin shim — script-form gate has its own 37 tests",
 }
 
 
