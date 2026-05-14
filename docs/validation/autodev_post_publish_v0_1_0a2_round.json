@@ -1,0 +1,123 @@
+{
+  "round": "autodev_post_publish_v0_1_0a2_round",
+  "status": "completed",
+  "overall_result": "pass_with_limitations",
+  "scope": "Path B — PYPI_API_TOKEN set; full PyPI + GitHub Release + Docker + Homebrew sha256 backfill",
+  "audit_date": "2026-05-14",
+  "auditor": "Opus autonomous (user authorized via 你自动处理，我授权给你)",
+  "tag": "v0.1.0a2",
+  "tag_commit": "d674d08",
+  "supersedes": "v0.1.0a1 (Path A; GitHub Release + Docker only)",
+  "pypi": {
+    "status": "published_verified",
+    "version": "0.1.0a2",
+    "project_url": "https://pypi.org/project/autodev-ai/0.1.0a2/",
+    "json_metadata_url": "https://pypi.org/pypi/autodev-ai/0.1.0a2/json",
+    "license": "MIT",
+    "install_smoke": "pass — fresh py3.12 venv + pip install --pre autodev-ai==0.1.0a2 + autodev --version → autodev-ai 0.1.0a2",
+    "artifacts": [
+      {
+        "type": "bdist_wheel",
+        "filename": "autodev_ai-0.1.0a2-py3-none-any.whl",
+        "url": "https://files.pythonhosted.org/packages/7a/14/855ac0890d696276bde36fea2eeea798e12201c6e77347c8af1a20e9a1c9/autodev_ai-0.1.0a2-py3-none-any.whl",
+        "sha256": "4b01686898c225200024a0a0758265792bcbb1b36f3cdc4690b3be3e21778600"
+      },
+      {
+        "type": "sdist",
+        "filename": "autodev_ai-0.1.0a2.tar.gz",
+        "url": "https://files.pythonhosted.org/packages/b0/4a/27e49dba9ee2846bff62ee934ee61896a820ba0f4031cc6c4df576b66d9b/autodev_ai-0.1.0a2.tar.gz",
+        "sha256": "246f5f60810c1832051f9219fd141fe63ce87bbafec0125412d18cea326c291d"
+      }
+    ]
+  },
+  "github_release": {
+    "status": "published_verified",
+    "tag": "v0.1.0a2",
+    "url": "https://github.com/merchloubna70-dot/autodev-ai/releases/tag/v0.1.0a2",
+    "publisher": "github-actions[bot] via release.yml softprops/action-gh-release@v2",
+    "twine_upload_succeeded": true,
+    "twine_upload_evidence": "release.yml conclusion=success; pip index versions autodev-ai --pre returns 0.1.0a2"
+  },
+  "docker": {
+    "status": "published_verified_with_limitations",
+    "registry": "ghcr.io/merchloubna70-dot/autodev-ai",
+    "tags_pushed": ["v0.1.0a2", "latest"],
+    "digest_v0_1_0a2": "sha256:6d0fb4a571229a30f2fda318a7d5679f0eec4b5dd80cd737dab114847cf65413",
+    "anon_pull_works": true,
+    "smoke_test": "pass — docker run --rm ghcr.io/.../autodev-ai:v0.1.0a2 --version → autodev-ai 0.1.0a2",
+    "multi_arch": "amd64 + arm64 (same docker-publish.yml workflow as v0.1.0a1 which was already verified multi-arch)",
+    "limitations": [
+      "v-prefix tag only (v0.1.0a2); no naked-version tag because PEP 440 alpha isn't valid semver",
+      "No SLSA provenance, no SBOM, no signed image (R5 scope)",
+      ":latest is rolling"
+    ]
+  },
+  "homebrew": {
+    "status": "formula_ready_tap_publish_pending",
+    "sha256_backfilled": true,
+    "formula_changes": {
+      "url_before": "https://github.com/merchloubna70-dot/autodev-ai/releases/download/v0.1.0-alpha/autodev_ai-0.1.0.tar.gz",
+      "url_after": "https://files.pythonhosted.org/packages/b0/4a/27e49dba9ee2846bff62ee934ee61896a820ba0f4031cc6c4df576b66d9b/autodev_ai-0.1.0a2.tar.gz",
+      "sha256_before": "TODO_PUBLISH_SHA256 (placeholder)",
+      "sha256_after": "246f5f60810c1832051f9219fd141fe63ce87bbafec0125412d18cea326c291d",
+      "version_before": "0.1.0a1 (never actually published)",
+      "version_after": "0.1.0a2"
+    },
+    "sha256_verification": "Downloaded the PyPI sdist locally and computed shasum -a 256 → matches the value embedded in the formula and the value returned by https://pypi.org/pypi/autodev-ai/0.1.0a2/json",
+    "brew_audit_status": "blocked_by_brew_5_path_audit_disabled",
+    "brew_audit_detail": "Homebrew 5.x rejects `brew audit [path]` — formulas must be tapped first. Formula syntax was loaded (brew installed rubocop deps before erroring), URL/sha256 verified independently to match PyPI metadata.",
+    "tap_publish_remaining": "User decision: publish to a public homebrew-tap repo (e.g. merchloubna70-dot/homebrew-autodev) so users can `brew tap merchloubna70-dot/autodev && brew install autodev-ai`. Out of scope for this round."
+  },
+  "release_readiness": {
+    "internal_dogfood": "allowed",
+    "public_beta": "allowed",
+    "pypi_0_1_0a2": "published_verified",
+    "docker_v0_1_0a2": "published_verified_with_limitations",
+    "homebrew_formula": "ready_tap_publish_pending",
+    "production_enterprise_use": "blocked"
+  },
+  "release_readiness_changes_vs_v0_1_0a1": {
+    "pypi": "intentionally_skipped_path_a → published_verified  (UPGRADE)",
+    "docker": "published_verified_with_limitations (same; new tag v0.1.0a2 added)",
+    "homebrew": "blocked_with_reason → formula_ready_tap_publish_pending  (UPGRADE)",
+    "production_enterprise": "blocked → blocked (R5 scope)"
+  },
+  "verified": [
+    "v0.1.0a2 git tag exists local + remote",
+    "release.yml workflow on v0.1.0a2 → success (test + publish jobs both green)",
+    "docker-publish.yml on v0.1.0a2 → success",
+    "PyPI autodev-ai 0.1.0a2 listed on https://pypi.org/project/autodev-ai/0.1.0a2/",
+    "PyPI sdist sha256 246f5f60810c1832051f9219fd141fe63ce87bbafec0125412d18cea326c291d (verified by independent download)",
+    "PyPI wheel sha256 4b01686898c225200024a0a0758265792bcbb1b36f3cdc4690b3be3e21778600",
+    "pip install --pre autodev-ai==0.1.0a2 in fresh py3.12 venv → autodev --version = autodev-ai 0.1.0a2",
+    "docker pull anonymous ghcr.io/.../autodev-ai:v0.1.0a2 → autodev-ai 0.1.0a2",
+    "Homebrew formula url + sha256 + version backfilled to point at canonical PyPI sdist",
+    "BLOCKED comment removed from formula header; replaced with 'Backfilled 2026-05-14 from real PyPI 0.1.0a2 publish' note"
+  ],
+  "remaining_risks": [
+    "Homebrew tap publish (creating merchloubna70-dot/homebrew-autodev tap repo) is out of scope; users still cannot `brew tap ... && brew install autodev-ai` until tap repo exists",
+    "9 transitive resource sha256s in formula (pydantic, typer, rich, PyYAML, jinja2, click, mdurl, markdown-it-py, pygments, shellingham) were not re-verified this round; they were captured at original formula draft; may be stale vs current PyPI versions. R5: re-run `poet -f autodev-ai` or `homebrew-pypi-poet` to regenerate.",
+    "Docker `:latest` is rolling; users wanting immutable refs should pin to v0.1.0a2 digest",
+    "No SLSA provenance, no SBOM, no signed Docker image (R5 enterprise scope)",
+    "9 transitive python resources in the Homebrew formula carry their own sha256s that haven't been re-verified against current PyPI metadata"
+  ],
+  "validation_commands_run": [
+    "pip index versions autodev-ai --pre  →  0.1.0a2",
+    "curl https://pypi.org/pypi/autodev-ai/0.1.0a2/json  →  metadata + URLs + sha256",
+    "curl <sdist URL> | shasum -a 256  →  matches formula sha256",
+    "python3.12 -m venv /tmp/pypi-real-smoke; pip install --pre autodev-ai==0.1.0a2; autodev --version  →  autodev-ai 0.1.0a2",
+    "docker logout ghcr.io && docker pull ghcr.io/merchloubna70-dot/autodev-ai:v0.1.0a2  →  Status: Downloaded",
+    "docker run --rm ghcr.io/.../autodev-ai:v0.1.0a2 --version  →  autodev-ai 0.1.0a2",
+    "gh release view v0.1.0a2 --repo merchloubna70-dot/autodev-ai",
+    "gh api repos/.../actions/secrets --jq '.secrets[].name'  →  PYPI_API_TOKEN (name only; value invisible)"
+  ],
+  "evidence_files": [
+    "docs/validation/autodev_post_publish_v0_1_0a2_round.{md,json}  (this aggregator)",
+    "docs/validation/autodev_post_publish_verification_round.{md,json}  (v0.1.0a1 historical Path A)",
+    "https://pypi.org/project/autodev-ai/0.1.0a2/",
+    "https://github.com/merchloubna70-dot/autodev-ai/releases/tag/v0.1.0a2",
+    "ghcr.io/merchloubna70-dot/autodev-ai:v0.1.0a2 (sha256:6d0fb4a571...)",
+    "packaging/homebrew/Formula/autodev-ai.rb  (sha256 backfilled)"
+  ],
+  "next_round_recommendation": "R5 Enterprise Hardening + Homebrew Tap Publish: (1) create merchloubna70-dot/homebrew-autodev tap repo + push formula; (2) re-verify 10 transitive resource sha256s in formula via homebrew-pypi-poet; (3) SLSA provenance via cosign on Docker; (4) SBOM in release.yml (syft/cyclonedx); (5) per-caller MCP auth (bearer/OAuth); (6) Apple Developer ID signing for macOS .app; (7) Coverage lift on 5 aspirational modules (cli 46% / mcp_server 72-76% / replay 61% / a2a/http 78% / worker_isolator 89%)."
+}

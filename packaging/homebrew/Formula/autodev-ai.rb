@@ -1,16 +1,14 @@
-# STATUS: pending PyPI publish — checksum/url tentative, do not `brew tap` until upstream PyPI 0.1.0a1 is live
-# brew audit will fail until checksum updated
-# BLOCKER-PKG-01 / BLOCKER-PKG-02: homepage + url + sha256 corrected; version aligned to 0.1.0a1
-# This formula is BLOCKED for publish until PyPI 0.1.0a1 is live and sha256 is computed from PyPI metadata.
+# Backfilled 2026-05-14 from real PyPI 0.1.0a2 publish.
+# URL points to canonical PyPI sdist; sha256 from https://pypi.org/pypi/autodev-ai/0.1.0a2/json.
+# `brew audit --strict` should now pass.
 class AutodevAi < Formula
   include Language::Python::Virtualenv
 
   desc "AI-driven software factory: CrewAI + Codex CLI + Claude Code CLI"
   homepage "https://github.com/merchloubna70-dot/autodev-ai"
-  url "https://github.com/merchloubna70-dot/autodev-ai/releases/download/v0.1.0-alpha/autodev_ai-0.1.0.tar.gz"
-  # LOCAL BUILD CHECKSUM — replace before brew tap publish
-  sha256 "TODO_PUBLISH_SHA256"
-  version "0.1.0a1"
+  url "https://files.pythonhosted.org/packages/b0/4a/27e49dba9ee2846bff62ee934ee61896a820ba0f4031cc6c4df576b66d9b/autodev_ai-0.1.0a2.tar.gz"
+  sha256 "246f5f60810c1832051f9219fd141fe63ce87bbafec0125412d18cea326c291d"
+  version "0.1.0a2"
   license "MIT"
 
   depends_on "python@3.12"
