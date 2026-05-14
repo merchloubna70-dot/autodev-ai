@@ -3,6 +3,14 @@
 Supported stages (in order):
   classification, product, architecture, planning,
   implementation, quality, verification, release
+
+Additionally, ``resume_from_milestone`` provides the public API for the
+``deliver-project --resume-from`` flag.  Accepted milestone / stage tags:
+
+  input, product, architecture, planning, execution,
+  quality, verification, delivery
+
+These map onto the canonical artifact sub-directories of a run.
 """
 from __future__ import annotations
 
@@ -48,6 +56,42 @@ STAGES = [
     "verification",
     "release",
 ]
+
+# ---------------------------------------------------------------------------
+# Milestone / stage tag definitions for --resume-from
+# ---------------------------------------------------------------------------
+
+# Valid milestone tags accepted by ``--resume-from``.  These correspond to the
+# canonical artifact sub-directories written by ProjectDeliveryFlow.
+MILESTONE_TAGS = [
+    "input",
+    "product",
+    "architecture",
+    "planning",
+    "execution",
+    "quality",
+    "verification",
+    "delivery",
+]
+
+# Mapping: milestone-tag  →  equivalent coarse STAGE name used by ReplayFlow.
+# "input"     corresponds to the classification stage.
+# "execution" corresponds to the implementation stage.
+# "delivery"  corresponds to the release stage.
+_MILESTONE_TO_STAGE: dict[str, str] = {
+    "input": "classification",
+    "product": "product",
+    "architecture": "architecture",
+    "planning": "planning",
+    "execution": "implementation",
+    "quality": "quality",
+    "verification": "verification",
+    "delivery": "release",
+}
+
+# Artifact subdirectories that belong *after* each milestone tag (in order).
+# Used to prune artifacts that are downstream of the resume point.
+_MILESTONE_ORDER = MILESTONE_TAGS  # already ordered earliest → latest
 
 # Subdirectories whose contents are snapshotted before a coarse-grained replay.
 # We snapshot all canonical stage dirs so any overwritten artifact is preserved.
@@ -319,3 +363,91 @@ class ReplayFlow:
 
         run.save()
         return run
+
+
+# ---------------------------------------------------------------------------
+# Public helper: resume_from_milestone
+# ---------------------------------------------------------------------------
+
+
+def _clear_artifacts_after(run_root: Path, from_milestone: str) -> list[str]:
+    """Delete artifact subdirectories that come *after* ``from_milestone``.
+
+    Returns a list of directory paths that were removed (for logging).
+    """
+    from_idx = _MILESTONE_ORDER.index(from_milestone)
+    later_tags = _MILESTONE_ORDER[from_idx + 1:]
+    removed: list[str] = []
+    for tag in later_tags:
+        target = run_root / tag
+        if target.exists():
+            shutil.rmtree(target)
+            removed.append(str(target))
+    return removed
+
+
+def resume_from_milestone(
+    run_id: str,
+    repo_path: str,
+    milestone: str,
+    config: FactoryConfig | None = None,
+) -> RunState:
+    """Resume a pipeline run from a specific milestone / stage tag.
+
+    Parameters
+    ----------
+    run_id:
+        The run to resume.
+    repo_path:
+        Root of the repository (same value as used when the run was created).
+    milestone:
+        One of the valid milestone tags: ``input``, ``product``,
+        ``architecture``, ``planning``, ``execution``, ``quality``,
+        ``verification``, ``delivery``.  The run must have an artifact
+        directory for this tag (i.e. it must exist on disk).
+    config:
+        Optional :class:`~autodev.config.FactoryConfig`.  Defaults to a
+        fresh instance when not provided.
+
+    Returns
+    -------
+    RunState
+        The updated :class:`~autodev.state.RunState` after the resumed replay.
+
+    Raises
+    ------
+    ValueError
+        When ``milestone`` is not a recognised tag or the corresponding
+        artifact directory does not exist in the run tree.
+    """
+    if milestone not in MILESTONE_TAGS:
+        raise ValueError(
+            f"Unknown milestone tag {milestone!r}. "
+            f"Valid tags: {MILESTONE_TAGS}"
+        )
+
+    run = RunState.load(repo_path, run_id)
+
+    # Validate that the milestone's artifact directory exists on disk.
+    artifact_dir = run.root / milestone
+    if not artifact_dir.exists():
+        raise ValueError(
+            f"Milestone artifact directory not found for tag {milestone!r}: "
+            f"{artifact_dir}. "
+            f"The run may not have reached this stage yet."
+        )
+
+    # Clear downstream artifacts so the replay starts fresh from this point.
+    removed = _clear_artifacts_after(run.root, milestone)
+    if removed:
+        print(  # noqa: T201
+            f"[resume-from] cleared {len(removed)} downstream artifact dir(s): "
+            + ", ".join(removed)
+        )
+
+    # Map the milestone tag to the equivalent replay stage.
+    from_stage = _MILESTONE_TO_STAGE[milestone]
+
+    # Delegate to the existing ReplayFlow.
+    flow = ReplayFlow(config=config)
+    return flow.replay(run_id=run_id, repo_path=repo_path, from_stage=from_stage)

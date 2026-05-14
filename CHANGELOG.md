@@ -12,7 +12,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `autodev-x replay --diff <run-id-A> --diff <run-id-B>`: structured diff of two pipeline run artifact trees; emits per-stage JSON-Patch ops, highlights executor-choice changes, and compares token/cost when `execution/router_metrics.json` is present in both runs. New `src/autodev/flows/replay_diff_flow.py`.
 - `autodev-x doctor` subcommand: prints a diagnostic status table covering Python version, PATH binaries (codex, claude), env vars, writable cwd, and git.
 - `scripts/verify_release.sh`: wraps `cosign verify` + optional `slsa-verifier` for supply-chain provenance checks on a tagged release.
-
+- `autodev-x ci-run` subcommand: auto-detects GitHub Actions / GitLab CI / Drone via env vars, runs `deliver-project` with sensible CI defaults, writes a Markdown summary to `$GITHUB_STEP_SUMMARY` on GitHub Actions, and emits correct exit codes for the CI runner.
+- `deliver-project --resume-from <milestone>` flag: resumes an existing run from a named artifact stage (`input|product|architecture|planning|execution|quality|verification|delivery`), clearing downstream artifacts before replaying — useful for incremental pipelines and partial re-runs.
 ## [0.1.0a6] — 2026-05-14 (Pre-Release, Docker fix for rename)
 
 ### Fixed

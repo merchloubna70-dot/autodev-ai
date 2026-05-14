@@ -186,8 +186,70 @@ def deliver_project(
     tag: bool = typer.Option(False, "--tag"),
     scale: str | None = typer.Option(None, "--scale", help="Project scale: bug-fix|small|medium|enterprise (auto-inferred if not given)"),
     style: str = typer.Option("prd", "--style", help="Document style: prd (default) or prfaq (Amazon Working Backwards)"),
+    resume_from: str | None = typer.Option(
+        None,
+        "--resume-from",
+        help=(
+            "Resume an existing run from a specific milestone stage rather than starting fresh. "
+            "Provide a run-id via --run-id combined with this flag. "
+            "Valid tags: input|product|architecture|planning|execution|quality|verification|delivery"
+        ),
+    ),
+    run_id: str | None = typer.Option(
+        None,
+        "--run-id",
+        help="Existing run ID to resume (required when --resume-from is given).",
+    ),
 ) -> None:
     """Run the Project Delivery Mode flow (brief / PRD / empty repo)."""
+    # ------------------------------------------------------------------
+    # --resume-from path: validate and delegate to resume_from_milestone
+    # ------------------------------------------------------------------
+    if resume_from is not None:
+        from .flows.replay_flow import MILESTONE_TAGS, resume_from_milestone
+
+        if resume_from not in MILESTONE_TAGS:
+            typer.echo(
+                f"[autodev] unknown milestone tag '{resume_from}'; "
+                f"valid: {' | '.join(MILESTONE_TAGS)}",
+                err=True,
+            )
+            raise typer.Exit(1) from None
+
+        if not run_id:
+            typer.echo(
+                "[autodev] --resume-from requires --run-id to identify the existing run.",
+                err=True,
+            )
+            raise typer.Exit(1) from None
+
+        pmode = _parse_mode(mode)
+        cfg = _build_config(
+            mode=pmode, allow_mock=_parse_tri_bool(allow_mock_executor), fail_fast=fail_fast,
+            continue_and_report=continue_and_report, concurrency=concurrency,
+            codex_timeout=codex_timeout, claude_timeout=claude_timeout,
+        )
+        try:
+            run = resume_from_milestone(
+                run_id=run_id,
+                repo_path=repo_path,
+                milestone=resume_from,
+                config=cfg,
+            )
+        except (ValueError, FileNotFoundError) as exc:
+            typer.echo(f"[autodev] resume-from failed: {exc}", err=True)
+            raise typer.Exit(2) from None
+
+        typer.echo(
+            f"run_id={run.run_id} resumed_from={resume_from} "
+            f"mode={run.state.mode.value if run.state.mode else 'N/A'} "
+            f"mock={run.state.mock_execution_used}"
+        )
+        return
+
+    # ------------------------------------------------------------------
+    # Normal (fresh) delivery path
+    # ------------------------------------------------------------------
     pmode = _parse_mode(mode)
     langs = _parse_languages(languages)
     backend = _parse_backend(executor)
@@ -1168,6 +1230,49 @@ def doctor_cmd() -> None:
 
     results = run_checks()
     print_table(results)
+
+
+# ---------------------------------------------------------------------------
+# ci-run
+# ---------------------------------------------------------------------------
+
+
+@app.command("ci-run")
+def ci_run_cmd(
+    repo_path: str = typer.Option(".", "--repo-path", help="Repository path to deliver (default: current directory)."),
+    mode: str = typer.Option("dry-run", "--mode", help="Pipeline mode: dry-run (default) or apply."),
+    allow_mock_executor: str | None = typer.Option(
+        None,
+        "--allow-mock-executor",
+        help=(
+            "Override mock executor flag (true/false). "
+            "When omitted, mock is used unless an API key is present in the environment."
+        ),
+    ),
+) -> None:
+    """Run deliver-project with sensible CI defaults.
+
+    Auto-detects the CI system via environment variables:
+
+    \b
+    - GitHub Actions: GITHUB_ACTIONS=true
+    - GitLab CI:      GITLAB_CI=true
+    - Drone CI:       DRONE=true
+
+    When run outside a recognised CI environment, prints a helpful message
+    and exits with code 1.
+
+    On GitHub Actions, writes a Markdown summary to $GITHUB_STEP_SUMMARY.
+    """
+    from .ci import run_ci
+
+    exit_code = run_ci(
+        repo_path=repo_path,
+        mode=mode,
+        allow_mock_executor=allow_mock_executor,
+    )
+    if exit_code != 0:
+        raise typer.Exit(code=exit_code)
 
 
 if __name__ == "__main__":  # pragma: no cover
