@@ -5,6 +5,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- SBOM workflow (CycloneDX + SPDX on tag push) — `.github/workflows/sbom.yml`
+  generates `sbom.cdx.json` (CycloneDX 1.5) and `sbom.spdx.json` (SPDX 2.3)
+  via `anchore/sbom-action` and attaches both as GitHub Release assets on every
+  `v*.*.*` tag push and on manual dispatch. Supports EU CRA / US EO 14028
+  compliance toolchains (grype, trivy, syft).
+
 ---
 
 ## [0.1.0a3] — 2026-05-14 (Pre-Release)
