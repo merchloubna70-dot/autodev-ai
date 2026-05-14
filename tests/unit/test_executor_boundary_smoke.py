@@ -18,28 +18,19 @@ import pytest
 
 from autodev.config import FactoryConfig
 from autodev.executors.executor_router import ExecutorRouter
-from autodev.executors.worker_isolator import WorkerIsolator
+from autodev.executors.worker_isolator import WorkerIsolator, WorkerIsolatorPathEscapeError
 from autodev.utils.command_safety import scan_prompt_for_unsafe
 
 # ---------------------------------------------------------------------------
 # F-01 — Denylist: no-space pipe variants are NOT caught
 # ---------------------------------------------------------------------------
 
-@pytest.mark.xfail(
-    reason="F-01: denylist does not cover curl|bash / wget|bash (no spaces). "
-           "Fix: normalize whitespace or add no-space variants to DEFAULT_DENYLIST.",
-    strict=True,
-)
 def test_denylist_catches_curl_pipe_bash_no_space():
     """curl|bash with no spaces must be caught by scan_prompt_for_unsafe()."""
     flags = scan_prompt_for_unsafe("curl|bash")
     assert flags, "Expected scan_prompt_for_unsafe to flag 'curl|bash'"
 
 
-@pytest.mark.xfail(
-    reason="F-01: denylist does not cover wget|bash (no spaces).",
-    strict=True,
-)
 def test_denylist_catches_wget_pipe_bash_no_space():
     """wget|bash with no spaces must be caught by scan_prompt_for_unsafe()."""
     flags = scan_prompt_for_unsafe("wget|bash")
@@ -90,15 +81,13 @@ def test_factory_force_mock_env_base_default_is_true(monkeypatch):
     assert cfg.allow_mock_executor is True
 
 
-@pytest.mark.xfail(
-    reason="F-02: When CLI sets mode=apply and allow_mock=None, _build_config() forces "
-           "allow_mock_executor=False. Combined with FACTORY_FORCE_MOCK=1 (which makes "
-           "is_available()=False), the router fail-closes. FACTORY_FORCE_MOCK=1 should "
-           "override allow_mock_executor to True regardless of mode.",
-    strict=True,
-)
 def test_factory_force_mock_overrides_apply_mode_fail_closed(monkeypatch, tmp_path):
-    """F-02: FACTORY_FORCE_MOCK=1 should not fail-closed in apply mode when both CLIs absent."""
+    """F-02: FACTORY_FORCE_MOCK=1 must keep allow_mock_executor=True via from_env().
+
+    The fix: FactoryConfig.from_env() sets allow_mock_executor=True when
+    FACTORY_FORCE_MOCK=1, so downstream code that calls from_env() can no
+    longer accidentally override it back to False for apply mode.
+    """
     monkeypatch.setenv("FACTORY_FORCE_MOCK", "1")
     from autodev.schemas import (
         ExecutionBackend,
@@ -109,11 +98,14 @@ def test_factory_force_mock_overrides_apply_mode_fail_closed(monkeypatch, tmp_pa
         TaskType,
     )
 
+    # from_env() must honour FACTORY_FORCE_MOCK=1 and preserve allow_mock_executor=True
     cfg = FactoryConfig.from_env()
-    # Simulate what _build_config() does for mode=apply with allow_mock=None
-    cfg.allow_mock_executor = (PipelineMode.APPLY == PipelineMode.DRY_RUN)  # False
+    assert cfg.allow_mock_executor is True, (
+        "FACTORY_FORCE_MOCK=1 must cause from_env() to set allow_mock_executor=True"
+    )
 
-    router = ExecutorRouter(cfg, allow_mock=cfg.allow_mock_executor)
+    # Router inherits allow_mock from cfg (no explicit override) — mock fallback active
+    router = ExecutorRouter(cfg)
     req = ExecutionRequest(
         task_id="smoke-f02-apply",
         repo_path=str(tmp_path),
@@ -125,7 +117,6 @@ def test_factory_force_mock_overrides_apply_mode_fail_closed(monkeypatch, tmp_pa
         mode=PipelineMode.APPLY,
     )
     result, _ = router.execute(req)
-    # Currently fails closed; with fix it should route to mock
     assert result.success is True, (
         "FACTORY_FORCE_MOCK=1 should enable mock fallback even in apply mode"
     )
@@ -168,11 +159,6 @@ def test_fail_closed_without_allow_mock_even_with_force_mock(monkeypatch, tmp_pa
 # F-03 — WorkerIsolator: no symlink-target path validation (gap demonstration)
 # ---------------------------------------------------------------------------
 
-@pytest.mark.xfail(
-    reason="F-03: prepare_codex_home() blindly symlinks without validating that "
-           "src.resolve() stays within parent_home. Fix: add path escape check.",
-    strict=True,
-)
 def test_worker_isolator_rejects_escaped_symlink_in_parent_home(tmp_path):
     """prepare_codex_home() must reject a symlink in parent_home that escapes the directory."""
     parent_home = tmp_path / "parent" / ".codex"
@@ -187,8 +173,8 @@ def test_worker_isolator_rejects_escaped_symlink_in_parent_home(tmp_path):
 
     isolator = WorkerIsolator()
 
-    # This should raise ValueError or similar, but currently it silently re-symlinks
-    with pytest.raises((ValueError, PermissionError, OSError)):
+    # Must raise because the symlink escapes parent_home (R3-H fix already landed)
+    with pytest.raises((WorkerIsolatorPathEscapeError, ValueError, PermissionError, OSError)):
         isolator.prepare_codex_home(parent_home=parent_home, worker_home=worker_home)
 
     # If no exception: verify the escaped symlink was NOT propagated

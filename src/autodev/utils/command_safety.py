@@ -5,6 +5,7 @@ Fail-closed: anything not on the allowlist is rejected.
 """
 from __future__ import annotations
 
+import re
 import shlex
 from dataclasses import dataclass
 
@@ -94,8 +95,17 @@ def is_command_allowed(command: str, allowlist: tuple[str, ...] = DEFAULT_ALLOWL
     return SafetyVerdict(False, None, "command not on allowlist (fail-closed)")
 
 
+def _normalize_pipe_whitespace(text: str) -> str:
+    """Collapse optional whitespace around pipe operators to a single space.
+
+    Converts ``curl|bash``, ``curl|bash``, ``curl  |  bash`` all to
+    ``curl | bash`` so denylist rules written with spaces match all variants.
+    """
+    return re.sub(r"\s*\|\s*", " | ", text)
+
+
 def is_command_denied(command: str, denylist: tuple[str, ...] = DEFAULT_DENYLIST) -> SafetyVerdict:
-    cmd = command
+    cmd = _normalize_pipe_whitespace(command)
     for rule in denylist:
         if rule in cmd:
             return SafetyVerdict(False, rule, f"matched denylist pattern: {rule!r}")
@@ -104,8 +114,9 @@ def is_command_denied(command: str, denylist: tuple[str, ...] = DEFAULT_DENYLIST
 
 def scan_prompt_for_unsafe(prompt: str) -> list[str]:
     """Detect unsafe shell patterns embedded in a generation prompt."""
+    normalized = _normalize_pipe_whitespace(prompt)
     flags: list[str] = []
     for rule in DEFAULT_DENYLIST:
-        if rule in prompt:
+        if rule in normalized:
             flags.append(f"prompt contains forbidden pattern: {rule!r}")
     return flags

@@ -1,0 +1,87 @@
+{
+  "agent": "Cov-J",
+  "phase": "Coverage Round Phase 2 — P1 Flow Failure Tests",
+  "date": "2026-05-14",
+  "status": "PASS",
+  "new_test_files": 4,
+  "new_tests_total": 18,
+  "regressions": 0,
+  "baseline": {
+    "passed": 1160,
+    "xfailed": 10,
+    "failed": 0
+  },
+  "with_new_tests": {
+    "passed": 1178,
+    "xfailed": 10,
+    "failed": 0
+  },
+  "files": [
+    {
+      "path": "tests/unit/test_investigation_flow.py",
+      "flow": "src/autodev/flows/investigation_flow.py",
+      "tests": 4,
+      "passed": 4,
+      "xfailed": 0,
+      "failed": 0,
+      "real_signatures_found": [
+        "InvestigationFlow() -> self.agent: InvestigatorAgent",
+        "InvestigationFlow.run(inp: InvestigationInput) -> CaseFile",
+        "InvestigationInput(input_token: str, repo_path: str = '.')",
+        "CaseFile.file_path set after agent writes <repo_path>/.dev-factory/investigations/<slug>.md"
+      ]
+    },
+    {
+      "path": "tests/unit/test_brownfield_doc_flow.py",
+      "flow": "src/autodev/flows/brownfield_doc_flow.py",
+      "tests": 4,
+      "passed": 4,
+      "xfailed": 0,
+      "failed": 0,
+      "real_signatures_found": [
+        "BrownfieldDocFlow() -> self._agent: DocumentProjectAgent",
+        "BrownfieldDocFlow.run(inp: BrownfieldDocInput) -> BrownfieldDoc",
+        "BrownfieldDocInput(repo_path: str = '.', languages: list[Language] = [])",
+        "languages=None is invalid (pydantic list field); languages=[] is the correct empty form",
+        "Always produces 7 sections under <repo_path>/.autodev/brownfield-docs/"
+      ]
+    },
+    {
+      "path": "tests/unit/test_project_context_flow.py",
+      "flow": "src/autodev/flows/project_context_flow.py",
+      "tests": 4,
+      "passed": 4,
+      "xfailed": 0,
+      "failed": 0,
+      "real_signatures_found": [
+        "ProjectContextFlow() -> self._agent: ContextGeneratorAgent",
+        "ProjectContextFlow.run(inputs: ProjectContextInput) -> ProjectContext",
+        "ProjectContextInput(repo_path: str = '.', product_name: str = '', brief_path: str | None = None)",
+        "OSError/PermissionError on brief_path silenced; brief=None passed to agent",
+        "Outputs: <repo_path>/_autodev/project-context.md and .json"
+      ]
+    },
+    {
+      "path": "tests/unit/test_flow_executor_failure_surface.py",
+      "flows_covered": [
+        "src/autodev/flows/issue_pipeline_flow.py",
+        "src/autodev/flows/bug_fix_flow.py",
+        "src/autodev/flows/multi_patch_flow.py",
+        "src/autodev/flows/project_delivery_flow.py",
+        "src/autodev/flows/replay_flow.py"
+      ],
+      "tests": 6,
+      "passed": 6,
+      "xfailed": 0,
+      "failed": 0,
+      "real_signatures_found": [
+        "ImplementationResult(milestone_id, task_results, success, mock_used, failed_task_ids)",
+        "IssuePipelineFlow: tolerates success=False in impl result, continues to reporting",
+        "BugFixFlow: concurrency=1, fail_fast=True hardcoded; single ImplementationResult",
+        "MultiPatchFlow: all-fail still writes vote.json; winner may be None or first by order",
+        "ProjectDeliveryFlow: tracks any_milestone_failed locally; fail_fast+continue_and_report branching",
+        "ReplayFlow.replay() raises ValueError for unknown stage AND planning without architecture"
+      ]
+    }
+  ]
+}

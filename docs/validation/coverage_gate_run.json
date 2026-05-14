@@ -1,0 +1,124 @@
+{
+  "gate": "coverage_threshold",
+  "ran_at": "2026-05-14T05:45:16Z",
+  "thresholds": {
+    "overall": 80.0,
+    "release": 85.0,
+    "security": 90.0
+  },
+  "overall_pct": 80.4,
+  "checks": [
+    {
+      "name": "overall",
+      "status": "pass",
+      "actual": 80.4,
+      "threshold": 80.0,
+      "detail": "line+branch combined coverage from coverage.json totals"
+    },
+    {
+      "name": "release::src/autodev/cli.py",
+      "status": "fail",
+      "actual": 46.2,
+      "threshold": 85.0,
+      "detail": ""
+    },
+    {
+      "name": "release::src/autodev/release_readiness_gate.py",
+      "status": "exempt",
+      "actual": null,
+      "threshold": 85.0,
+      "detail": "thin shim \u2014 script-form gate has its own 37 tests"
+    },
+    {
+      "name": "release::src/autodev/mcp_server/server.py",
+      "status": "fail",
+      "actual": 72.0,
+      "threshold": 85.0,
+      "detail": ""
+    },
+    {
+      "name": "release::src/autodev/mcp_server/tools.py",
+      "status": "fail",
+      "actual": 75.7,
+      "threshold": 85.0,
+      "detail": ""
+    },
+    {
+      "name": "release::src/autodev/adapters/a2a/server.py",
+      "status": "pass",
+      "actual": 85.4,
+      "threshold": 85.0,
+      "detail": ""
+    },
+    {
+      "name": "release::src/autodev/adapters/a2a/client.py",
+      "status": "pass",
+      "actual": 97.1,
+      "threshold": 85.0,
+      "detail": ""
+    },
+    {
+      "name": "release::src/autodev/executors/executor_router.py",
+      "status": "pass",
+      "actual": 87.3,
+      "threshold": 85.0,
+      "detail": ""
+    },
+    {
+      "name": "release::src/autodev/executors/worker_isolator.py",
+      "status": "pass",
+      "actual": 89.2,
+      "threshold": 85.0,
+      "detail": ""
+    },
+    {
+      "name": "release::src/autodev/flows/release_flow.py",
+      "status": "pass",
+      "actual": 100.0,
+      "threshold": 85.0,
+      "detail": ""
+    },
+    {
+      "name": "release::src/autodev/flows/milestone_flow.py",
+      "status": "pass",
+      "actual": 100.0,
+      "threshold": 85.0,
+      "detail": ""
+    },
+    {
+      "name": "release::src/autodev/flows/replay_flow.py",
+      "status": "fail",
+      "actual": 61.2,
+      "threshold": 85.0,
+      "detail": ""
+    },
+    {
+      "name": "security::src/autodev/adapters/a2a/transports/http.py",
+      "status": "fail",
+      "actual": 78.0,
+      "threshold": 90.0,
+      "detail": ""
+    },
+    {
+      "name": "security::src/autodev/executors/worker_isolator.py",
+      "status": "fail",
+      "actual": 89.2,
+      "threshold": 90.0,
+      "detail": ""
+    },
+    {
+      "name": "security::src/autodev/utils/command_safety.py",
+      "status": "pass",
+      "actual": 93.7,
+      "threshold": 90.0,
+      "detail": ""
+    }
+  ],
+  "summary": {
+    "pass": 8,
+    "fail": 6,
+    "exempt": 1,
+    "missing": 0
+  },
+  "strict_pass": false
+}

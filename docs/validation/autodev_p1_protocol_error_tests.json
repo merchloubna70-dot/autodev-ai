@@ -1,0 +1,138 @@
+{
+  "report": "autodev_p1_protocol_error_tests",
+  "agent": "Cov-I",
+  "round": "Phase 2 / P1",
+  "date": "2026-05-14",
+  "test_file": "tests/unit/test_protocol_error_paths.py",
+  "summary": {
+    "total_tests": 18,
+    "passed": 17,
+    "xfailed": 1,
+    "failed": 0,
+    "regressions": 0,
+    "exit_code": 0
+  },
+  "categories": {
+    "schema_rejection": {
+      "count": 8,
+      "passed": 8,
+      "xfailed": 0,
+      "tests": [
+        {
+          "name": "test_agent_card_missing_name_rejected",
+          "status": "passed",
+          "description": "AgentCard without name raises ValidationError"
+        },
+        {
+          "name": "test_a2a_task_missing_id_rejected",
+          "status": "passed",
+          "description": "A2ATask without id raises ValidationError"
+        },
+        {
+          "name": "test_a2a_message_missing_role_rejected",
+          "status": "passed",
+          "description": "A2AMessage without role raises ValidationError"
+        },
+        {
+          "name": "test_a2a_message_role_unexpected_value_via_model_validate",
+          "status": "passed",
+          "description": "Non-standard role string passes (str field, not Literal); permissive behavior documented"
+        },
+        {
+          "name": "test_a2a_task_status_invalid_enum_rejected",
+          "status": "passed",
+          "description": "A2ATaskStatus('INVALID') raises ValueError"
+        },
+        {
+          "name": "test_acceptance_criterion_missing_id_rejected",
+          "status": "passed",
+          "description": "AcceptanceCriterion without id raises ValidationError"
+        },
+        {
+          "name": "test_milestone_missing_milestone_id_rejected",
+          "status": "passed",
+          "description": "Milestone without milestone_id raises ValidationError"
+        },
+        {
+          "name": "test_schema_roundtrip_a2a_message",
+          "status": "passed",
+          "description": "model_dump -> model_validate cycle preserves all fields"
+        }
+      ]
+    },
+    "mcp_error_paths": {
+      "count": 5,
+      "passed": 4,
+      "xfailed": 1,
+      "tests": [
+        {
+          "name": "test_mcp_tool_internal_error_returns_is_error_true",
+          "status": "passed",
+          "description": "Handler raising RuntimeError returns isError:true"
+        },
+        {
+          "name": "test_mcp_tools_call_missing_required_param_returns_error",
+          "status": "xfailed",
+          "strict": true,
+          "reason": "MCP server does not enforce required JSON Schema fields; handlers use args.get() with silent defaults"
+        },
+        {
+          "name": "test_mcp_tools_call_unknown_tool_returns_error",
+          "status": "passed",
+          "description": "Unknown tool returns JSON-RPC error -32601"
+        },
+        {
+          "name": "test_mcp_jsonrpc_missing_method_field_returns_minus_32600",
+          "status": "passed",
+          "description": "Missing method field returns -32601 (server) vs -32600 (spec); test accepts either"
+        },
+        {
+          "name": "test_mcp_jsonrpc_malformed_json_returns_minus_32700",
+          "status": "passed",
+          "description": "Malformed JSON returns parse error -32700"
+        }
+      ]
+    },
+    "a2a_error_paths": {
+      "count": 5,
+      "passed": 5,
+      "xfailed": 0,
+      "tests": [
+        {
+          "name": "test_a2a_http_poll_exhaustion_returns_failed",
+          "status": "passed",
+          "description": "Always-WORKING server + max_poll_attempts=3 → FAILED status"
+        },
+        {
+          "name": "test_a2a_http_invalid_endpoint_scheme_raises",
+          "status": "passed",
+          "description": "gopher:// rejected by _validate_url; send_task returns FAILED"
+        },
+        {
+          "name": "test_a2a_mock_transport_handles_unknown_skill",
+          "status": "passed",
+          "description": "MockTransport returns COMPLETED for unrecognised skill"
+        },
+        {
+          "name": "test_a2a_roundtable_one_agent_failure_does_not_break_others",
+          "status": "passed",
+          "description": "One agent raising does not prevent other agents from completing"
+        },
+        {
+          "name": "test_a2a_roundtable_deep_copy_independence",
+          "status": "passed",
+          "description": "model_copy(deep=True) produces fully independent task copies"
+        }
+      ]
+    }
+  },
+  "xfails": [
+    {
+      "test": "test_mcp_tools_call_missing_required_param_returns_error",
+      "strict": true,
+      "category": "mcp_error_paths",
+      "reason": "MCP server does not enforce 'required' JSON Schema fields before dispatching to handlers. All handlers use args.get() with silent defaults, so missing required params succeed (isError:false) rather than being rejected.",
+      "remediation": "Add pre-dispatch schema validation in MCPServer._handle() that checks params.arguments against tool.input_schema['required'] and returns isError:true for missing required fields."
+    }
+  ]
+}

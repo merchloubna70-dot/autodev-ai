@@ -1,0 +1,581 @@
+{
+  "round": "release_critical_coverage",
+  "produced_by": "Cov-B",
+  "produced_at": "2026-05-14T00:00:00+00:00",
+  "modules": [
+    {
+      "file": "src/autodev/cli.py",
+      "current_coverage_pct": 46.2,
+      "stmts": 466,
+      "missing": 242,
+      "existing_test_files": [
+        "tests/integration/test_cli_design_ux.py",
+        "tests/integration/test_cli_document_project.py",
+        "tests/integration/test_cli_generate_context.py",
+        "tests/integration/test_cli_help.py",
+        "tests/integration/test_cli_investigate.py",
+        "tests/integration/test_cli_next.py",
+        "tests/integration/test_cli_review_command.py",
+        "tests/integration/test_cli_roundtable.py",
+        "tests/integration/test_cli_sprint.py",
+        "tests/unit/test_cli_help_surface.py"
+      ],
+      "missing_happy_paths": [
+        "run-issue with --issue-file end-to-end in mock mode",
+        "deliver-project with --prd and --style prfaq in dry-run mode",
+        "execute-milestone happy path with mock executor",
+        "replay with --from-step fine-grained resume",
+        "plan-tasks when milestone_plan exists in RunState"
+      ],
+      "missing_failure_paths": [
+        "deliver-project with unknown --scale exits with code 1",
+        "_parse_backend with unmapped value falls back to AUTO",
+        "_parse_tri_bool with edge inputs (None, empty, garbage)",
+        "run-issue when issue_file read fails (FileNotFoundError)",
+        "_version_callback raises Exit when called"
+      ],
+      "missing_security_paths": [
+        "CLI rejects --mode apply when FACTORY_FORCE_MOCK=1 is active",
+        "CLI does not expose secrets via --version or --help output"
+      ],
+      "missing_integration_paths": [
+        "Full CLI roundtrip: classify-input -> create-prd -> plan-project in one session",
+        "deliver-project with commit=True, push=True against a temp git repo"
+      ],
+      "release_risk": "high",
+      "recommended_tests": [
+        "test_cli_deliver_project_unknown_scale_exits_1",
+        "test_cli_run_issue_with_issue_file_mock_mode",
+        "test_cli_replay_from_step_resumes_correct_step",
+        "test_cli_parse_tri_bool_all_edge_cases",
+        "test_cli_create_prd_with_prfaq_style_writes_correct_sections",
+        "test_cli_version_callback_prints_and_exits"
+      ],
+      "p_priority": "P0"
+    },
+    {
+      "file": "src/autodev/release_readiness_gate.py",
+      "current_coverage_pct": 0.0,
+      "stmts": 13,
+      "missing": 13,
+      "existing_test_files": [
+        "tests/unit/test_release_readiness_gate.py"
+      ],
+      "missing_happy_paths": [
+        "_load() successfully imports and calls scripts/release_readiness_gate.py:main()",
+        "Module runs via __main__ guard when invoked as python -m"
+      ],
+      "missing_failure_paths": [
+        "_load() raises ImportError when _SCRIPT path does not exist",
+        "_load() raises ImportError when spec.loader is None (corrupted spec)"
+      ],
+      "missing_security_paths": [
+        "Shim does not allow arbitrary script path injection via environment variable"
+      ],
+      "missing_integration_paths": [
+        "End-to-end: python -m autodev.release_readiness_gate --repo-path . executes all checks"
+      ],
+      "release_risk": "high",
+      "recommended_tests": [
+        "test_release_readiness_gate_shim_load_calls_main",
+        "test_release_readiness_gate_shim_missing_script_raises_import_error",
+        "test_release_readiness_gate_shim_none_loader_raises_import_error",
+        "test_release_readiness_gate_module_main_guard_invokes_load"
+      ],
+      "p_priority": "P0"
+    },
+    {
+      "file": "scripts/release_readiness_gate.py",
+      "current_coverage_pct": null,
+      "stmts": null,
+      "missing": null,
+      "coverage_note": "NOT FOUND in coverage.json — script is excluded from coverage collection. This is a critical gap: 36 release-gate check functions have zero coverage instrumentation.",
+      "existing_test_files": [
+        "tests/unit/test_release_readiness_gate.py"
+      ],
+      "missing_happy_paths": [
+        "main() with --strict runs all 36 checks and writes JSON report",
+        "main() with --include-r2 runs only R2 checks",
+        "main() with --include-r3 runs only R3 checks",
+        "main() with --strict-rc skips Homebrew-publish-only failures",
+        "check_mock_executor_works passes when FACTORY_FORCE_MOCK=1 returns exit 0"
+      ],
+      "missing_failure_paths": [
+        "main() exits with code 1 when --strict and at least one check fails",
+        "check_package_metadata_valid fails when pyproject.toml missing required keys",
+        "_run() returns -1 on TimeoutExpired, -2 on FileNotFoundError",
+        "check_a2a_smoke_path_exists fails when fewer than 5 a2a test files exist"
+      ],
+      "missing_security_paths": [
+        "check_no_dangerous_release_claims detects forbidden phrases in README",
+        "check_r2_a2a_http_ssrf_hardened fails when A2AHttpSSRFError missing"
+      ],
+      "missing_integration_paths": [
+        "build_report() aggregates pass/fail/skip counts correctly across all 36 checks",
+        "report JSON is written to the output path and is valid JSON"
+      ],
+      "release_risk": "high",
+      "recommended_tests": [
+        "test_rrgate_main_strict_exits_1_on_failure",
+        "test_rrgate_build_report_counts_all_36_checks",
+        "test_rrgate_check_no_dangerous_release_claims_detects_forbidden",
+        "test_rrgate_mock_executor_works_with_force_mock_env",
+        "test_rrgate_run_timeout_returns_minus_one",
+        "test_rrgate_strict_rc_excludes_homebrew_publish_checks"
+      ],
+      "p_priority": "P0"
+    },
+    {
+      "file": "src/autodev/mcp_server/server.py",
+      "current_coverage_pct": 64.5,
+      "stmts": 79,
+      "missing": 24,
+      "existing_test_files": [
+        "tests/unit/test_mcp_server.py",
+        "tests/integration/test_mcp_server_smoke.py",
+        "tests/integration/test_mcp_serve_cli.py"
+      ],
+      "missing_happy_paths": [
+        "MCPServer.run() processes multiple sequential requests from stdin",
+        "_handle() tools/call with valid tool name returns isError=False"
+      ],
+      "missing_failure_paths": [
+        "_handle() returns parse error on invalid JSON input",
+        "_handle() tools/call for unknown tool name returns -32601 error",
+        "_handle() for unknown method returns -32601 error"
+      ],
+      "missing_security_paths": [
+        "MCPServer does not leak internal state in error messages",
+        "tools/call exception is returned as isError=True, not propagated"
+      ],
+      "missing_integration_paths": [
+        "MCPServer full stdio roundtrip: initialize -> tools/list -> tools/call -> ping"
+      ],
+      "release_risk": "medium",
+      "recommended_tests": [
+        "test_mcp_server_handle_invalid_json_returns_parse_error",
+        "test_mcp_server_tools_call_unknown_tool_returns_method_not_found",
+        "test_mcp_server_tools_call_exception_returns_is_error_true",
+        "test_mcp_server_handle_notification_returns_none",
+        "test_mcp_server_run_processes_sequential_requests",
+        "test_mcp_server_unknown_method_returns_32601"
+      ],
+      "p_priority": "P1"
+    },
+    {
+      "file": "src/autodev/mcp_server/tools.py",
+      "current_coverage_pct": 75.7,
+      "stmts": 192,
+      "missing": 47,
+      "existing_test_files": [
+        "tests/unit/test_mcp_server.py",
+        "tests/integration/test_mcp_apply_guardrail.py"
+      ],
+      "missing_happy_paths": [
+        "Tool handler for run_issue in dry-run mode returns expected JSON",
+        "Tool handler for deliver_project with prfaq style returns structured output"
+      ],
+      "missing_failure_paths": [
+        "Tool handler returns error dict when allow_apply=False and apply mode requested",
+        "Tool handler returns error when AUTODEV_MCP_ALLOW_APPLY env not set"
+      ],
+      "missing_security_paths": [
+        "Dual-gate: AUTODEV_MCP_ALLOW_APPLY=0 blocks apply even if allow_apply param=True",
+        "Tool handler rejects prompt injection in tool arguments"
+      ],
+      "missing_integration_paths": [
+        "get_tools() returns non-empty list and all tools have valid inputSchema"
+      ],
+      "release_risk": "medium",
+      "recommended_tests": [
+        "test_mcp_tools_apply_guardrail_blocks_when_env_not_set",
+        "test_mcp_tools_apply_guardrail_blocks_when_allow_apply_false",
+        "test_mcp_tools_get_tools_returns_valid_schemas",
+        "test_mcp_tools_run_issue_handler_dry_run_returns_json",
+        "test_mcp_tools_dual_gate_env_false_blocks_even_if_param_true"
+      ],
+      "p_priority": "P1"
+    },
+    {
+      "file": "src/autodev/adapters/a2a/transports/http.py",
+      "current_coverage_pct": 76.8,
+      "stmts": 248,
+      "missing": 56,
+      "existing_test_files": [
+        "tests/unit/test_a2a_http_transport.py",
+        "tests/unit/test_a2a_http_ssrf_hardening.py",
+        "tests/unit/test_a2a_dns_rebinding_hardening.py",
+        "tests/integration/test_a2a_http_roundtrip.py"
+      ],
+      "missing_happy_paths": [
+        "HTTP transport sends task with valid URL and receives result",
+        "_resolve_and_pin_host resolves and pins a non-loopback address"
+      ],
+      "missing_failure_paths": [
+        "A2AHttpSSRFError raised for link-local IP (169.254.x.x)",
+        "A2AHttpSSRFError raised for private CIDR (10.0.0.0/8)",
+        "TimeoutError propagates correctly on connection timeout"
+      ],
+      "missing_security_paths": [
+        "DNS rebinding TOCTOU: second resolution to private IP is rejected after pin",
+        "A2AHttpSSRFError raised for IPv6 loopback (::1)"
+      ],
+      "missing_integration_paths": [
+        "Full roundtrip with PinnedHTTPSHandler through a local test TLS server"
+      ],
+      "release_risk": "medium",
+      "recommended_tests": [
+        "test_a2a_http_ssrf_link_local_raises_ssrf_error",
+        "test_a2a_http_dns_rebinding_second_resolve_private_rejected",
+        "test_a2a_http_transport_send_task_happy_path",
+        "test_a2a_http_ssrf_ipv6_loopback_rejected",
+        "test_a2a_http_timeout_propagates_correctly"
+      ],
+      "p_priority": "P1"
+    },
+    {
+      "file": "src/autodev/adapters/a2a/server.py",
+      "current_coverage_pct": 85.4,
+      "stmts": 170,
+      "missing": 22,
+      "existing_test_files": [
+        "tests/unit/test_a2a_server.py",
+        "tests/integration/test_a2a_server_cli.py",
+        "tests/integration/test_a2a_roundtable_e2e.py"
+      ],
+      "missing_happy_paths": [
+        "Server handles concurrent task submissions without race conditions"
+      ],
+      "missing_failure_paths": [
+        "Server returns error response when executor raises exception",
+        "Server handles malformed JSON-RPC task request gracefully",
+        "Server correctly reports task not found for unknown task_id"
+      ],
+      "missing_security_paths": [
+        "Server rejects requests from non-allowlisted hosts"
+      ],
+      "missing_integration_paths": [
+        "Server lifecycle: start -> accept task -> return result -> shutdown"
+      ],
+      "release_risk": "medium",
+      "recommended_tests": [
+        "test_a2a_server_executor_exception_returns_error_response",
+        "test_a2a_server_malformed_jsonrpc_request_returns_parse_error",
+        "test_a2a_server_unknown_task_id_returns_not_found",
+        "test_a2a_server_concurrent_tasks_no_race_condition"
+      ],
+      "p_priority": "P1"
+    },
+    {
+      "file": "src/autodev/adapters/a2a/client.py",
+      "current_coverage_pct": 97.1,
+      "stmts": 27,
+      "missing": 0,
+      "existing_test_files": [
+        "tests/integration/test_a2a_http_roundtrip.py"
+      ],
+      "missing_happy_paths": [],
+      "missing_failure_paths": [],
+      "missing_security_paths": [],
+      "missing_integration_paths": [],
+      "release_risk": "low",
+      "recommended_tests": [],
+      "p_priority": "P2"
+    },
+    {
+      "file": "src/autodev/executors/executor_router.py",
+      "current_coverage_pct": 87.3,
+      "stmts": 135,
+      "missing": 11,
+      "existing_test_files": [
+        "tests/unit/test_executor_router.py",
+        "tests/unit/test_budget_routing.py",
+        "tests/unit/test_router_metrics.py",
+        "tests/integration/test_executor_router_fail_closed.py"
+      ],
+      "missing_happy_paths": [
+        "Router selects Claude executor for CRITICAL risk task when Claude is available"
+      ],
+      "missing_failure_paths": [
+        "Router fail-closes (raises RuntimeError) when both real executors unavailable and allow_mock=False",
+        "Router fallback path: Codex unavailable, falls back to Claude successfully"
+      ],
+      "missing_security_paths": [
+        "Router never selects a mock when allow_mock=False regardless of executor availability"
+      ],
+      "missing_integration_paths": [
+        "Router records accurate metrics across 10+ heterogeneous task dispatches"
+      ],
+      "release_risk": "medium",
+      "recommended_tests": [
+        "test_executor_router_fail_closed_when_no_real_executor_and_no_mock",
+        "test_executor_router_selects_claude_for_critical_risk",
+        "test_executor_router_fallback_codex_to_claude_when_codex_unavailable",
+        "test_executor_router_mock_never_selected_when_allow_mock_false"
+      ],
+      "p_priority": "P1"
+    },
+    {
+      "file": "src/autodev/executors/codex_cli_executor.py",
+      "current_coverage_pct": 82.6,
+      "stmts": null,
+      "missing": null,
+      "coverage_note": "Mapped to codex_cli_executor.py (requested as codex_executor.py). 82.6% coverage; missing lines include timeout, FileNotFoundError, and sandbox violation paths.",
+      "existing_test_files": [
+        "tests/unit/test_codex_dry_run_sandbox.py",
+        "tests/unit/test_codex_inner_steps.py",
+        "tests/unit/test_executor_boundary_smoke.py"
+      ],
+      "missing_happy_paths": [
+        "Codex executor executes task in apply mode and returns changed_files"
+      ],
+      "missing_failure_paths": [
+        "Codex executor returns exit_code=127 when codex binary not found (FileNotFoundError)",
+        "Codex executor returns exit_code=124 on TimeoutExpired",
+        "Codex executor rejects prompt with unsafe pattern via scan_prompt_for_unsafe"
+      ],
+      "missing_security_paths": [
+        "Codex executor sandbox: disallowed_patterns in config block execution",
+        "Codex executor sets CODEX_SANDBOX_NETWORK=off in child process environment"
+      ],
+      "missing_integration_paths": [
+        "Codex executor full roundtrip against a tmp repo with a simple Python fix task"
+      ],
+      "release_risk": "medium",
+      "recommended_tests": [
+        "test_codex_executor_file_not_found_returns_127",
+        "test_codex_executor_timeout_returns_124",
+        "test_codex_executor_unsafe_prompt_rejected",
+        "test_codex_executor_disallowed_pattern_blocks_execution",
+        "test_codex_executor_apply_mode_returns_changed_files"
+      ],
+      "p_priority": "P1"
+    },
+    {
+      "file": "src/autodev/executors/claude_executor.py",
+      "current_coverage_pct": 59.5,
+      "stmts": null,
+      "missing": null,
+      "coverage_note": "Mapped to claude_code_executor.py (requested as claude_executor.py). 59.5% coverage; missing ~40% including FileNotFoundError, TimeoutExpired, and all _parse_claude_inner_steps non-happy branches.",
+      "existing_test_files": [
+        "tests/unit/test_executor_boundary_smoke.py",
+        "tests/unit/test_mocks_and_executors.py"
+      ],
+      "missing_happy_paths": [
+        "ClaudeCodeExecutor.execute() succeeds when claude binary present and returns inner_steps",
+        "_parse_claude_inner_steps correctly parses stream-json JSONL with multiple event types"
+      ],
+      "missing_failure_paths": [
+        "ClaudeCodeExecutor.execute() returns exit_code=127 on FileNotFoundError",
+        "ClaudeCodeExecutor.execute() returns exit_code=124 on TimeoutExpired",
+        "_parse_claude_inner_steps returns [] on non-JSONL output (legacy claude)",
+        "ClaudeCodeExecutor rejects prompt with safety_flags (unsafe pattern)"
+      ],
+      "missing_security_paths": [
+        "FACTORY_FORCE_MOCK=1 causes is_available() to return False",
+        "disallowed_patterns in config block claude execution before subprocess spawn",
+        "_prompt_violates_config flags known dangerous patterns"
+      ],
+      "missing_integration_paths": [
+        "ClaudeCodeExecutor full subprocess mock roundtrip with patched shutil.which"
+      ],
+      "release_risk": "high",
+      "recommended_tests": [
+        "test_claude_executor_file_not_found_returns_127",
+        "test_claude_executor_timeout_returns_124",
+        "test_claude_executor_factory_force_mock_disables_availability",
+        "test_claude_executor_unsafe_prompt_rejected_before_subprocess",
+        "test_parse_claude_inner_steps_returns_empty_on_non_jsonl",
+        "test_claude_executor_disallowed_pattern_in_config_blocks_execution"
+      ],
+      "p_priority": "P0"
+    },
+    {
+      "file": "src/autodev/executors/mock_executor.py",
+      "current_coverage_pct": 78.4,
+      "stmts": null,
+      "missing": null,
+      "coverage_note": "Mapped to mock_claude_executor.py (requested as mock_executor.py). mock_codex_executor.py is at 100%. mock_claude_executor.py is at 78.4% with missing lines in error/edge paths.",
+      "existing_test_files": [
+        "tests/unit/test_mocks_and_executors.py",
+        "tests/unit/test_mock_fixture_config.py"
+      ],
+      "missing_happy_paths": [
+        "MockClaudeExecutor.execute() returns success with expected mock output"
+      ],
+      "missing_failure_paths": [
+        "MockClaudeExecutor returns is_mock=True in all returned ExecutionResults",
+        "MockClaudeExecutor handles empty prompt without crashing"
+      ],
+      "missing_security_paths": [],
+      "missing_integration_paths": [
+        "Mock executor round-trips through ExecutorRouter when allow_mock=True"
+      ],
+      "release_risk": "low",
+      "recommended_tests": [
+        "test_mock_claude_executor_returns_is_mock_true",
+        "test_mock_claude_executor_empty_prompt_succeeds",
+        "test_mock_claude_executor_roundtrip_via_router"
+      ],
+      "p_priority": "P2"
+    },
+    {
+      "file": "src/autodev/executors/worker_isolator.py",
+      "current_coverage_pct": 89.2,
+      "stmts": 112,
+      "missing": 9,
+      "existing_test_files": [
+        "tests/unit/test_worker_isolator.py",
+        "tests/unit/test_worker_isolator_symlink_hardening.py"
+      ],
+      "missing_happy_paths": [
+        "WorkerIsolator.run() executes task in isolated temp directory"
+      ],
+      "missing_failure_paths": [
+        "WorkerIsolatorPathEscapeError raised when symlink points outside sandbox boundary",
+        "WorkerIsolator cleanup handles OSError during teardown gracefully"
+      ],
+      "missing_security_paths": [
+        "Symlink traversal attack: nested symlinks do not escape sandbox",
+        "Absolute symlink target outside sandbox raises WorkerIsolatorPathEscapeError"
+      ],
+      "missing_integration_paths": [
+        "WorkerIsolator full lifecycle: setup -> execute -> cleanup with real filesystem"
+      ],
+      "release_risk": "medium",
+      "recommended_tests": [
+        "test_worker_isolator_nested_symlink_escape_raises_error",
+        "test_worker_isolator_absolute_symlink_outside_sandbox_raises_error",
+        "test_worker_isolator_cleanup_handles_oserror",
+        "test_worker_isolator_run_executes_in_temp_dir"
+      ],
+      "p_priority": "P1"
+    },
+    {
+      "file": "src/autodev/utils/command_safety.py",
+      "current_coverage_pct": 93.2,
+      "stmts": 39,
+      "missing": 2,
+      "existing_test_files": [
+        "tests/unit/test_shell_safety.py"
+      ],
+      "missing_happy_paths": [],
+      "missing_failure_paths": [
+        "scan_prompt_for_unsafe returns flags for edge-case dangerous pattern combinations"
+      ],
+      "missing_security_paths": [
+        "scan_prompt_for_unsafe catches curl|bash pipeline injection variant"
+      ],
+      "missing_integration_paths": [],
+      "release_risk": "low",
+      "recommended_tests": [
+        "test_command_safety_curl_bash_pipeline_flagged",
+        "test_command_safety_edge_case_pattern_combination_flagged"
+      ],
+      "p_priority": "P2"
+    },
+    {
+      "file": "src/autodev/utils/config_stack.py",
+      "current_coverage_pct": 82.9,
+      "stmts": 102,
+      "missing": 15,
+      "existing_test_files": [
+        "tests/unit/test_config_stack.py"
+      ],
+      "missing_happy_paths": [
+        "ConfigStack loads all 4 layers and merges in correct priority order"
+      ],
+      "missing_failure_paths": [
+        "ConfigStack returns empty dict when tomllib is unavailable (tomllib=None branch)",
+        "ConfigStack gracefully handles malformed TOML in user config file",
+        "_deep_merge handles array-of-tables merge with duplicate code keys"
+      ],
+      "missing_security_paths": [],
+      "missing_integration_paths": [
+        "Full 4-layer merge: global < project < user-override < runtime, verified key by key"
+      ],
+      "release_risk": "medium",
+      "recommended_tests": [
+        "test_config_stack_tomllib_none_returns_empty",
+        "test_config_stack_malformed_toml_handled_gracefully",
+        "test_config_stack_deep_merge_aot_duplicate_code_key",
+        "test_config_stack_four_layer_priority_order"
+      ],
+      "p_priority": "P1"
+    },
+    {
+      "file": "src/autodev/flows/release_flow.py",
+      "current_coverage_pct": 100.0,
+      "stmts": 16,
+      "missing": 0,
+      "existing_test_files": [
+        "tests/unit/test_release_flow.py"
+      ],
+      "missing_happy_paths": [],
+      "missing_failure_paths": [],
+      "missing_security_paths": [],
+      "missing_integration_paths": [],
+      "release_risk": "low",
+      "recommended_tests": [],
+      "p_priority": "P2"
+    },
+    {
+      "file": "src/autodev/flows/milestone_flow.py",
+      "current_coverage_pct": 100.0,
+      "stmts": 32,
+      "missing": 0,
+      "existing_test_files": [
+        "tests/unit/test_milestone_flow.py"
+      ],
+      "missing_happy_paths": [],
+      "missing_failure_paths": [],
+      "missing_security_paths": [],
+      "missing_integration_paths": [],
+      "release_risk": "low",
+      "recommended_tests": [],
+      "p_priority": "P2"
+    },
+    {
+      "file": "src/autodev/flows/replay_flow.py",
+      "current_coverage_pct": 57.0,
+      "stmts": 133,
+      "missing": 58,
+      "existing_test_files": [
+        "tests/unit/test_replay_flow.py",
+        "tests/integration/test_project_delivery_microfile.py"
+      ],
+      "missing_happy_paths": [
+        "ReplayFlow.replay() with from_step resumes at correct fine-grained step",
+        "ReplayFlow.replay() with from_stage='quality' runs quality+verification+release stages only"
+      ],
+      "missing_failure_paths": [
+        "ReplayFlow.replay() raises ValueError for unknown from_stage string",
+        "ReplayFlow.replay() raises ValueError for 'planning' when architecture missing from state",
+        "ReplayFlow.replay() raises ValueError for 'implementation' when milestone_plan missing"
+      ],
+      "missing_security_paths": [
+        "ReplayFlow does not allow stage injection via crafted from_stage value"
+      ],
+      "missing_integration_paths": [
+        "ReplayFlow full coarse-grained replay from 'classification' against a temp RunState",
+        "ReplayFlow fine-grained from_step replay loads and runs StepRunner correctly"
+      ],
+      "release_risk": "high",
+      "recommended_tests": [
+        "test_replay_flow_unknown_stage_raises_value_error",
+        "test_replay_flow_planning_without_architecture_raises_value_error",
+        "test_replay_flow_from_step_resumes_at_correct_step",
+        "test_replay_flow_quality_stage_skips_earlier_stages",
+        "test_replay_flow_from_stage_classification_full_run",
+        "test_replay_flow_implementation_without_milestone_plan_raises"
+      ],
+      "p_priority": "P0"
+    }
+  ],
+  "release_risk_summary": {
+    "high": 5,
+    "medium": 8,
+    "low": 5
+  },
+  "verdict": "BLOCK_RELEASE — 5 high-risk modules have insufficient coverage. P0 gaps in cli.py (46%), claude_code_executor.py (60%), replay_flow.py (57%), and release_readiness_gate.py (0% shim, absent from coverage for the script). Phase 2 (Cov-G) must close at least the 4 P0 modules before a PyPI release tag can proceed."
+}

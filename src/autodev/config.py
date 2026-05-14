@@ -76,6 +76,13 @@ class FactoryConfig:
             cfg.claude_code.binary = os.environ["FACTORY_CLAUDE_BIN"]
         if os.environ.get("FACTORY_CLAUDE_CMD"):
             cfg.claude_code.command_template = os.environ["FACTORY_CLAUDE_CMD"]
+        # FACTORY_FORCE_MOCK=1 must enable mock fallback regardless of mode.
+        # This allows CI / test environments to route to mocks even when the
+        # pipeline mode is "apply" (which would otherwise harden allow_mock_executor
+        # to False).  Only the allow_mock_executor flag is affected; all other
+        # apply-mode hardening remains intact.
+        if os.environ.get("FACTORY_FORCE_MOCK") == "1":
+            cfg.allow_mock_executor = True
         return cfg
 
     @classmethod

@@ -1,0 +1,344 @@
+{
+  "round": "flow_agent_failure_coverage",
+  "generated_by": "Cov-E",
+  "date": "2026-05-14",
+  "flows": [
+    {
+      "flow": "issue_pipeline_flow",
+      "test_files": ["tests/integration/test_issue_pipeline.py"],
+      "happy_path_test_exists": true,
+      "failure_path_test_exists": false,
+      "replay_test_exists": false,
+      "mock_executor_test_exists": true,
+      "external_cli_absent_test_exists": false,
+      "report_output_test_exists": true,
+      "risk_level": "high",
+      "notes": "2 tests both exercise happy path with mock. No test injects executor failure or invalid-input path. No test verifies final_report.md structure beyond existence.",
+      "recommended_tests": [
+        "test_issue_pipeline_executor_failure_surfaces_in_state: patch ImplementerAgent.run_milestone to return success=False; assert run.state.errors contains failure marker",
+        "test_issue_pipeline_empty_repo_path_raises: pass non-existent repo_path and verify flow raises or surfaces error gracefully",
+        "test_issue_pipeline_invalid_issue_text_empty_string: pass empty issue_text; assert flow completes and final_report.md is written (resilience)",
+        "test_issue_pipeline_final_report_structure: parse final_report.md and assert it contains required sections (Run ID, mode, languages)",
+        "test_issue_pipeline_codex_absent_falls_back_to_mock: monkeypatch PATH to hide codex binary; assert mock_execution_used is True"
+      ]
+    },
+    {
+      "flow": "project_delivery_flow",
+      "test_files": ["tests/integration/test_project_delivery.py"],
+      "happy_path_test_exists": true,
+      "failure_path_test_exists": true,
+      "replay_test_exists": false,
+      "mock_executor_test_exists": true,
+      "external_cli_absent_test_exists": false,
+      "report_output_test_exists": true,
+      "risk_level": "high",
+      "notes": "test_continue_and_report_flag exercises the fail_fast=False path. any_milestone_failed branch is exercised but only with mock (all succeed). No test forces mid-milestone executor failure to verify any_milestone_failed=True surfaces in run.state.errors.",
+      "recommended_tests": [
+        "test_delivery_milestone_executor_failure_recorded: patch ImplementerAgent.run_milestone for M2 to return success=False; assert run.state.errors contains 'not-all-milestones-complete'",
+        "test_delivery_fail_fast_stops_after_first_failure: patch first milestone to fail; assert only 1 implementation_result when fail_fast=True",
+        "test_delivery_report_delivery_report_md_structure: parse delivery/delivery_report.md; verify it has release decision section",
+        "test_delivery_external_cli_absent_uses_mock: monkeypatch PATH; assert mock_execution_used is True and flow completes"
+      ]
+    },
+    {
+      "flow": "project_delivery_microfile",
+      "test_files": ["tests/integration/test_project_delivery_microfile.py"],
+      "happy_path_test_exists": true,
+      "failure_path_test_exists": false,
+      "replay_test_exists": true,
+      "mock_executor_test_exists": true,
+      "external_cli_absent_test_exists": false,
+      "report_output_test_exists": true,
+      "risk_level": "high",
+      "notes": "Resume (from_step) and until_step tested in test_micro_resume_from_implementation_loop. No test injects a step failure to verify StepRunner marks it FAILED vs COMPLETED. No test verifies force_restart=True behavior.",
+      "recommended_tests": [
+        "test_micro_step_failure_recorded_as_failed: inject an exception into a mid-pipeline step fn; assert step record status == 'failed'",
+        "test_micro_force_restart_reruns_completed_steps: run full flow; then run again with force_restart=True; verify all steps re-executed (no skips)",
+        "test_micro_until_step_stops_execution: run with until_step='architecture_design'; verify later step files are all 'skipped'",
+        "test_micro_step_records_have_timing: verify each step .json has started_at and completed_at timestamps"
+      ]
+    },
+    {
+      "flow": "sprint_flow",
+      "test_files": ["tests/unit/test_sprint_flow.py"],
+      "happy_path_test_exists": true,
+      "failure_path_test_exists": true,
+      "replay_test_exists": false,
+      "mock_executor_test_exists": false,
+      "external_cli_absent_test_exists": false,
+      "report_output_test_exists": true,
+      "risk_level": "medium",
+      "notes": "Retrospective with failed tasks tested (test_retrospective_extracts_from_impl_results). status.health='blocked' path has no test — state.json with _blockers set is never written in tests. correct_course with planning files that actually match keywords not tested.",
+      "recommended_tests": [
+        "test_status_health_blocked: write state.json with _blockers list; assert status.health == 'blocked'",
+        "test_status_health_at_risk: write 1 success out of 5 tasks; assert health == 'at-risk'",
+        "test_correct_course_with_matching_planning_files: write prd.md containing change keywords; assert impact.artifact == 'PRD' in proposal.impacts",
+        "test_resolve_sprint_dir_no_sprint_raises: call status on empty repo; assert FileNotFoundError"
+      ]
+    },
+    {
+      "flow": "bug_fix_flow",
+      "test_files": ["tests/integration/test_bug_fix_flow.py"],
+      "happy_path_test_exists": true,
+      "failure_path_test_exists": false,
+      "replay_test_exists": false,
+      "mock_executor_test_exists": true,
+      "external_cli_absent_test_exists": false,
+      "report_output_test_exists": false,
+      "risk_level": "high",
+      "notes": "5 tests all verify happy-path structure (tasks.json, order, 4 execution_calls, mock_used). No test verifies what happens when a stage fails (fail_fast=True should stop). No test verifies concurrency=1 enforcement. No test for invalid empty bug_description.",
+      "recommended_tests": [
+        "test_bug_fix_fail_fast_stops_at_reproduce: patch executor to fail on BUG-T1-REPRODUCE; assert run finishes and implementation_results[0].success is False",
+        "test_bug_fix_empty_description_handled_gracefully: pass empty bug_description; assert flow returns RunState without raising",
+        "test_bug_fix_report_artifact_structure: verify execution_calls.jsonl entries have required keys (task_id, backend, success)",
+        "test_bug_fix_concurrency_is_enforced_as_one: inspect ImplementerAgent.run_milestone call kwargs; assert concurrency == 1"
+      ]
+    },
+    {
+      "flow": "multi_patch_flow",
+      "test_files": ["tests/integration/test_multi_patch_flow.py"],
+      "happy_path_test_exists": true,
+      "failure_path_test_exists": false,
+      "replay_test_exists": false,
+      "mock_executor_test_exists": true,
+      "external_cli_absent_test_exists": false,
+      "report_output_test_exists": true,
+      "risk_level": "medium",
+      "notes": "3 tests verify structure of candidate files and vote.json. No test verifies winner election when candidates have different scores (all mock candidates score 0). No test for n_candidates=1 edge case or n_candidates=0 boundary.",
+      "recommended_tests": [
+        "test_multi_patch_winner_election_highest_score: mock impl results to return different pass counts per candidate; assert vote.winner_candidate_id is the highest scorer",
+        "test_multi_patch_n_candidates_one: run with n_candidates=1; assert exactly 1 candidate file and winner is candidate-1",
+        "test_multi_patch_all_candidates_fail_winner_is_first: mock all candidates to return 0 passes; assert winner is candidate-1 (first by id)",
+        "test_multi_patch_summary_json_structure: parse summary.json; verify it has candidates, winner_candidate_id, rationale, mock_used"
+      ]
+    },
+    {
+      "flow": "investigation_flow",
+      "test_files": [],
+      "happy_path_test_exists": false,
+      "failure_path_test_exists": false,
+      "replay_test_exists": false,
+      "mock_executor_test_exists": false,
+      "external_cli_absent_test_exists": false,
+      "report_output_test_exists": false,
+      "risk_level": "high",
+      "notes": "Zero dedicated flow-level tests. CLI-level tests in test_cli_investigate.py exercise via Typer runner but do not import InvestigationFlow directly. The .dev-factory/investigations dir creation step is never verified via the flow API. No test for invalid input_token. Agent-level coverage exists in test_investigator.py but does not cross the flow boundary.",
+      "recommended_tests": [
+        "test_investigation_flow_creates_state_dir: call InvestigationFlow().run(inp); assert Path(repo_path)/'.dev-factory'/'investigations' exists",
+        "test_investigation_flow_returns_case_file: verify return value is CaseFile with case_id, mode, hypotheses, evidence fields populated",
+        "test_investigation_flow_invalid_repo_path: pass non-existent repo_path; assert flow creates the dir (mkdir parents=True) rather than raising",
+        "test_investigation_flow_brief_path_unreadable: pass brief_path pointing to restricted file; verify CaseFile returned without crash"
+      ],
+      "phase2_test_shape": {
+        "file": "tests/unit/test_investigation_flow.py",
+        "suggested_init": "from autodev.flows.investigation_flow import InvestigationFlow\nfrom autodev.schemas import InvestigationInput\nimport pytest\nfrom pathlib import Path",
+        "key_paths": [
+          "test_investigation_flow_creates_state_dir: InvestigationFlow().run(InvestigationInput(repo_path=str(tmp_path), input_token='PROJ-101')); assert (tmp_path/'.dev-factory'/'investigations').is_dir()",
+          "test_investigation_flow_returns_case_file: assert isinstance(result, CaseFile) and result.case_id",
+          "test_investigation_flow_repo_does_not_exist_auto_created: pass tmp_path/'noexist'; assert dir created"
+        ]
+      }
+    },
+    {
+      "flow": "brownfield_doc_flow",
+      "test_files": [],
+      "happy_path_test_exists": false,
+      "failure_path_test_exists": false,
+      "replay_test_exists": false,
+      "mock_executor_test_exists": false,
+      "external_cli_absent_test_exists": false,
+      "report_output_test_exists": false,
+      "risk_level": "high",
+      "notes": "Zero dedicated flow-level tests. test_document_project.py (unit) and test_cli_document_project.py (integration) cover DocumentProjectAgent directly but never import BrownfieldDocFlow. The flow is a thin wrapper (4 lines) but the languages=None → None conversion and inp.repo_path passthrough are untested at flow level.",
+      "recommended_tests": [
+        "test_brownfield_doc_flow_returns_brownfield_doc: run BrownfieldDocFlow().run(BrownfieldDocInput(repo_path=str(python_repo))); assert isinstance(result, BrownfieldDoc)",
+        "test_brownfield_doc_flow_languages_none_passthrough: run with languages=None; assert agent.document called with languages=None (verifying the None conversion)",
+        "test_brownfield_doc_flow_nonexistent_repo_raises_or_returns_empty: pass non-existent path; assert BrownfieldDoc returned or OSError surfaced cleanly"
+      ],
+      "phase2_test_shape": {
+        "file": "tests/unit/test_brownfield_doc_flow.py",
+        "suggested_init": "from autodev.flows.brownfield_doc_flow import BrownfieldDocFlow\nfrom autodev.schemas import BrownfieldDoc, BrownfieldDocInput, Language\nfrom pathlib import Path",
+        "key_paths": [
+          "test_flow_returns_brownfield_doc: assert isinstance with minimal python_repo fixture",
+          "test_flow_languages_none_passed_as_none: monkeypatch _agent.document; assert called with languages=None when inp.languages=None",
+          "test_flow_languages_list_passed_through: pass [Language.PYTHON]; monkeypatch; assert called with [Language.PYTHON]"
+        ]
+      }
+    },
+    {
+      "flow": "ux_design_flow",
+      "test_files": ["tests/unit/test_ux_design_flow.py"],
+      "happy_path_test_exists": true,
+      "failure_path_test_exists": false,
+      "replay_test_exists": false,
+      "mock_executor_test_exists": false,
+      "external_cli_absent_test_exists": false,
+      "report_output_test_exists": true,
+      "risk_level": "low",
+      "notes": "7 well-structured unit tests cover all 7 steps individually, output file, determinism, and backward compat. No failure path (no LLM calls so limited failure surface). Missing: test for use_llm=True instantiation raising or falling back, and test for read-only repo_path write failure.",
+      "recommended_tests": [
+        "test_flow_write_spec_readonly_repo: chmod repo dir to 0o555; assert flow raises PermissionError with clear message",
+        "test_flow_use_llm_true_instantiates: verify UXDesignFlow(use_llm=True) constructs without error (flag passed to agent)",
+        "test_flow_empty_product_name_fallback: pass product_name=None and prd=None; assert spec.product_name is a non-empty string"
+      ]
+    },
+    {
+      "flow": "project_context_flow",
+      "test_files": [],
+      "happy_path_test_exists": false,
+      "failure_path_test_exists": false,
+      "replay_test_exists": false,
+      "mock_executor_test_exists": false,
+      "external_cli_absent_test_exists": false,
+      "report_output_test_exists": false,
+      "risk_level": "high",
+      "notes": "Zero dedicated flow-level tests. CLI-level test_cli_generate_context.py exercises via Typer. The brief_path read + OSError/PermissionError branch is flow-specific and untested. The None passthrough when brief_path is absent is also untested at flow level.",
+      "recommended_tests": [
+        "test_project_context_flow_returns_project_context: ProjectContextFlow().run(ProjectContextInput(repo_path=str(tmp_path))); assert isinstance(result, ProjectContext)",
+        "test_project_context_flow_brief_path_read_error_silenced: pass brief_path pointing to non-existent file; assert brief=None is passed to agent (no crash)",
+        "test_project_context_flow_brief_path_permission_error_silenced: monkeypatch Path.read_text to raise PermissionError; assert flow still returns ProjectContext",
+        "test_project_context_flow_product_name_forwarded: pass product_name='TestProd'; monkeypatch agent.run; assert called with product_name='TestProd'"
+      ],
+      "phase2_test_shape": {
+        "file": "tests/unit/test_project_context_flow.py",
+        "suggested_init": "from autodev.flows.project_context_flow import ProjectContextFlow\nfrom autodev.schemas import ProjectContext, ProjectContextInput\nfrom unittest.mock import patch\nimport pytest\nfrom pathlib import Path",
+        "key_paths": [
+          "test_flow_returns_project_context: assert isinstance with tmp_path fixture",
+          "test_flow_brief_path_missing_silenced: pass brief_path='nonexistent.md'; assert no exception, agent called with brief=None",
+          "test_flow_permission_error_silenced: monkeypatch Path.read_text to raise PermissionError; assert agent called with brief=None"
+        ]
+      }
+    },
+    {
+      "flow": "release_flow",
+      "test_files": ["tests/unit/test_release_flow.py"],
+      "happy_path_test_exists": true,
+      "failure_path_test_exists": true,
+      "replay_test_exists": false,
+      "mock_executor_test_exists": true,
+      "external_cli_absent_test_exists": true,
+      "report_output_test_exists": true,
+      "risk_level": "low",
+      "notes": "7 tests — the best coverage of any flow. Covers happy path, BLOCKER finding, report write, persistence, artifact write, and no-external-CLI. The only missing path is multiple successive check() calls on the same run (idempotence).",
+      "recommended_tests": [
+        "test_release_flow_check_idempotent: call flow.check(run) twice; assert second call returns same decision and run_state.json is stable"
+      ]
+    },
+    {
+      "flow": "milestone_flow",
+      "test_files": ["tests/unit/test_milestone_flow.py"],
+      "happy_path_test_exists": true,
+      "failure_path_test_exists": true,
+      "replay_test_exists": false,
+      "mock_executor_test_exists": true,
+      "external_cli_absent_test_exists": false,
+      "report_output_test_exists": true,
+      "risk_level": "medium",
+      "notes": "7 tests including RuntimeError on missing plan, failure surfacing, empty milestone collapse. Missing: test for invalid milestone_id (milestone_id not in plan) and test for multi-run accumulation (prior results for different milestone preserved).",
+      "recommended_tests": [
+        "test_milestone_flow_preserves_other_milestone_results: seed run with M1 result; run flow for M2; assert M1 result still in run.state.implementation_results",
+        "test_milestone_flow_unknown_milestone_id_returns_empty: pass milestone_id='M_NONEXISTENT'; verify result.success=True and task_results=[]"
+      ]
+    },
+    {
+      "flow": "replay_flow",
+      "test_files": ["tests/unit/test_replay_flow.py"],
+      "happy_path_test_exists": true,
+      "failure_path_test_exists": true,
+      "replay_test_exists": true,
+      "mock_executor_test_exists": true,
+      "external_cli_absent_test_exists": false,
+      "report_output_test_exists": false,
+      "risk_level": "high",
+      "notes": "3 tests: replay from release, replay from implementation, bogus stage raises. The from_step (fine-grained) path is not tested here (only in test_project_delivery_microfile.py via MicroFlow). Planning stage requires architecture in state — missing test for that error branch. Verification/release output artifacts not checked.",
+      "recommended_tests": [
+        "test_replay_planning_without_architecture_raises: seed run without architecture; replay(from_stage='planning'); assert ValueError('Cannot replay planning')",
+        "test_replay_implementation_without_plan_raises: seed run without milestone_plan; replay(from_stage='implementation'); assert ValueError",
+        "test_replay_from_step_adds_step_note: replay(from_step='quality_gate'); assert run.state.errors contains 'replayed from step quality_gate'",
+        "test_replay_release_writes_release_check_json: replay(from_stage='release'); assert verification/release_check.json exists"
+      ]
+    },
+    {
+      "flow": "issue_pipeline_crewflow",
+      "test_files": ["tests/unit/test_crewflow_stubs.py"],
+      "happy_path_test_exists": false,
+      "failure_path_test_exists": false,
+      "replay_test_exists": false,
+      "mock_executor_test_exists": false,
+      "external_cli_absent_test_exists": true,
+      "report_output_test_exists": false,
+      "risk_level": "medium",
+      "notes": "Only 2 tests: construct without crewai, and run() raises RuntimeError when crewai unavailable. The actual flow execution path (when crewai is available) has zero coverage. The route_to_implementation router node always returns 'implement' — this routing logic untested. Individual node methods untested.",
+      "recommended_tests": [
+        "test_issue_pipeline_crewflow_node_classify_input: call flow.classify_input() directly (with _inp set); assert _state['classification'] populated",
+        "test_issue_pipeline_crewflow_node_analyse_issue: call flow.analyse_issue({}) after setting _inp; assert _state['issue'] populated",
+        "test_issue_pipeline_crewflow_route_always_implement: call route_to_implementation({}); assert return value == 'implement'",
+        "test_crewai_availability_flag_reflects_import: verify _CREWAI_AVAILABLE matches actual crewai import availability"
+      ]
+    },
+    {
+      "flow": "project_delivery_crewflow",
+      "test_files": ["tests/unit/test_crewflow_stubs.py"],
+      "happy_path_test_exists": false,
+      "failure_path_test_exists": false,
+      "replay_test_exists": false,
+      "mock_executor_test_exists": false,
+      "external_cli_absent_test_exists": true,
+      "report_output_test_exists": false,
+      "risk_level": "medium",
+      "notes": "Same as issue_pipeline_crewflow: construct + RuntimeError tests only. plan_milestones node calls MilestonePlannerAgent.plan with prd= kwarg but canonical signature may not accept it — untested. implement node's empty-milestone-tasks skip (if not m_tasks: continue) untested.",
+      "recommended_tests": [
+        "test_project_delivery_crewflow_node_classify_input: call classify_input() with _inp set; assert _state['classification'] populated",
+        "test_project_delivery_crewflow_route_returns_plan_milestones: call route_to_milestones({}); assert return value == 'plan_milestones'",
+        "test_project_delivery_crewflow_implement_skips_empty_milestones: set _state with milestones having no matching tasks; assert implement({}) runs without error and returns milestone_count=0",
+        "test_project_delivery_crewflow_node_write_prd: verify write_prd({}) with _inp.brief_text set returns dict with 'prd' key"
+      ]
+    }
+  ],
+  "total_flows": 15,
+  "happy_path_covered_count": 10,
+  "failure_path_covered_count": 4,
+  "replay_covered_count": 3,
+  "mock_covered_count": 9,
+  "external_cli_absent_covered_count": 2,
+  "report_output_covered_count": 9,
+  "flows_with_zero_dedicated_test": [
+    "investigation_flow",
+    "brownfield_doc_flow",
+    "project_context_flow"
+  ],
+  "flows_with_zero_failure_path_test": [
+    "issue_pipeline_flow",
+    "project_delivery_microfile",
+    "bug_fix_flow",
+    "multi_patch_flow",
+    "ux_design_flow",
+    "investigation_flow",
+    "brownfield_doc_flow",
+    "project_context_flow",
+    "issue_pipeline_crewflow",
+    "project_delivery_crewflow",
+    "replay_flow"
+  ],
+  "top_priority_gaps": [
+    {
+      "rank": 1,
+      "gap": "investigation_flow / brownfield_doc_flow / project_context_flow — zero flow-level tests",
+      "risk": "high",
+      "action": "Phase 2 Cov-J creates test_investigation_flow.py, test_brownfield_doc_flow.py, test_project_context_flow.py with the shapes specified above"
+    },
+    {
+      "rank": 2,
+      "gap": "issue_pipeline_flow and bug_fix_flow have no executor-failure path test — the most critical runtime failure mode (CLI crash / timeout) never verified to surface correctly",
+      "risk": "high",
+      "action": "Add tests that patch ImplementerAgent.run_milestone to return success=False and assert run.state reflects the failure"
+    },
+    {
+      "rank": 3,
+      "gap": "replay_flow missing 2 error-guard tests (planning without architecture, implementation without plan) — these are defensive branches in production code with no test coverage",
+      "risk": "high",
+      "action": "Add pytest.raises tests for both ValueError branches in replay_flow.replay()"
+    }
+  ],
+  "verdict": "Only 4/15 flows have any failure-path test. 3 flows have zero dedicated tests. The 2 crewflow variants have stub-only tests (no node-level coverage). Priority for Phase 2: create the 3 missing test files first, then add failure-path tests to issue_pipeline_flow and bug_fix_flow."
+}

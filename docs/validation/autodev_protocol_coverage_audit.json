@@ -1,0 +1,210 @@
+{
+  "round": "protocol_coverage",
+  "generated_at": "2026-05-14",
+  "auditor": "Cov-D",
+  "mcp": {
+    "scenarios": [
+      {
+        "name": "handshake initialize",
+        "covered": true,
+        "test_file": "tests/unit/test_mcp_server.py::test_initialize_returns_protocol_version, tests/integration/test_mcp_server_smoke.py::test_initialize_handshake"
+      },
+      {
+        "name": "tools/list",
+        "covered": true,
+        "test_file": "tests/unit/test_mcp_server.py::test_tools_list_returns_nine_or_more_tools, tests/integration/test_mcp_server_smoke.py::test_tools_list_count_and_names, test_tools_list_has_input_schema"
+      },
+      {
+        "name": "tools/call valid",
+        "covered": true,
+        "test_file": "tests/unit/test_mcp_server.py::test_tools_call_scan_empty_repo, test_tools_call_classify_input, test_tools_call_roundtable_mock, test_list_runs_empty_repo, tests/integration/test_mcp_server_smoke.py::test_tools_call_list_runs"
+      },
+      {
+        "name": "tools/call invalid tool name",
+        "covered": true,
+        "test_file": "tests/unit/test_mcp_server.py::test_unknown_tool_returns_error, tests/integration/test_mcp_server_smoke.py::test_unknown_tool_error"
+      },
+      {
+        "name": "tools/call missing required param",
+        "covered": false,
+        "test_file": null,
+        "note": "No test sends tools/call with a required param absent and asserts the structured error response."
+      },
+      {
+        "name": "malformed JSON-RPC (e.g. missing method/jsonrpc field)",
+        "covered": true,
+        "test_file": "tests/unit/test_mcp_server.py::test_parse_error_on_bad_json, tests/integration/test_mcp_server_smoke.py::test_parse_error_on_invalid_json",
+        "note": "Malformed JSON covered; missing-method-field mentioned in smoke module docstring but NO corresponding test function exists."
+      },
+      {
+        "name": "missing method field specifically (request has jsonrpc/id but no method key)",
+        "covered": false,
+        "test_file": null,
+        "note": "Listed in smoke test module docstring but never implemented as a test function."
+      },
+      {
+        "name": "unknown method",
+        "covered": true,
+        "test_file": "tests/integration/test_mcp_server_smoke.py::test_unknown_method_error"
+      },
+      {
+        "name": "apply mode denied (both gates)",
+        "covered": true,
+        "test_file": "tests/integration/test_mcp_apply_guardrail.py::TestApplyDeniedNoAllowApplyParam, TestApplyDeniedNoEnvVar, TestRunIssueBothFlagsRequired"
+      },
+      {
+        "name": "apply mode allowed with guardrail",
+        "covered": true,
+        "test_file": "tests/integration/test_mcp_apply_guardrail.py::TestApplyAllowedDefaultCommitPushTag, TestAuditLogAllowed"
+      },
+      {
+        "name": "tool internal error → structured isError:true or error object",
+        "covered": false,
+        "test_file": null,
+        "note": "Tests only assert isError:false on success paths. No test injects a runtime exception inside a handler and verifies isError:true returned (not a protocol-level error)."
+      },
+      {
+        "name": "notification (no id) handling",
+        "covered": true,
+        "test_file": "tests/integration/test_mcp_server_smoke.py::test_notification_no_response"
+      },
+      {
+        "name": "shutdown handling",
+        "covered": true,
+        "test_file": "tests/integration/test_mcp_server_smoke.py::test_shutdown_graceful"
+      }
+    ],
+    "total_scenarios": 13,
+    "covered_count": 9,
+    "uncovered_count": 4,
+    "coverage_pct": 69
+  },
+  "a2a": {
+    "scenarios": [
+      {
+        "name": "AgentCard valid construction",
+        "covered": true,
+        "test_file": "tests/unit/test_a2a_schema.py::test_agent_card_with_skills, test_agent_card_defaults"
+      },
+      {
+        "name": "AgentCard missing required field rejected",
+        "covered": false,
+        "test_file": null,
+        "note": "AgentCard.name is the only required field but no test calls AgentCard() without name and asserts ValidationError."
+      },
+      {
+        "name": "A2ATask valid lifecycle",
+        "covered": true,
+        "test_file": "tests/unit/test_a2a_schema.py::test_a2a_task_defaults, tests/unit/test_a2a_http_transport.py::test_send_task_completed_immediately, test_send_task_polls_until_completed"
+      },
+      {
+        "name": "A2AMessage invalid role/status rejected",
+        "covered": false,
+        "test_file": null,
+        "note": "A2AMessage.role is str (no enum constraint), so this cannot raise ValidationError. A2ATaskStatus invalid value is never tested via model_validate. No pytest.raises on bad role/status."
+      },
+      {
+        "name": "mock transport happy path",
+        "covered": true,
+        "test_file": "tests/unit/test_a2a_local_shell_transport.py::test_mock_transport_pure, test_mock_transport_deterministic, test_mock_transport_never_shells"
+      },
+      {
+        "name": "local_shell transport",
+        "covered": true,
+        "test_file": "tests/unit/test_a2a_local_shell_transport.py::test_force_mock_returns_mock_local_shell_prefix, test_failed_shell_returns_failed_status, test_no_exception_even_on_internal_error"
+      },
+      {
+        "name": "http transport happy path",
+        "covered": true,
+        "test_file": "tests/unit/test_a2a_http_transport.py::test_send_task_completed_immediately, test_send_task_polls_until_completed, tests/integration/test_a2a_http_roundtrip.py"
+      },
+      {
+        "name": "http transport SSRF rejection (file://, ftp://, localhost, private IP, metadata IP)",
+        "covered": true,
+        "test_file": "tests/unit/test_a2a_http_ssrf_hardening.py::test_reject_file_scheme, test_reject_ftp_scheme, test_reject_loopback_ipv4_literal, test_reject_aws_metadata_ip, test_reject_localhost_hostname, test_reject_unspecified_ipv4, test_reject_rfc1918_class_a, test_reject_rfc1918_class_c, test_reject_loopback_ipv6_literal"
+      },
+      {
+        "name": "http transport DNS rebinding (public-then-private)",
+        "covered": true,
+        "test_file": "tests/unit/test_a2a_dns_rebinding_hardening.py::test_dns_rebinding_connect_to_pinned_public_ip, test_resolve_and_pin_host_rejects_private_ip"
+      },
+      {
+        "name": "http redirect to private rejected",
+        "covered": true,
+        "test_file": "tests/unit/test_a2a_http_ssrf_hardening.py::test_redirect_to_private_is_rejected, tests/unit/test_a2a_dns_rebinding_hardening.py::test_redirect_to_private_hostname_rejected, test_ipv6_redirect_to_loopback_rejected"
+      },
+      {
+        "name": "http unreachable endpoint → FAILED task",
+        "covered": true,
+        "test_file": "tests/unit/test_a2a_http_transport.py::test_send_task_unreachable_returns_failed"
+      },
+      {
+        "name": "http timeout (max poll attempts exhausted, server stays WORKING)",
+        "covered": false,
+        "test_file": null,
+        "note": "test_send_task_unreachable_returns_failed covers connection-refused; no test keeps a server alive returning WORKING indefinitely until max_poll_attempts is exhausted and asserts FAILED."
+      },
+      {
+        "name": "roundtable party-mode independence (deep copy verified)",
+        "covered": false,
+        "test_file": null,
+        "note": "Tests verify same context_id and same history length are sent to each participant, but no test explicitly mutates one participant task and asserts the others are unaffected (deep copy check)."
+      },
+      {
+        "name": "roundtable synthesizer deterministic",
+        "covered": true,
+        "test_file": "tests/unit/test_roundtable_agent.py::test_force_mock_deterministic, tests/integration/test_a2a_roundtable_e2e.py::test_synth_message_from_synthesizer_card"
+      }
+    ],
+    "total_scenarios": 14,
+    "covered_count": 9,
+    "uncovered_count": 5,
+    "coverage_pct": 64
+  },
+  "schemas": {
+    "scenarios": [
+      {
+        "name": "pydantic model construction with valid data",
+        "covered": true,
+        "test_file": "tests/unit/test_a2a_schema.py (all positive-path tests), tests/unit/test_mcp_server.py::test_mcp_schemas_importable"
+      },
+      {
+        "name": "missing required field rejected",
+        "covered": false,
+        "test_file": null,
+        "note": "No test across the entire suite calls any Pydantic model with a missing required field and asserts ValidationError. The A2A schema tests only exercise positive construction paths."
+      },
+      {
+        "name": "invalid enum value rejected",
+        "covered": false,
+        "test_file": null,
+        "note": "A2ATaskStatus is tested for valid values only. No test passes an invalid string to model_validate and asserts ValidationError."
+      },
+      {
+        "name": "nested model invalid rejected",
+        "covered": false,
+        "test_file": null,
+        "note": "A2APart/A2AMessage nesting is only exercised with valid data. No test injects bad data into a nested field."
+      },
+      {
+        "name": "serialization → deserialization roundtrip",
+        "covered": true,
+        "test_file": "tests/unit/test_a2a_schema.py::test_a2a_message_roundtrip"
+      },
+      {
+        "name": "backward-compat for v0.1.0a1 schemas exported",
+        "covered": false,
+        "test_file": null,
+        "note": "The schemas.py file has no __all__ or version-guard; no test imports from a frozen v0.1.0a1 snapshot and asserts backward-compat field presence or model_validate success."
+      }
+    ],
+    "total_scenarios": 6,
+    "covered_count": 2,
+    "uncovered_count": 4,
+    "coverage_pct": 33
+  },
+  "total_covered": 20,
+  "total_uncovered": 13,
+  "overall_coverage_pct": 61,
+  "verdict": "MCP protocol coverage is adequate for the happy-path and security gates (apply guardrail thoroughly tested) but missing three protocol-level error paths: missing-method-field, missing-required-param, and tool-internal-error→isError:true. A2A coverage is strong on transport security (SSRF+DNS rebinding) but weak on schema validation (no rejection tests) and missing a poll-timeout scenario. Pydantic schema coverage is the weakest surface: only positive construction and one roundtrip are tested; all rejection paths (missing required field, invalid enum, nested invalid, backward compat) are uncovered."
+}

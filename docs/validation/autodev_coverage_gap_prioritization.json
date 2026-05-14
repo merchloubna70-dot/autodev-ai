@@ -1,0 +1,191 @@
+{
+  "round": "coverage_gap_prioritization",
+  "date": "2026-05-14",
+  "agent": "Cov-F",
+  "sibling_reports_found": {
+    "Cov-A_test_coverage_baseline": "NOT_PRESENT — used full_audit_quality_ci.json (PreTag-H) as source",
+    "Cov-B_release_critical_coverage": "NOT_PRESENT — used full_pre_tag_audit_round.json + release_readiness_gate.json as source",
+    "Cov-C_security_coverage": "NOT_PRESENT — used full_audit_security.json (PreTag-I) + r2_a2a_http_ssrf + r3_a2a_dns_rebinding + r3_worker_isolator_symlink as source",
+    "Cov-D_protocol_coverage": "NOT_PRESENT — used full_audit_a2a.json (PreTag-E) + r3_mcp_apply_guardrail as source",
+    "Cov-E_flow_agent_failure_coverage": "NOT_PRESENT — used full_audit_flow_agent_coverage.json (PreTag-G) + executor_isolation (PreTag-F) as source"
+  },
+  "baseline": {
+    "pytest_passed": 1062,
+    "pytest_xfailed": 4,
+    "pytest_failed": 0,
+    "coverage_pct": 81,
+    "coverage_statements": 10884,
+    "coverage_missed": 2054,
+    "ruff_errors": 0,
+    "mypy_errors": 0,
+    "release_gate_checks": 36,
+    "release_gate_pass": 36
+  },
+  "p0_gaps": [
+    {
+      "area": "src/autodev/executors/worker_isolator.py — F-03 stale xfail",
+      "gap": "test_worker_isolator_rejects_escaped_symlink_in_parent_home is marked xfail(strict=True) but R3-H actually fixed the escape; xfail is stale and will start emitting an XPASS warning when future pytest changes or a CI-flag-run reveals the annotation mismatch. Stale xfail also means the fix is not regression-guarded as a passing test.",
+      "recommended_test": "tests/unit/test_executor_boundary_smoke.py — remove xfail(strict=True) from test_worker_isolator_rejects_escaped_symlink_in_parent_home (F-03); OR delete and re-write in test_worker_isolator_symlink_hardening.py as a plain passing test",
+      "est_new_tests": 1,
+      "est_coverage_delta_pct": 0
+    },
+    {
+      "area": "src/autodev/utils/command_safety.py — denylist no-space pipe variants",
+      "gap": "F-01a/F-01b: 'curl|bash' and 'wget|bash' (no spaces) bypass scan_prompt_for_unsafe() substring match. Two xfail(strict=True) tests document this. A real attacker prompt using no-space syntax evades the shell safety gate entirely.",
+      "recommended_test": "tests/unit/test_executor_boundary_smoke.py — fix the underlying source (normalize whitespace before denylist scan OR add no-space variants), then invert both xfail markers to passing tests: test_denylist_catches_curl_pipe_bash_no_space + test_denylist_catches_wget_pipe_bash_no_space",
+      "est_new_tests": 0,
+      "est_coverage_delta_pct": 1
+    },
+    {
+      "area": "src/autodev/executors/executor_router.py — FACTORY_FORCE_MOCK=1 apply-mode fail-closed (F-02)",
+      "gap": "When CLI mode=apply and allow_mock=None, _build_config forces allow_mock_executor=False, so FACTORY_FORCE_MOCK=1 still fail-closes instead of routing to mock. The xfail(strict=True) test F-02 exposes this but does not block CI. Breaks 'apply-mode dry-run with mocked executors' use-case that affects release gate smoke testing.",
+      "recommended_test": "tests/unit/test_executor_boundary_smoke.py::test_factory_force_mock_overrides_apply_mode_fail_closed — fix FactoryConfig.from_env() / _build_config() to honour FACTORY_FORCE_MOCK=1 by forcing allow_mock_executor=True, then remove xfail",
+      "est_new_tests": 0,
+      "est_coverage_delta_pct": 1
+    },
+    {
+      "area": "src/autodev/mcp_server/tools.py — audit log world-writable default path",
+      "gap": "_DEFAULT_AUDIT_LOG='/tmp/autodev_mcp_audit.log' is world-writable. No test validates that when AUTODEV_MCP_AUDIT_LOG is unset the process emits a warning or that the log path permissions are checked. An attacker with local access can inject or truncate the audit trail silently.",
+      "recommended_test": "tests/integration/test_mcp_apply_guardrail.py — add: test_audit_log_tmp_path_emits_warning_when_env_unset; test_audit_log_restricted_path_no_warning; also add to unit test_mcp_server.py",
+      "est_new_tests": 3,
+      "est_coverage_delta_pct": 1
+    },
+    {
+      "area": "release.yml — token exposed as CLI flag",
+      "gap": "twine upload uses -p \"$PYPI_API_TOKEN\" (flag form), briefly visible in /proc/<pid>/cmdline on Linux runners. No test validates that the release workflow uses TWINE_PASSWORD env-var form instead of -p flag. This is a pre-tag honesty gap: the hardening round documented it as R4 but no coverage enforces the policy.",
+      "recommended_test": "tests/unit/test_release_workflow_policy.py — add test_release_yml_uses_twine_password_env_not_p_flag to parse .github/workflows/release.yml and assert '-p' is absent from the twine upload command",
+      "est_new_tests": 1,
+      "est_coverage_delta_pct": 0
+    }
+  ],
+  "p1_gaps": [
+    {
+      "area": "src/autodev/flows/investigation_flow.py — InvestigationFlow untested",
+      "gap": "InvestigationFlow.run() has zero test coverage. Confirmed by Pre-Tag G audit and direct grep of tests/. InputClassifier routes 'github issue URL' to this flow, so it is reachable from CLI in normal use.",
+      "recommended_test": "tests/unit/test_investigation_flow.py (new) — happy path, empty result, executor fallback, schema round-trip via InvestigationInput/CaseFile",
+      "est_new_tests": 5,
+      "est_coverage_delta_pct": 1
+    },
+    {
+      "area": "src/autodev/flows/brownfield_doc_flow.py — BrownfieldDocFlow untested",
+      "gap": "BrownfieldDocFlow.run() has zero test coverage. Confirmed by Pre-Tag G audit. Reachable via CLI document-project when existing docs detected.",
+      "recommended_test": "tests/unit/test_brownfield_doc_flow.py (new) — happy path, missing-docs branch, report artifact generation",
+      "est_new_tests": 4,
+      "est_coverage_delta_pct": 1
+    },
+    {
+      "area": "src/autodev/flows/project_context_flow.py — ProjectContextFlow effectively untested",
+      "gap": "Pre-Tag G confirmed R3-E's 'ProjectContextFlow closure' was overstated — only schema-level coverage exists, no dedicated flow test. run() body untested.",
+      "recommended_test": "tests/unit/test_project_context_flow.py (new) — happy path (stub executor), cache-hit branch, partial-context fallback",
+      "est_new_tests": 4,
+      "est_coverage_delta_pct": 1
+    },
+    {
+      "area": "src/autodev/executors/executor_router.py — _auto_route heuristics branch coverage",
+      "gap": "35 executor tests pass but edge paths in _auto_route (high-risk language, file-count boundary, explicit backend override for CLAUDE backend in auto mode) are not fully exercised per coverage.json missed lines.",
+      "recommended_test": "tests/unit/test_executor_router.py — add: test_auto_route_high_risk_prefers_claude; test_auto_route_large_file_count_threshold; test_explicit_claude_backend_override",
+      "est_new_tests": 5,
+      "est_coverage_delta_pct": 1
+    },
+    {
+      "area": "src/autodev/adapters/a2a/transports/http.py — redirect_to_private_is_rejected test pre-existing failure",
+      "gap": "test_redirect_to_private_is_rejected was in the pre-existing failure list in R2 and is still not passing; the redirect revalidation path has a coverage gap for 302->private IP sequences that use a real httpd fixture vs. monkeypatch approach.",
+      "recommended_test": "tests/unit/test_a2a_http_ssrf_hardening.py — diagnose + fix test_redirect_to_private_is_rejected; ensure it passes without requiring real network",
+      "est_new_tests": 2,
+      "est_coverage_delta_pct": 1
+    },
+    {
+      "area": "src/autodev/reports/ — delivery_reporter and release_reporter untested",
+      "gap": "No unit tests for delivery_reporter.py or release_reporter.py discovered; test_report_banner.py covers banner helper only. Report generation paths (artifact write, section rendering, template fill) have zero direct test coverage.",
+      "recommended_test": "tests/unit/test_delivery_reporter.py (new); tests/unit/test_release_reporter.py (new) — artifact path, missing fields, template round-trip",
+      "est_new_tests": 6,
+      "est_coverage_delta_pct": 2
+    },
+    {
+      "area": "src/autodev/gates/ — contract_diff, integration_gate, rust_gate, typescript_gate branch coverage",
+      "gap": "Gates for non-Python toolchains (Rust, TypeScript, integration) have only stub-level tests. Failure paths (lint binary absent, gate timeout, partial findings) are untested.",
+      "recommended_test": "tests/unit/test_gates_edge_cases.py (new) — binary-absent fallback, timeout, partial-pass, all-fail for rust_gate/typescript_gate/integration_gate",
+      "est_new_tests": 8,
+      "est_coverage_delta_pct": 2
+    },
+    {
+      "area": "src/autodev/context_providers/ — diff_provider, search_provider, tree_provider",
+      "gap": "test_context_providers.py exists (11 tests) but search_provider and tree_provider miss large-file truncation and encoding-error paths; diff_provider misses binary-file handling.",
+      "recommended_test": "tests/unit/test_context_providers.py — add test_search_provider_large_file_truncation; test_tree_provider_encoding_error; test_diff_provider_binary_file_skip",
+      "est_new_tests": 3,
+      "est_coverage_delta_pct": 1
+    }
+  ],
+  "p2_gaps": [
+    {
+      "area": "src/autodev/tui/dashboard.py, widgets.py — full TUI widget rendering",
+      "gap": "test_tui_loaders.py covers 24 loader tests but dashboard.py and widgets.py (Textual optional dep) have no rendering tests. Low risk: optional dep, no security surface.",
+      "recommended_test": "tests/unit/test_tui_dashboard.py (new) — stub Textual app mount, widget update, deferred import when textual absent",
+      "est_new_tests": 5,
+      "est_coverage_delta_pct": 1
+    },
+    {
+      "area": "src/autodev/agents/ — doc_writer, editorial_reviewer, prfaq, product_manager edge cases",
+      "gap": "These agents have some test coverage but empty-input, malformed-LLM-response, and retry paths are untested.",
+      "recommended_test": "tests/unit/test_doc_writer.py + test_editorial_reviewer.py — add: empty_input_graceful_fallback, malformed_llm_json_retry, token_limit_exceeded_truncation",
+      "est_new_tests": 6,
+      "est_coverage_delta_pct": 1
+    },
+    {
+      "area": "examples/ directory — example script import health",
+      "gap": "No test verifies that the scripts in examples/ are importable / executable. Breaking changes to public API could silently break examples.",
+      "recommended_test": "tests/unit/test_examples_import.py (new) — for each .py in examples/, assert importlib.util.find_spec or subprocess call exits 0 with --help",
+      "est_new_tests": 3,
+      "est_coverage_delta_pct": 0
+    },
+    {
+      "area": "src/autodev/adapters/distillator.py, embeddings_index.py — optional-dep branches",
+      "gap": "distillator.py and embeddings_index.py have tests but missing-optional-dep (no sentence-transformers, no anthropic) deferred-import paths are only partially covered.",
+      "recommended_test": "tests/unit/test_distillator.py + test_embeddings_index.py — add test_graceful_import_error_when_sentence_transformers_absent",
+      "est_new_tests": 4,
+      "est_coverage_delta_pct": 1
+    },
+    {
+      "area": "src/autodev/scanners/ — monorepo_scanner error handling",
+      "gap": "6 scanner tests cover happy paths; monorepo_scanner.py permission-error and symlink-loop paths are untested.",
+      "recommended_test": "tests/unit/test_scanners.py — add test_monorepo_scanner_permission_error_skip; test_monorepo_scanner_symlink_loop_skip",
+      "est_new_tests": 2,
+      "est_coverage_delta_pct": 1
+    }
+  ],
+  "p0_count": 5,
+  "p1_count": 8,
+  "p2_count": 5,
+  "total_est_new_tests": 62,
+  "current_coverage_pct": 81,
+  "expected_final_coverage_pct": 86,
+  "should_block_tag": false,
+  "should_block_tag_reason": "All 5 P0 gaps are coverage improvements and hardening follow-ups, not regressions. The 4 xfail tests (F-01a, F-01b, F-02, F-03) are actively tracked known-gaps documented across R2/R3/Pre-Tag rounds; they do not represent new or undiscovered defects. The pre-tag audit round (Pre-Tag N) issued 'go_after_user_action' with full knowledge of these gaps, all 36 release gate checks pass, pytest is 1062 pass / 0 fail, ruff 0, mypy 0. No P0 gap is a regression from a previously-passing test or an unreported security finding; all are improvement opportunities for R4.",
+  "phase_2_plan": [
+    {
+      "agent": "Cov-G",
+      "scope": "P0 release-critical fixes: de-xfail F-03 stale marker; fix denylist no-space variants (F-01a/F-01b) and convert to passing tests; add release_yml TWINE_PASSWORD policy test",
+      "est_new_tests": 3
+    },
+    {
+      "agent": "Cov-H",
+      "scope": "P0 security tests: fix F-02 FACTORY_FORCE_MOCK apply-mode fail-closed; add MCP audit-log /tmp world-writable warning tests",
+      "est_new_tests": 4
+    },
+    {
+      "agent": "Cov-I",
+      "scope": "P1 protocol error tests: fix test_redirect_to_private_is_rejected pre-existing failure; add _auto_route heuristics branch coverage",
+      "est_new_tests": 7
+    },
+    {
+      "agent": "Cov-J",
+      "scope": "P1 flow failure tests: InvestigationFlow, BrownfieldDocFlow, ProjectContextFlow — new test files with happy path + failure + schema tests",
+      "est_new_tests": 13
+    },
+    {
+      "agent": "Cov-K",
+      "scope": "P1 report/gate/context tests + P2 sweep: delivery_reporter, release_reporter, gates edge cases, context_provider error paths, TUI stubs, examples import health",
+      "est_new_tests": 35
+    }
+  ]
+}

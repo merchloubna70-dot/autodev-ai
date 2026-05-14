@@ -1,0 +1,180 @@
+{
+  "round": "coverage-phase-2",
+  "agent": "Cov-H",
+  "date": "2026-05-14",
+  "test_file": "tests/integration/test_security_p0_coverage.py",
+  "scope": "P0 security test expansion on top of R3-B 19 MCP guardrail tests; addresses Cov-C gap report",
+  "summary": {
+    "tests_added": 14,
+    "passed": 9,
+    "xfailed": 5,
+    "unexpected_failures": 0,
+    "full_suite_passed": 1178,
+    "full_suite_xfailed": 10,
+    "full_suite_failed": 0,
+    "regressions": 0,
+    "production_code_changes": false
+  },
+  "groups": [
+    {
+      "name": "A - Audit Log Path",
+      "tests": [
+        {
+          "id": "TestAuditLogPath::test_mcp_audit_log_default_path_is_under_tmp",
+          "result": "PASS",
+          "gap_closed": true,
+          "notes": "Documents world-writable risk of /tmp/autodev_mcp_audit.log"
+        },
+        {
+          "id": "TestAuditLogPath::test_mcp_audit_log_overridable_via_env",
+          "result": "PASS",
+          "gap_closed": true,
+          "notes": "AUTODEV_MCP_AUDIT_LOG env var correctly redirects writes"
+        }
+      ]
+    },
+    {
+      "name": "B - Denylist Completeness",
+      "tests": [
+        {
+          "id": "TestDenylistCompleteness::test_denylist_catches_cat_env",
+          "result": "PASS",
+          "gap_closed": true,
+          "pattern": "cat .env"
+        },
+        {
+          "id": "TestDenylistCompleteness::test_denylist_catches_source_env",
+          "result": "PASS",
+          "gap_closed": true,
+          "pattern": "source .env"
+        },
+        {
+          "id": "TestDenylistCompleteness::test_denylist_catches_printenv",
+          "result": "PASS",
+          "gap_closed": true,
+          "pattern": "printenv"
+        },
+        {
+          "id": "TestDenylistCompleteness::test_denylist_catches_printenv_with_args",
+          "result": "PASS",
+          "gap_closed": true,
+          "pattern": "printenv PATH"
+        }
+      ]
+    },
+    {
+      "name": "C - MCP Path-arg .env Denial",
+      "tests": [
+        {
+          "id": "TestMCPPathArgDotEnvDenial::test_mcp_rejects_path_argument_containing_dot_env",
+          "result": "XFAIL",
+          "strict": true,
+          "gap_closed": false,
+          "gap_description": "MCP handlers accept any repo_path without validating for .env component",
+          "r4_priority": "P1",
+          "remediation": "Add path validation in _handle_deliver_project and _handle_run_issue to reject paths containing .env component"
+        }
+      ]
+    },
+    {
+      "name": "D - Executor Secret Scrubbing",
+      "tests": [
+        {
+          "id": "TestExecutorSecretScrubbing::test_executor_result_does_not_leak_pypi_api_token_in_stderr",
+          "result": "XFAIL",
+          "strict": true,
+          "gap_closed": false,
+          "gap_description": "ClaudeCodeExecutor/CodexCliExecutor pass env directly to subprocess; no output scrubbing",
+          "r4_priority": "P1",
+          "remediation": "Add secret-scrubbing post-processor in BaseExecutor.execute() that redacts known secret env values from stdout/stderr"
+        },
+        {
+          "id": "TestExecutorSecretScrubbing::test_executor_result_does_not_leak_anthropic_api_key",
+          "result": "XFAIL",
+          "strict": true,
+          "gap_closed": false,
+          "gap_description": "Same root cause as PYPI_API_TOKEN — no scrubbing of subprocess output",
+          "r4_priority": "P1",
+          "remediation": "Same as above"
+        }
+      ]
+    },
+    {
+      "name": "E - Executor is_mock Attribute",
+      "tests": [
+        {
+          "id": "TestExecutorIsMockAttribute::test_claude_code_executor_is_mock_is_false",
+          "result": "PASS",
+          "gap_closed": true,
+          "notes": "ClaudeCodeExecutor.is_mock == False confirmed at class and instance level"
+        },
+        {
+          "id": "TestExecutorIsMockAttribute::test_codex_executor_is_mock_is_false",
+          "result": "PASS",
+          "gap_closed": true,
+          "notes": "CodexCliExecutor.is_mock == False confirmed"
+        },
+        {
+          "id": "TestExecutorIsMockAttribute::test_mock_executor_is_mock_is_true",
+          "result": "PASS",
+          "gap_closed": true,
+          "notes": "MockClaudeExecutor.is_mock == True confirmed (sanity inverse)"
+        }
+      ]
+    },
+    {
+      "name": "F - WorkerIsolator Branch Name Shell Injection",
+      "tests": [
+        {
+          "id": "TestWorkerIsolatorBranchNameInjection::test_worker_isolator_branch_name_rejects_dollar_paren",
+          "result": "XFAIL",
+          "strict": true,
+          "gap_closed": false,
+          "gap_description": "feat$(whoami) passes _validate_branch_name; $() without / not caught",
+          "r4_priority": "P1",
+          "remediation": "Add '$' and '`' to rejected characters in _validate_branch_name",
+          "note": "feat$(rm -rf /) is incidentally caught via '/' rejection; the real gap is $() without a slash"
+        },
+        {
+          "id": "TestWorkerIsolatorBranchNameInjection::test_worker_isolator_branch_name_rejects_backtick",
+          "result": "XFAIL",
+          "strict": true,
+          "gap_closed": false,
+          "gap_description": "feat`whoami` passes _validate_branch_name; backtick not checked",
+          "r4_priority": "P1",
+          "remediation": "Add backtick to rejected characters in _validate_branch_name"
+        }
+      ]
+    }
+  ],
+  "r4_tracked_gaps": [
+    {
+      "gap": "MCP path-arg .env denial",
+      "file": "src/autodev/mcp_server/tools.py",
+      "priority": "P1"
+    },
+    {
+      "gap": "Executor output secret scrubbing (PYPI_API_TOKEN, ANTHROPIC_API_KEY)",
+      "file": "src/autodev/executors/base_executor.py",
+      "priority": "P1"
+    },
+    {
+      "gap": "Branch name $() injection rejection",
+      "file": "src/autodev/executors/worker_isolator.py",
+      "function": "_validate_branch_name",
+      "priority": "P1"
+    },
+    {
+      "gap": "Branch name backtick injection rejection",
+      "file": "src/autodev/executors/worker_isolator.py",
+      "function": "_validate_branch_name",
+      "priority": "P1"
+    },
+    {
+      "gap": "Audit log world-writable /tmp path",
+      "file": "src/autodev/mcp_server/tools.py",
+      "constant": "_DEFAULT_AUDIT_LOG",
+      "priority": "P2"
+    }
+  ]
+}

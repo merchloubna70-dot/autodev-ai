@@ -1,0 +1,198 @@
+{
+  "round": "security_coverage",
+  "audited_by": "Cov-C",
+  "audit_date": "2026-05-14",
+  "controls": [
+    {
+      "id": 1,
+      "name": "A2A SSRF guard (A2AHttpSSRFError / _validate_url)",
+      "test_file": "tests/unit/test_a2a_http_ssrf_hardening.py",
+      "positive_test_exists": true,
+      "negative_test_exists": true,
+      "bypass_test_exists": true,
+      "notes": "13 tests: file/ftp scheme rejection, loopback/RFC-1918/link-local/IPv6 literals, DNS-resolves-to-loopback, redirect-to-private blocked, allow_private=True bypass documented. Comprehensive.",
+      "remaining_gap": "none",
+      "severity": "info",
+      "recommended_test_name": null
+    },
+    {
+      "id": 2,
+      "name": "DNS rebinding guard (_resolve_and_pin_host / _PinnedHTTPHandler)",
+      "test_file": "tests/unit/test_a2a_dns_rebinding_hardening.py",
+      "positive_test_exists": true,
+      "negative_test_exists": true,
+      "bypass_test_exists": true,
+      "notes": "10 tests: IP-pinning prevents TOCTOU flip; redirect to private hostname rejected; max_redirects=5 enforced; HTTPS SNI hostname stored correctly; allow_private_networks=True bypasses pinning without calling _build_pinned_opener.",
+      "remaining_gap": "none",
+      "severity": "info",
+      "recommended_test_name": null
+    },
+    {
+      "id": 3,
+      "name": "MCP apply guardrail (AUTODEV_MCP_ALLOW_APPLY + allow_apply dual-gate)",
+      "test_file": "tests/integration/test_mcp_apply_guardrail.py",
+      "positive_test_exists": true,
+      "negative_test_exists": true,
+      "bypass_test_exists": true,
+      "notes": "9 test classes, 20+ cases: default dry-run, deny if only param or only env, deny on AUTODEV_MCP_ALLOW_APPLY=0, allow when both gates satisfied, audit log fields (allowed/denied), invalid mode rejected, default audit log path. Full dual-gate coverage.",
+      "remaining_gap": "No test verifies that mode='apply' with allow_apply=True is denied when the env var value is an arbitrary truthy string other than '1' (e.g., 'yes', 'true'). Edge case only.",
+      "severity": "low",
+      "recommended_test_name": "test_apply_env_var_non_canonical_truthy_denied"
+    },
+    {
+      "id": 4,
+      "name": "WorkerIsolator symlink escape (WorkerIsolatorPathEscapeError)",
+      "test_file": "tests/unit/test_worker_isolator_symlink_hardening.py",
+      "positive_test_exists": true,
+      "negative_test_exists": true,
+      "bypass_test_exists": true,
+      "notes": "9 tests: symlink target outside parent_home rejected; malicious pre-placed symlink blocked; cleanup outside root refused; valid symlink inside root succeeds; full lifecycle happy path.",
+      "remaining_gap": "none",
+      "severity": "info",
+      "recommended_test_name": null
+    },
+    {
+      "id": 5,
+      "name": "WorkerIsolator branch-name validation",
+      "test_file": "tests/unit/test_worker_isolator_symlink_hardening.py",
+      "positive_test_exists": true,
+      "negative_test_exists": true,
+      "bypass_test_exists": true,
+      "notes": "Tests for '..', bare '..', '/' in middle, NUL byte all present. No test for branch name with shell metacharacters ($, `, ;) or names starting with '-' which could be CLI injection vectors.",
+      "remaining_gap": "Branch name with shell metacharacters (e.g., $(), `) or leading dash not tested.",
+      "severity": "medium",
+      "recommended_test_name": "test_branch_name_shell_metacharacters_rejected"
+    },
+    {
+      "id": 6,
+      "name": "CommandSafety denylist (DEFAULT_DENYLIST)",
+      "test_file": "tests/unit/test_shell_safety.py + tests/unit/test_executor_boundary_smoke.py",
+      "positive_test_exists": true,
+      "negative_test_exists": true,
+      "bypass_test_exists": true,
+      "notes": "test_shell_safety.py covers rm -rf, curl|bash (spaced), unknown command rejection. test_executor_boundary_smoke.py exposes xfail gaps: curl|bash and wget|bash WITHOUT spaces bypass denylist (F-01 known, strict=True xfail). Known denylist entries 'source .env' and 'cat .env' have no dedicated positive test to confirm they are caught.",
+      "remaining_gap": "F-01 gap (no-space pipe variants) is documented as xfail but not fixed. 'source .env' and 'cat .env' denylist entries have no dedicated test asserting they are caught by is_command_denied() or scan_prompt_for_unsafe().",
+      "severity": "high",
+      "recommended_test_name": "test_denylist_catches_source_env / test_denylist_catches_cat_env / test_denylist_catches_nospace_pipe_variants"
+    },
+    {
+      "id": 7,
+      "name": "CODEX_HOME isolation",
+      "test_file": "tests/unit/test_worker_isolator_symlink_hardening.py",
+      "positive_test_exists": true,
+      "negative_test_exists": true,
+      "bypass_test_exists": true,
+      "notes": "test_codex_home_env_outside_worktree_root_raises() directly tests CODEX_HOME env override pointing outside narrow worktree_root; raises WorkerIsolatorPathEscapeError with 'CODEX_HOME' in message. Happy-path lifecycle also verified.",
+      "remaining_gap": "none",
+      "severity": "info",
+      "recommended_test_name": null
+    },
+    {
+      "id": 8,
+      "name": "Mock vs real executor distinction (no mock-marked-as-real)",
+      "test_file": "tests/unit/test_mocks_and_executors.py + tests/unit/test_sandboxed_executor.py",
+      "positive_test_exists": true,
+      "negative_test_exists": true,
+      "bypass_test_exists": false,
+      "notes": "MockCodexExecutor and MockClaudeExecutor assert mock_used=True. SandboxedExecutor inherits is_mock from inner. Real ClaudeCodeExecutor and CodexCliExecutor have is_mock=False in source (verified), but no test explicitly asserts that ClaudeCodeExecutor().is_mock is False and CodexCliExecutor().is_mock is False. No test verifies the router rejects a real executor with is_mock=True (spoofed mock).",
+      "remaining_gap": "No test asserts that real executors (ClaudeCodeExecutor, CodexCliExecutor) report is_mock=False. No bypass test that tries to mark a real executor as mock and verifies the router catches it.",
+      "severity": "medium",
+      "recommended_test_name": "test_real_executors_have_is_mock_false / test_router_rejects_spoofed_mock_executor"
+    },
+    {
+      "id": 9,
+      "name": "Token leakage avoidance (PYPI_API_TOKEN / ANTHROPIC_API_KEY redaction)",
+      "test_file": "tests/unit/test_release_workflow_policy.py (partial)",
+      "positive_test_exists": false,
+      "negative_test_exists": false,
+      "bypass_test_exists": false,
+      "notes": "test_release_workflow_policy.py tests that the CI workflow gates twine upload on PYPI_API_TOKEN presence, but this is a workflow policy test, not a runtime redaction test. No test verifies that PYPI_API_TOKEN, ANTHROPIC_API_KEY, or other secrets are scrubbed from executor logs, MCP responses, or exception messages. No test attempts to leak a token via a prompt and confirms it is redacted.",
+      "remaining_gap": "No runtime token redaction tests exist anywhere in the test suite. Secrets could leak in log output, exception tracebacks, or MCP content fields.",
+      "severity": "high",
+      "recommended_test_name": "test_executor_result_scrubs_env_token_from_stderr / test_mcp_response_does_not_contain_secret_value"
+    },
+    {
+      "id": 10,
+      "name": "Temporary directory cleanup",
+      "test_file": "tests/unit/test_worker_isolator_symlink_hardening.py",
+      "positive_test_exists": true,
+      "negative_test_exists": true,
+      "bypass_test_exists": false,
+      "notes": "test_happy_path_full_lifecycle() verifies cleanup_worktree removes the worker_home directory. test_cleanup_nonexistent_path_is_idempotent() verifies no-op on missing path. test_cleanup_outside_root_raises() confirms safety boundary. However, no test verifies cleanup occurs on exception/early-exit (i.e., no test of cleanup in a finally/context-manager path).",
+      "remaining_gap": "No test verifies that temp dirs are cleaned up when prepare_codex_home raises mid-way (exception-safety of cleanup). No test checks /tmp leakage across test runs.",
+      "severity": "low",
+      "recommended_test_name": "test_cleanup_called_on_prepare_exception"
+    },
+    {
+      "id": 11,
+      "name": ".env / secret path denial in MCP/CLI",
+      "test_file": "tests/unit/test_shell_safety.py (implicit via DEFAULT_DENYLIST)",
+      "positive_test_exists": false,
+      "negative_test_exists": false,
+      "bypass_test_exists": false,
+      "notes": "DEFAULT_DENYLIST contains 'source .env' and 'cat .env', but no dedicated test exercises is_command_denied('source .env') or is_command_denied('cat .env'). No test verifies MCP or CLI layers explicitly block requests that include .env or secret file paths as arguments. The coverage is implicit only through the denylist being loaded.",
+      "remaining_gap": "No test explicitly confirms 'source .env', 'cat .env', or access to /etc/passwd via MCP tool arguments is denied. The denylist entries exist in source but are not test-verified.",
+      "severity": "high",
+      "recommended_test_name": "test_denylist_catches_source_env / test_denylist_catches_cat_env / test_mcp_rejects_secret_file_path_arg"
+    },
+    {
+      "id": 12,
+      "name": "Docker digest pin check",
+      "test_file": "tests/unit/test_docker_digest_pinning.py",
+      "positive_test_exists": true,
+      "negative_test_exists": true,
+      "bypass_test_exists": false,
+      "notes": "6 tests: Dockerfile exists, all FROM lines contain @sha256:, digest is 64 hex chars, UPDATE.md exists and mentions 'digest', both builder+runtime stages use same digest, no floating python:3.12-slim tag. Structural integrity fully verified. No test for bypass (e.g., a test that a FROM line with a floating tag would fail the check).",
+      "remaining_gap": "No bypass/attack test that provides a Dockerfile with a floating tag and confirms the test catches it (test of the test itself). Minor gap.",
+      "severity": "low",
+      "recommended_test_name": "test_floating_tag_dockerfile_fails_digest_check"
+    },
+    {
+      "id": 13,
+      "name": "Release workflow pytest gate",
+      "test_file": "tests/unit/test_release_workflow_policy.py",
+      "positive_test_exists": true,
+      "negative_test_exists": true,
+      "bypass_test_exists": false,
+      "notes": "7 tests: workflow file exists, valid YAML, contains pytest step, publish needs test, no 'if: false' bypasses, PyPI upload gated on PYPI_API_TOKEN, test job has ruff and mypy. Comprehensive policy coverage.",
+      "remaining_gap": "No test verifies that a hypothetical workflow with 'needs: []' (empty needs) would fail the check — i.e., the assertion logic itself is not regression-tested against a malformed workflow.",
+      "severity": "low",
+      "recommended_test_name": "test_workflow_without_test_dependency_fails_needs_check"
+    }
+  ],
+  "controls_count": 13,
+  "fully_covered_count": 4,
+  "gap_count": 9,
+  "high_severity_gaps": [
+    {
+      "control_id": 6,
+      "name": "CommandSafety denylist — no-space pipe variants bypass (F-01 known xfail) + missing .env entry tests",
+      "severity": "high",
+      "recommended_tests": [
+        "test_denylist_catches_source_env",
+        "test_denylist_catches_cat_env",
+        "test_denylist_catches_nospace_pipe_variants"
+      ]
+    },
+    {
+      "control_id": 9,
+      "name": "Token leakage — no runtime redaction tests for PYPI_API_TOKEN / ANTHROPIC_API_KEY",
+      "severity": "high",
+      "recommended_tests": [
+        "test_executor_result_scrubs_env_token_from_stderr",
+        "test_mcp_response_does_not_contain_secret_value"
+      ]
+    },
+    {
+      "control_id": 11,
+      "name": ".env / secret path denial — denylist entries not explicitly test-verified",
+      "severity": "high",
+      "recommended_tests": [
+        "test_denylist_catches_source_env",
+        "test_denylist_catches_cat_env",
+        "test_mcp_rejects_secret_file_path_arg"
+      ]
+    }
+  ],
+  "verdict": "4 of 13 controls are fully covered (A2A SSRF, DNS rebinding, MCP apply guardrail, CODEX_HOME isolation). 9 controls have gaps of varying severity. 3 HIGH gaps require immediate attention in Phase 2: (1) CommandSafety denylist has a known unfixed bypass for no-space pipe variants and missing explicit tests for .env-specific entries; (2) no runtime token redaction tests exist anywhere — secrets could leak in logs/tracebacks; (3) .env/secret path denylist entries are untested in isolation, making regression risk real."
+}

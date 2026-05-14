@@ -1,0 +1,81 @@
+{
+  "report": "autodev_p0_release_critical_tests",
+  "date": "2026-05-14",
+  "agent": "Cov-G",
+  "phase": "Coverage Round Phase 2",
+  "gaps_closed": [
+    {
+      "id": "F-01a",
+      "name": "curl|bash no-space denylist bypass",
+      "status": "CLOSED",
+      "fix_file": "src/autodev/utils/command_safety.py",
+      "fix_description": "Added _normalize_pipe_whitespace() that collapses \\s*\\|\\s* to ' | ' before denylist matching in scan_prompt_for_unsafe and is_command_denied",
+      "test": "test_denylist_catches_curl_pipe_bash_no_space",
+      "xfail_removed": true
+    },
+    {
+      "id": "F-01b",
+      "name": "wget|bash no-space denylist bypass",
+      "status": "CLOSED",
+      "fix_file": "src/autodev/utils/command_safety.py",
+      "fix_description": "Same _normalize_pipe_whitespace() fix covers wget|bash variants",
+      "test": "test_denylist_catches_wget_pipe_bash_no_space",
+      "xfail_removed": true
+    },
+    {
+      "id": "F-02",
+      "name": "FACTORY_FORCE_MOCK=1 does not override apply-mode allow_mock_executor=False",
+      "status": "CLOSED",
+      "fix_file": "src/autodev/config.py",
+      "fix_description": "FactoryConfig.from_env() sets allow_mock_executor=True when FACTORY_FORCE_MOCK=1, regardless of mode",
+      "test": "test_factory_force_mock_overrides_apply_mode_fail_closed",
+      "xfail_removed": true,
+      "test_updated": true,
+      "test_update_reason": "Test rewritten to directly assert from_env() behavior rather than simulating the now-fixed _build_config() bug"
+    },
+    {
+      "id": "F-03",
+      "name": "WorkerIsolator: no escaped symlink validation in parent_home",
+      "status": "CLOSED",
+      "fix_file": "tests/unit/test_executor_boundary_smoke.py",
+      "fix_description": "xfail removed (R3-H already fixed underlying code). Added WorkerIsolatorPathEscapeError to pytest.raises tuple to match actual raised exception type",
+      "test": "test_worker_isolator_rejects_escaped_symlink_in_parent_home",
+      "xfail_removed": true
+    }
+  ],
+  "new_tests": [
+    {
+      "id": "TWINE-POLICY",
+      "file": "tests/unit/test_release_workflow_twine_password_policy.py",
+      "description": "Policy tests asserting release.yml uses TWINE_PASSWORD env var instead of -p CLI flag for twine upload",
+      "test_count": 5,
+      "passing": 1,
+      "xfailed": 4,
+      "xfail_reason": "release.yml still uses -p flag; R4 to switch to TWINE_PASSWORD env",
+      "strict": true,
+      "tests": [
+        "test_release_yml_exists",
+        "test_twine_upload_does_not_use_p_flag",
+        "test_twine_upload_uses_twine_password_env",
+        "test_twine_upload_does_not_inline_secret_in_run",
+        "test_twine_upload_command_is_minimal_without_auth_flags"
+      ]
+    }
+  ],
+  "suite_delta": {
+    "boundary_smoke_before": {"passed": 13, "xfailed": 4, "failed": 0},
+    "boundary_smoke_after": {"passed": 17, "xfailed": 0, "failed": 0},
+    "twine_policy_new": {"passed": 1, "xfailed": 4, "failed": 0},
+    "full_suite_before": {"passed": 1158, "xfailed": 6, "failed": 0},
+    "full_suite_after": {"passed": 1178, "xfailed": 10, "failed": 0},
+    "regressions": 0
+  },
+  "files_modified": [
+    "src/autodev/utils/command_safety.py",
+    "src/autodev/config.py",
+    "tests/unit/test_executor_boundary_smoke.py",
+    "tests/unit/test_release_workflow_twine_password_policy.py",
+    "docs/validation/autodev_p0_release_critical_tests.md",
+    "docs/validation/autodev_p0_release_critical_tests.json"
+  ]
+}
