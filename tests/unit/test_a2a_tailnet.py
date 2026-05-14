@@ -266,8 +266,9 @@ class TestPortConflict:
         """Binding a port that is already in use must raise PortConflict."""
         holder = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
-            holder.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            # Do NOT set SO_REUSEADDR — we WANT the second bind to fail
             holder.bind(("127.0.0.1", 0))
+            holder.listen(1)  # listen() forces a real conflict cross-platform
             taken_port = holder.getsockname()[1]
             with pytest.raises(PortConflict) as exc_info:
                 _probe_port_free("127.0.0.1", taken_port)
@@ -280,8 +281,8 @@ class TestPortConflict:
         """PortConflict message must guide the user to pick a different port."""
         holder = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
-            holder.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             holder.bind(("127.0.0.1", 0))
+            holder.listen(1)
             taken_port = holder.getsockname()[1]
             with pytest.raises(PortConflict) as exc_info:
                 _probe_port_free("127.0.0.1", taken_port)
