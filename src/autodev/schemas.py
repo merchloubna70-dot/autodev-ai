@@ -69,6 +69,9 @@ class ExecutionBackend(str, Enum):
     MOCK_CODEX = "mock_codex"
     MOCK_CLAUDE = "mock_claude"
     AUTO = "auto"
+    GEMINI = "gemini"
+    QWEN = "qwen"
+    AIDER = "aider"
 
 
 class GateStatus(str, Enum):

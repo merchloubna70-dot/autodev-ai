@@ -5,6 +5,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- Opt-in executor adapters for Gemini CLI (`--executor gemini`), Qwen Code CLI (`--executor qwen`), and Aider (`--executor aider`); these are NOT part of `--executor auto` routing and produce a clear install-hint error when the underlying binary is absent.
+
 ## [0.1.0a6] — 2026-05-14 (Pre-Release, Docker fix for rename)
 
 ### Fixed

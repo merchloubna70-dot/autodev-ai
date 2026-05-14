@@ -26,11 +26,14 @@ from ..schemas import (
     RouterMetricsSummary,
     TaskType,
 )
+from .aider_executor import AiderExecutor
 from .base_executor import BaseExecutor
 from .claude_code_executor import ClaudeCodeExecutor
 from .codex_cli_executor import CodexCliExecutor
+from .gemini_executor import GeminiExecutor
 from .mock_claude_executor import MockClaudeExecutor
 from .mock_codex_executor import MockCodexExecutor
+from .qwen_executor import QwenExecutor
 
 
 @dataclass
@@ -65,6 +68,9 @@ class ExecutorRouter:
         claude: BaseExecutor | None = None,
         mock_codex: BaseExecutor | None = None,
         mock_claude: BaseExecutor | None = None,
+        gemini: BaseExecutor | None = None,
+        qwen: BaseExecutor | None = None,
+        aider: BaseExecutor | None = None,
         allow_mock: bool | None = None,
     ):
         self.config = config or FactoryConfig()
@@ -73,6 +79,10 @@ class ExecutorRouter:
         self.claude = claude or ClaudeCodeExecutor(self.config.claude_code)
         self.mock_codex = mock_codex or MockCodexExecutor()
         self.mock_claude = mock_claude or MockClaudeExecutor()
+        # Opt-in adapters (not part of --executor auto routing)
+        self.gemini = gemini or GeminiExecutor()
+        self.qwen = qwen or QwenExecutor()
+        self.aider = aider or AiderExecutor()
         self.allow_mock = self.config.allow_mock_executor if allow_mock is None else allow_mock
         self.metrics: RouterMetricsSummary = RouterMetricsSummary()
         self.budget: BudgetHint = BudgetHint()
@@ -118,6 +128,31 @@ class ExecutorRouter:
                 "user-selected mock claude",
                 False,
                 True,
+            )
+        # Opt-in adapters: routed directly, no mock fallback, fail if CLI missing
+        if request.backend == ExecutionBackend.GEMINI:
+            return RouterDecision(
+                ExecutionBackend.GEMINI,
+                [ExecutionBackend.GEMINI],
+                "user-selected: --executor gemini",
+                False,
+                False,
+            )
+        if request.backend == ExecutionBackend.QWEN:
+            return RouterDecision(
+                ExecutionBackend.QWEN,
+                [ExecutionBackend.QWEN],
+                "user-selected: --executor qwen",
+                False,
+                False,
+            )
+        if request.backend == ExecutionBackend.AIDER:
+            return RouterDecision(
+                ExecutionBackend.AIDER,
+                [ExecutionBackend.AIDER],
+                "user-selected: --executor aider",
+                False,
+                False,
             )
 
         # 2) Auto-route based on task_type / risk / language / files
@@ -294,6 +329,12 @@ class ExecutorRouter:
             return self.mock_codex
         if backend == ExecutionBackend.MOCK_CLAUDE:
             return self.mock_claude
+        if backend == ExecutionBackend.GEMINI:
+            return self.gemini
+        if backend == ExecutionBackend.QWEN:
+            return self.qwen
+        if backend == ExecutionBackend.AIDER:
+            return self.aider
         # AUTO should never reach here after decide()
         raise ValueError(f"no concrete executor for backend {backend}")
 
