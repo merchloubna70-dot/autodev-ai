@@ -24,7 +24,7 @@ jobs:
           cache: pip
 
       - name: Install dependencies
-        run: pip install -e ".[dev]"
+        run: pip install -e ".[dev,tui]"
 
       - name: Run pytest
         run: pytest -q --cov=autodev --cov-report=xml --cov-report=term-missing

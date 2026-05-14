@@ -87,7 +87,7 @@ class TestJobStructure:
         jobs = workflow.get("jobs", {})
         assert jobs, "Workflow must define at least one job"
         # Accept any job name that looks like the sbom job
-        for job_name, job in jobs.items():
+        for _job_name, job in jobs.items():
             steps = job.get("steps", [])
             if steps:
                 return steps
