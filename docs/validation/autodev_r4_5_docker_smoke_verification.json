@@ -1,0 +1,31 @@
+{
+  "round": "r4_5_docker_smoke_verification",
+  "status": "completed",
+  "result": "published_verified_with_limitations",
+  "image": "ghcr.io/merchloubna70-dot/autodev-ai",
+  "tag": "v0.1.0a2",
+  "digest": "sha256:6d0fb4a571229a30f2fda318a7d5679f0eec4b5dd80cd737dab114847cf65413",
+  "anonymous_pull_works": true,
+  "pull_output": "Status: Image is up to date for ghcr.io/merchloubna70-dot/autodev-ai:v0.1.0a2",
+  "smoke_version_output": "autodev-ai 0.1.0a2",
+  "smoke_help_exit_code": 0,
+  "smoke_help_first_line": "Usage: autodev [OPTIONS] COMMAND [ARGS]...",
+  "multi_arch_verified": "previously confirmed (linux/amd64 + linux/arm64) on v0.1.0a1; same docker-publish.yml workflow path for v0.1.0a2",
+  "limitations": [
+    "Alpha pre-release image — pin to v0.1.0a2 explicitly for immutable refs",
+    ":latest is rolling and will move when next version is published",
+    "NO SLSA provenance attestation (R5)",
+    "NO SBOM in image (R5)",
+    "NOT signed (no cosign signature; R5)",
+    "Base image (python@sha256:401f6e1a...) is digest-pinned for reproducibility (good); no rotation schedule yet (R5)"
+  ],
+  "production_enterprise_ready": false,
+  "production_enterprise_blocked_reason": "alpha pre-release without supply-chain attestation; R5 scope",
+  "validation_commands": [
+    "docker logout ghcr.io",
+    "docker pull ghcr.io/merchloubna70-dot/autodev-ai:v0.1.0a2",
+    "docker run --rm ghcr.io/merchloubna70-dot/autodev-ai:v0.1.0a2 --version",
+    "docker run --rm ghcr.io/merchloubna70-dot/autodev-ai:v0.1.0a2 --help"
+  ],
+  "verdict": "docker_pull_and_smoke_pass_alpha_image"
+}

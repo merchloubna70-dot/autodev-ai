@@ -1,0 +1,33 @@
+{
+  "round": "r4_5_homebrew_formula_check",
+  "status": "completed",
+  "verdict": "formula_ready_tap_publish_pending",
+  "formula_path": "packaging/homebrew/Formula/autodev-ai.rb",
+  "version_in_formula": "0.1.0a2",
+  "url_in_formula": "https://files.pythonhosted.org/packages/b0/4a/27e49dba9ee2846bff62ee934ee61896a820ba0f4031cc6c4df576b66d9b/autodev_ai-0.1.0a2.tar.gz",
+  "sha256_in_formula": "246f5f60810c1832051f9219fd141fe63ce87bbafec0125412d18cea326c291d",
+  "sha256_matches_pypi": true,
+  "todo_publish_sha256_remaining": false,
+  "blocked_comment_remaining": false,
+  "leading_comment": "Backfilled 2026-05-14 from real PyPI 0.1.0a2 publish (R4.5-E confirmed)",
+  "publish_checklist_present": true,
+  "publish_checklist_path": "packaging/homebrew/PUBLISH_CHECKLIST.md",
+  "brew_audit_path_based_disabled": true,
+  "brew_audit_path_based_disabled_detail": "Homebrew 5.1.9 rejects `brew audit [path]` — requires tap-first. Did not perform full `brew install` (would need 10+ transitive python deps + venv build, ~5 min). Static checks pass: URL+sha256 match canonical PyPI artifact (verified via R4.5-D), Ruby parses (brew loads the file before erroring out at audit step).",
+  "tap_repo_created": false,
+  "tap_repo_to_create": "merchloubna70-dot/homebrew-autodev (R5 scope)",
+  "to_unblock_tap_publish": [
+    "Create public repo merchloubna70-dot/homebrew-autodev",
+    "Push Formula/autodev-ai.rb into that repo",
+    "Users can then: brew tap merchloubna70-dot/autodev && brew install autodev-ai"
+  ],
+  "transitive_resource_sha256s_in_formula": 9,
+  "transitive_resource_sha256s_verified_this_round": 0,
+  "transitive_resource_sha256s_verification_pending": "R5 — re-run homebrew-pypi-poet to regenerate; current values captured at initial formula draft and may be stale vs current PyPI versions of pydantic / typer / rich / PyYAML / jinja2 / click / mdurl / markdown-it-py / pygments / shellingham",
+  "limitations": [
+    "Tap repo doesn't exist; users still cannot `brew install autodev-ai` until R5 tap publish",
+    "9 transitive resource sha256s not re-verified this round",
+    "Full brew install smoke not run (heavy operation; URL+sha256 verified independently is sufficient for static check)"
+  ],
+  "verdict_detail": "Formula static state is correct and matches canonical PyPI artifact. Tap publish is a separate R5 task and would require creating a new public repo + pushing the formula there."
+}

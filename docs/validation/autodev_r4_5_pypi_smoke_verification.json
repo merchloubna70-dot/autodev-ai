@@ -1,0 +1,29 @@
+{
+  "round": "r4_5_pypi_smoke_verification",
+  "status": "completed",
+  "audit_date": "2026-05-14",
+  "package": "autodev-ai",
+  "version": "0.1.0a2",
+  "pypi_install": "pass",
+  "cli_version": "autodev-ai 0.1.0a2",
+  "cli_help_exit": 0,
+  "module_form_version": "autodev-ai 0.1.0a2",
+  "release_readiness_gate_from_pypi_install": "broken_shim_known_limitation",
+  "release_readiness_gate_detail": "src/autodev/release_readiness_gate.py shim attempts to load scripts/release_readiness_gate.py via spec.loader.exec_module from a relative path (../scripts/...). When autodev-ai is installed from PyPI, scripts/ does NOT ship inside the wheel (only src/autodev/ does), so the shim cannot find the standalone gate script and raises during _load(). The gate ITSELF (when run from a source tree, `python scripts/release_readiness_gate.py`) works perfectly — 36/36 pass. This is a R5 cleanup: either ship scripts/ in the wheel, OR rewrite the shim to be self-contained.",
+  "python_version": "3.12.13",
+  "pip_version": "26.0 (upgrade hint to 26.1.1, not blocking)",
+  "limitations": [
+    "typer 0.25.1 dropped the [all] extra; pyproject still declares typer[all]>=0.9 → pip emits 'typer 0.25.1 does not provide the extra all' warning (non-blocking). R5: change to bare `typer>=0.9` since modern typer bundles rich + shellingham already.",
+    "python -m autodev.release_readiness_gate fails from PyPI install (shim points at scripts/ which isn't in wheel). Gate itself works from source tree. R5: ship scripts/ in wheel or rewrite shim."
+  ],
+  "validation_commands": [
+    "python3.12 -m venv /tmp/autodev-pypi-final",
+    "/tmp/autodev-pypi-final/bin/pip install --upgrade pip",
+    "/tmp/autodev-pypi-final/bin/pip install --pre autodev-ai==0.1.0a2",
+    "/tmp/autodev-pypi-final/bin/autodev --version",
+    "/tmp/autodev-pypi-final/bin/autodev --help",
+    "/tmp/autodev-pypi-final/bin/python -m autodev.cli --version",
+    "/tmp/autodev-pypi-final/bin/python -m autodev.release_readiness_gate"
+  ],
+  "verdict": "pypi_install_works_with_2_documented_r5_cleanups"
+}

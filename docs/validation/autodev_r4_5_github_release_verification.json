@@ -1,0 +1,26 @@
+{
+  "round": "r4_5_github_release_verification",
+  "status": "completed",
+  "tag": "v0.1.0a2",
+  "result": "published_verified",
+  "url": "https://github.com/merchloubna70-dot/autodev-ai/releases/tag/v0.1.0a2",
+  "draft": false,
+  "prerelease": false,
+  "author": "github-actions[bot]",
+  "created_at": "2026-05-14T07:48:15Z",
+  "published_at": "2026-05-14T07:49:34Z",
+  "assets": [
+    "autodev_ai-0.1.0a2-py3-none-any.whl",
+    "autodev_ai-0.1.0a2.tar.gz"
+  ],
+  "release_body_contains_compare_link": "Full Changelog: v0.1.0a1...v0.1.0a2",
+  "workflow_run_status": "release.yml on v0.1.0a2 → success",
+  "workflow_run_jobs": ["test (ruff + mypy + pytest)", "publish (build + twine check + GitHub Release + PyPI upload)"],
+  "secret_leak_in_logs": "none_detected (logs auto-masked via release.yml using TWINE_PASSWORD env, not -p flag)",
+  "release_body_does_not_claim": [
+    "production-ready",
+    "enterprise-ready",
+    "stable 1.0"
+  ],
+  "verdict": "github_release_published_verified"
+}

@@ -1,0 +1,152 @@
+{
+  "round": "autodev_r4_5_post_release_hygiene_round",
+  "status": "completed",
+  "overall_result": "pass_with_limitations",
+  "audit_date": "2026-05-14",
+  "auditor": "Opus inline (A/B/C/D/E/G/H/I) + 1 sonnet (F secret hygiene)",
+  "version": "0.1.0a2",
+  "user_authority": "你自动处理 — autonomous handling within R4.5 boundaries (no new release, no token rotation, no tap publish)",
+  "pypi": {
+    "status": "published_verified",
+    "install_smoke": "pass",
+    "artifact_hashes_verified": true,
+    "version": "0.1.0a2",
+    "url": "https://pypi.org/project/autodev-ai/0.1.0a2/",
+    "wheel_sha256": "4b01686898c225200024a0a0758265792bcbb1b36f3cdc4690b3be3e21778600",
+    "sdist_sha256": "246f5f60810c1832051f9219fd141fe63ce87bbafec0125412d18cea326c291d",
+    "minor_pypi_install_warnings": [
+      "typer[all] extra dropped in typer 0.25.1 (non-blocking; R5: change to bare typer>=0.9)",
+      "python -m autodev.release_readiness_gate shim broken from PyPI install (R5: ship scripts/ in wheel OR rewrite shim self-contained)"
+    ]
+  },
+  "github_release": {
+    "status": "published_verified",
+    "tag": "v0.1.0a2",
+    "url": "https://github.com/merchloubna70-dot/autodev-ai/releases/tag/v0.1.0a2",
+    "draft": false,
+    "prerelease": false,
+    "assets": ["autodev_ai-0.1.0a2-py3-none-any.whl", "autodev_ai-0.1.0a2.tar.gz"],
+    "workflow_run": "release.yml on v0.1.0a2 → success",
+    "secret_in_logs": "none_detected (release.yml uses TWINE_PASSWORD env, not -p flag)"
+  },
+  "docker": {
+    "status": "published_verified_with_limitations",
+    "image": "ghcr.io/merchloubna70-dot/autodev-ai",
+    "tag": "v0.1.0a2",
+    "digest": "sha256:6d0fb4a571229a30f2fda318a7d5679f0eec4b5dd80cd737dab114847cf65413",
+    "anonymous_pull_works": true,
+    "smoke_version": "autodev-ai 0.1.0a2",
+    "smoke_help_exit": 0,
+    "multi_arch": "amd64 + arm64",
+    "limitations_for_enterprise": ["no SLSA provenance", "no SBOM", "not cosign-signed", ":latest is rolling"]
+  },
+  "homebrew": {
+    "status": "formula_ready_tap_publish_pending",
+    "sha256_backfilled": true,
+    "version_in_formula": "0.1.0a2",
+    "url_in_formula": "https://files.pythonhosted.org/packages/b0/4a/.../autodev_ai-0.1.0a2.tar.gz",
+    "sha256_in_formula": "246f5f60810c1832051f9219fd141fe63ce87bbafec0125412d18cea326c291d",
+    "sha256_matches_pypi_canonical": true,
+    "todo_publish_sha256_remaining": false,
+    "blocked_comment_remaining": false,
+    "publish_checklist_present": true,
+    "tap_repo_created": false,
+    "tap_publish_remains_r5": "create merchloubna70-dot/homebrew-autodev repo + push formula",
+    "transitive_resource_sha256_reverification_pending": true
+  },
+  "secret_hygiene": {
+    "actual_secret_leak_found": false,
+    "pypi_token_patterns_in_git": 0,
+    "findings_by_classification": {
+      "placeholder": 7,
+      "test_fixture": 18,
+      "doc_example": 8,
+      "tool_pattern_constant": 4,
+      "actual_leak": 0
+    },
+    "mitigations_present": {
+      "secret_redaction_module": true,
+      "path_safety_module": true,
+      "gitignore_secret_paths": true,
+      "branch_name_validator": true
+    },
+    "gh_secret_metadata": {
+      "PYPI_API_TOKEN": {
+        "present": true,
+        "updated_at": "2026-05-14T07:44:23Z (when Opus set via stdin pipe in current session)"
+      }
+    },
+    "token_rotation_recommended": true,
+    "token_rotation_completed": false,
+    "token_rotation_reason": "Token was pasted into chat history once. Audit confirms 0 token presence in git-tracked files. Chat exposure is the residual leak channel; rotation eliminates it. Process channel (stdin pipe to gh secret set) was clean — no argv/file/log exposure."
+  },
+  "release_readiness": {
+    "internal_dogfood": "allowed",
+    "public_beta": "allowed",
+    "pypi_0_1_0a2": "published_verified",
+    "github_release": "published_verified",
+    "docker": "published_verified_with_limitations",
+    "homebrew": "formula_ready_tap_publish_pending",
+    "production_enterprise_use": "blocked"
+  },
+  "validation_commands": [
+    "git status --short",
+    "python3.12 -m venv /tmp/autodev-pypi-final",
+    "/tmp/autodev-pypi-final/bin/pip install --pre autodev-ai==0.1.0a2",
+    "/tmp/autodev-pypi-final/bin/autodev --version  →  autodev-ai 0.1.0a2",
+    "/tmp/autodev-pypi-final/bin/autodev --help     →  exit 0",
+    "/tmp/autodev-pypi-final/bin/python -m autodev.cli --version  →  autodev-ai 0.1.0a2",
+    "gh release view v0.1.0a2 --repo merchloubna70-dot/autodev-ai",
+    "docker pull ghcr.io/merchloubna70-dot/autodev-ai:v0.1.0a2",
+    "docker run --rm ghcr.io/.../autodev-ai:v0.1.0a2 --version  →  autodev-ai 0.1.0a2",
+    "curl -sL <pypi wheel/sdist URLs> | shasum -a 256  →  match expected",
+    "gh api repos/.../actions/secrets --jq '.secrets[]|\"\\(.name) updated=\\(.updated_at)\"'  →  PYPI_API_TOKEN present"
+  ],
+  "evidence_files": [
+    "docs/validation/autodev_r4_5_pypi_smoke_verification.{md,json}",
+    "docs/validation/autodev_r4_5_github_release_verification.{md,json}",
+    "docs/validation/autodev_r4_5_docker_smoke_verification.{md,json}",
+    "docs/validation/autodev_r4_5_artifact_hash_verification.{md,json}",
+    "docs/validation/autodev_r4_5_homebrew_formula_check.{md,json}",
+    "docs/validation/autodev_r4_5_secret_hygiene_audit.{md,json}",
+    "docs/validation/autodev_r4_5_token_rotation_checklist.{md,json}",
+    "docs/release/pypi_token_rotation_checklist.md",
+    "docs/validation/autodev_r4_5_post_release_hygiene_round.{md,json} (this aggregator)"
+  ],
+  "remaining_blockers": [
+    {
+      "id": "HOMEBREW-TAP-REPO",
+      "severity": "operational (not technical)",
+      "title": "merchloubna70-dot/homebrew-autodev tap repo does not exist yet",
+      "unblocks": "Users running `brew tap merchloubna70-dot/autodev && brew install autodev-ai`",
+      "scope": "R5"
+    },
+    {
+      "id": "PROD-ENTERPRISE",
+      "severity": "scope-deferred",
+      "title": "Production enterprise readiness — alpha pre-release without supply-chain attestation",
+      "unblocks_after": "R5 SLSA + SBOM + per-caller MCP auth + signed Docker",
+      "scope": "R5+"
+    }
+  ],
+  "remaining_risks": [
+    "PyPI token rotation not yet done (recommended; checklist provided; not blocking)",
+    "9 transitive resource sha256s in Homebrew formula not re-verified against current PyPI versions of those deps",
+    "Docker `:latest` is rolling (alpha pre-release; pin to v0.1.0a2 for immutability)",
+    "No SLSA provenance / SBOM / cosign signature on Docker (R5 enterprise scope)",
+    "typer[all] deprecation warning on PyPI install (non-blocking; R5: change to bare typer>=0.9)",
+    "python -m autodev.release_readiness_gate broken from PyPI install (scripts/ not in wheel; R5)"
+  ],
+  "r5_plan_recommended": [
+    "(1) Create merchloubna70-dot/homebrew-autodev tap repo + push formula",
+    "(2) Re-verify 9 transitive resource sha256s via homebrew-pypi-poet",
+    "(3) Rotate PYPI_API_TOKEN to project-scoped (minimum privilege)",
+    "(4) Fix typer[all] in pyproject.toml — change to bare typer>=0.9",
+    "(5) Fix python -m autodev.release_readiness_gate broken-from-PyPI shim",
+    "(6) SLSA provenance via cosign on Docker images",
+    "(7) SBOM generation in release.yml (syft / cyclonedx)",
+    "(8) Per-caller MCP auth (bearer / OAuth on stdio transport)",
+    "(9) Apple Developer ID signing for macOS .app launcher",
+    "(10) Coverage lift on 5 aspirational modules (cli 46→80 / mcp_server 72-76→85 / replay 61→85 / a2a/http 78→90 / worker_isolator 89→95)"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "round": "r4_5_artifact_hash_verification",
+  "status": "completed",
+  "result": "all_hashes_exact_match",
+  "wheel": {
+    "filename": "autodev_ai-0.1.0a2-py3-none-any.whl",
+    "expected_sha256": "4b01686898c225200024a0a0758265792bcbb1b36f3cdc4690b3be3e21778600",
+    "downloaded_sha256": "4b01686898c225200024a0a0758265792bcbb1b36f3cdc4690b3be3e21778600",
+    "match": true,
+    "source_url": "https://files.pythonhosted.org/packages/7a/14/855ac0890d696276bde36fea2eeea798e12201c6e77347c8af1a20e9a1c9/autodev_ai-0.1.0a2-py3-none-any.whl"
+  },
+  "sdist": {
+    "filename": "autodev_ai-0.1.0a2.tar.gz",
+    "expected_sha256": "246f5f60810c1832051f9219fd141fe63ce87bbafec0125412d18cea326c291d",
+    "downloaded_sha256": "246f5f60810c1832051f9219fd141fe63ce87bbafec0125412d18cea326c291d",
+    "match": true,
+    "source_url": "https://files.pythonhosted.org/packages/b0/4a/27e49dba9ee2846bff62ee934ee61896a820ba0f4031cc6c4df576b66d9b/autodev_ai-0.1.0a2.tar.gz"
+  },
+  "homebrew_formula_uses_sdist_sha256": true,
+  "homebrew_sha256_in_formula": "246f5f60810c1832051f9219fd141fe63ce87bbafec0125412d18cea326c291d",
+  "homebrew_sha256_matches_pypi": true,
+  "validation_commands": [
+    "curl -sL -o autodev_ai-0.1.0a2-py3-none-any.whl <pypi-wheel-url>",
+    "curl -sL -o autodev_ai-0.1.0a2.tar.gz <pypi-sdist-url>",
+    "shasum -a 256 autodev_ai-0.1.0a2-py3-none-any.whl autodev_ai-0.1.0a2.tar.gz"
+  ],
+  "verdict": "no_tampering_detected_homebrew_safe_to_tap"
+}

@@ -1,0 +1,24 @@
+{
+  "round": "r4_5_token_rotation_checklist",
+  "status": "checklist_generated_not_executed",
+  "rotation_recommended": true,
+  "rotation_completed": false,
+  "rotation_recommended_because": "PYPI_API_TOKEN was pasted in chat history once. R4.5-F audit confirms zero token traces in git-tracked content. Chat exposure is the residual leak channel; rotation eliminates it.",
+  "checklist_path": "docs/release/pypi_token_rotation_checklist.md",
+  "checklist_steps_count": 4,
+  "steps": [
+    "1. Generate new project-scoped token at https://pypi.org/manage/account/token/ (scope: Project: autodev-ai, was Entire account)",
+    "2. Update GitHub repo secret via printf|gh secret set stdin pipe (never -p/--body flag)",
+    "3. Revoke OLD token on PyPI (burns the chat-leaked credential)",
+    "4. Verify on next tag push (release.yml twine upload uses new token)"
+  ],
+  "safety_constraints": [
+    "Do NOT paste new token back into chat",
+    "Do NOT write token to any file in repo (even .env)",
+    "Do NOT use gh secret set --body (token in argv briefly)",
+    "Do NOT skip step 3 (revoke old)"
+  ],
+  "blocking_for_release": false,
+  "blocking_for_release_detail": "v0.1.0a2 already published; current token works; rotation is hygiene not blocker. Next release will use whichever token is current at the time.",
+  "verdict": "checklist_ready_user_action_required"
+}
