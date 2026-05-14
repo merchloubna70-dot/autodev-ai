@@ -1,0 +1,67 @@
+{
+  "finding": "F-04",
+  "round": "R3",
+  "agent": "R3-D",
+  "date": "2026-05-14",
+  "status": "CLOSED",
+  "verdict": "PASS",
+  "digest": {
+    "reference": "python@sha256:401f6e1a67dad31a1bd78e9ad22d0ee0a3b52154e6bd30e90be696bb6a3d7461",
+    "sha256": "401f6e1a67dad31a1bd78e9ad22d0ee0a3b52154e6bd30e90be696bb6a3d7461",
+    "python_version": "3.12.13",
+    "image_created": "2026-05-08T20:14:42.406762012Z",
+    "architecture": "linux/arm64",
+    "variant": "v8",
+    "size_bytes": 43482760,
+    "obtained_by": "docker pull python:3.12-slim && docker inspect python:3.12-slim --format '{{index .RepoDigests 0}}'"
+  },
+  "changes": [
+    {
+      "file": "packaging/docker/Dockerfile",
+      "description": "Both FROM python:3.12-slim lines replaced with digest-pinned FROM python@sha256:401f6e1a67dad31a1bd78e9ad22d0ee0a3b52154e6bd30e90be696bb6a3d7461 plus leading comment"
+    },
+    {
+      "file": "packaging/docker/UPDATE.md",
+      "description": "New file: digest update process instructions (when/how/where/test)"
+    },
+    {
+      "file": "tests/unit/test_docker_digest_pinning.py",
+      "description": "New file: 6 unit tests for Dockerfile digest pinning correctness"
+    }
+  ],
+  "verification": {
+    "docker_build": {
+      "command": "docker build -f packaging/docker/Dockerfile -t autodev-ai:r3-d-smoke .",
+      "result": "SUCCESS",
+      "output_image": "sha256:4acd5216be5a28cc87d7cdb6ef5ef7f0cd43041838f4bfda79875ed18ac57785"
+    },
+    "unit_tests": {
+      "command": "python -m pytest tests/unit/test_docker_digest_pinning.py -v",
+      "passed": 6,
+      "failed": 0,
+      "tests": [
+        "test_dockerfile_exists",
+        "test_dockerfile_from_lines_contain_digest",
+        "test_dockerfile_sha256_hash_is_64_hex_chars",
+        "test_update_md_exists_and_mentions_digest",
+        "test_both_stages_use_same_digest",
+        "test_dockerfile_no_floating_python_tag"
+      ]
+    },
+    "full_suite": {
+      "command": "python -m pytest tests/ -q",
+      "passed": 1054,
+      "failed": 1,
+      "xfailed": 4,
+      "pre_existing_failure": "tests/unit/test_homebrew_formula_metadata.py::test_formula_sha256_placeholder_is_explicit"
+    }
+  },
+  "gate_check_spec": {
+    "name": "r3_docker_base_digest_pinned",
+    "check": "Parse packaging/docker/Dockerfile; for every non-comment FROM line, assert the image reference contains '@sha256:' followed by exactly 64 hex characters.",
+    "pass_condition": "All FROM lines contain '@sha256:<64-hex-chars>'; no floating tags present.",
+    "remediation": "Run: docker pull python:3.12-slim && docker inspect python:3.12-slim --format '{{index .RepoDigests 0}}'. Replace both FROM lines in packaging/docker/Dockerfile with the output.",
+    "severity": "HIGH",
+    "finding_ref": "F-04"
+  }
+}

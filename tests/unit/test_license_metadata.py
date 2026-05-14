@@ -1,9 +1,9 @@
 """Tests for LICENSE file existence and pyproject.toml / README license metadata."""
 from __future__ import annotations
 
-import tomllib
 from pathlib import Path
 
+import tomllib
 
 REPO_ROOT = Path(__file__).parent.parent.parent
 LICENSE_FILE = REPO_ROOT / "LICENSE"

@@ -12,7 +12,6 @@ import urllib.error
 import urllib.request
 from http.client import HTTPMessage
 from io import BytesIO
-from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -21,7 +20,6 @@ from autodev.adapters.a2a.transports.http import (
     A2AHttpTransport,
     _validate_url,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers

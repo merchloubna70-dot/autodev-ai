@@ -11,7 +11,6 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-import pytest
 import yaml
 
 WORKFLOW_PATH = Path(__file__).parents[2] / ".github" / "workflows" / "release.yml"

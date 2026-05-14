@@ -221,10 +221,10 @@ class WorkerIsolator:
         """Assert ``resolved`` is inside ``root``; raise otherwise."""
         try:
             resolved.relative_to(root)
-        except ValueError:
+        except ValueError as exc:
             raise WorkerIsolatorPathEscapeError(
                 f"{label}: resolved path {resolved} is outside root {root}"
-            )
+            ) from exc
 
     # ------------------------------------------------------------------
     # Codex home isolation
@@ -276,11 +276,11 @@ class WorkerIsolator:
             resolved_root = self._worktree_root.resolve()
             try:
                 resolved_env.relative_to(resolved_root)
-            except ValueError:
+            except ValueError as exc:
                 raise WorkerIsolatorPathEscapeError(
                     f"CODEX_HOME env override {env_codex_home!r} resolves to "
                     f"{resolved_env} which is outside worktree_root {self._worktree_root}"
-                )
+                ) from exc
 
         worker_home.mkdir(parents=True, exist_ok=True)
 

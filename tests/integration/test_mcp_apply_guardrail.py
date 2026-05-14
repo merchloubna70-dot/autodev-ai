@@ -11,28 +11,21 @@ from __future__ import annotations
 
 import json
 import os
-import tempfile
 from pathlib import Path
 from typing import Any
 from unittest import mock
-
-import pytest
 
 # ---------------------------------------------------------------------------
 # Import the handler functions under test directly.
 # This avoids subprocess overhead and any flow-level dependencies.
 # ---------------------------------------------------------------------------
-
 from autodev.mcp_server.tools import (
     _ENV_ALLOW_APPLY,
     _ENV_AUDIT_LOG,
-    _DEFAULT_AUDIT_LOG,
+    _check_apply_mode_allowed,
     _handle_deliver_project,
     _handle_run_issue,
-    _check_apply_mode_allowed,
-    _write_audit_log,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers

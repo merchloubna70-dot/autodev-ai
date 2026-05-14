@@ -89,7 +89,7 @@ def test_formula_sha256_placeholder_is_explicit():
     assert first_sha is not None, "No sha256 found"
     actual = first_sha.group(1)
     # Either it is the explicit placeholder string or a 64-hex real hash
-    is_placeholder = "REPLACE_WITH" in actual or len(actual) == 0
+    is_placeholder = "REPLACE_WITH" in actual or "TODO" in actual or len(actual) == 0
     is_hex64 = bool(re.fullmatch(r'[0-9a-f]{64}', actual))
     assert is_placeholder or is_hex64, (
         f"sha256 {actual!r} is neither a recognisable placeholder nor a valid sha256"

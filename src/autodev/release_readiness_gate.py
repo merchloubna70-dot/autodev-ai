@@ -7,7 +7,6 @@ Delegates entirely to scripts/release_readiness_gate.py — no duplicate logic.
 from __future__ import annotations
 
 import importlib.util
-import sys
 from pathlib import Path
 
 _SCRIPT = Path(__file__).parent.parent.parent / "scripts" / "release_readiness_gate.py"

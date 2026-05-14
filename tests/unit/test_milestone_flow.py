@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -26,7 +26,6 @@ from autodev.schemas import (
     TaskType,
 )
 from autodev.state import RunState
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -188,7 +187,7 @@ def test_milestone_flow_report_artifact(tmp_path: Path) -> None:
         "autodev.flows.milestone_flow.ImplementerAgent.run_milestone",
         return_value=ok_result,
     ):
-        result = flow.run(inp)
+        flow.run(inp)
 
     # The flow appends result to run.state.implementation_results and saves.
     saved_state_file = (

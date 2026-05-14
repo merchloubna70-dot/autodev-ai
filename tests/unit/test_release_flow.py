@@ -8,26 +8,19 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from unittest.mock import MagicMock, patch
-
-import pytest
+from unittest.mock import patch
 
 from autodev.flows.release_flow import ReleaseFlow
 from autodev.schemas import (
     GateStatus,
-    ImplementationResult,
     Language,
-    Milestone,
-    MilestonePlan,
     PipelineMode,
     ReleaseCheckReport,
     ReleaseDecision,
     Severity,
     SeverityFinding,
-    VerificationReport,
 )
 from autodev.state import RunState
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -110,7 +103,7 @@ def test_release_flow_blocker_finding_blocks_release(tmp_path: Path) -> None:
     flow = ReleaseFlow()
 
     # Build a state with a security review that has a BLOCKER finding.
-    from autodev.schemas import GateStatus, SecurityReviewReport
+    from autodev.schemas import SecurityReviewReport
 
     blocker = SeverityFinding(
         severity=Severity.BLOCKER,

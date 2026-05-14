@@ -1,0 +1,140 @@
+{
+  "report": "autodev_r3_ruff_lint_closure",
+  "date": "2026-05-14",
+  "round": "R3-C",
+  "before_error_count": 55,
+  "after_error_count": 0,
+  "auto_fixed_count": 46,
+  "manual_fixed_count": 9,
+  "per_file_fixes": [
+    {
+      "file": "scripts/release_readiness_gate.py",
+      "category": "scripts/",
+      "auto_fixes": ["I001 (import sort)", "F541 (3x f-string without placeholder)"],
+      "manual_fixes": ["RUF059 stdout2 unused -> _stdout2", "RUF059 stderr2 unused -> _stderr2", "RUF059 stdout unused -> _stdout"],
+      "noqa_added": []
+    },
+    {
+      "file": "src/autodev/adapters/a2a/transports/http.py",
+      "category": "src/",
+      "auto_fixes": ["I001 (import sort)"],
+      "manual_fixes": [],
+      "noqa_added": []
+    },
+    {
+      "file": "src/autodev/executors/worker_isolator.py",
+      "category": "src/",
+      "auto_fixes": [],
+      "manual_fixes": [
+        "B904 raise-from-exc (line 225): added `from exc` to ValueError handler",
+        "B904 raise-from-exc (line 280): added `from exc` to ValueError handler"
+      ],
+      "noqa_added": []
+    },
+    {
+      "file": "tests/integration/test_mcp_server_smoke.py",
+      "category": "tests/",
+      "auto_fixes": [],
+      "manual_fixes": ["RUF059 stdout unused -> _stdout"],
+      "noqa_added": []
+    },
+    {
+      "file": "tests/unit/test_a2a_dns_rebinding_hardening.py",
+      "category": "tests/",
+      "auto_fixes": [],
+      "manual_fixes": [
+        "RUF059 body unused -> _body (line 183)",
+        "RUF059 body unused -> _body (line 285)",
+        "RUF059 body unused -> _body (line 393)"
+      ],
+      "noqa_added": []
+    },
+    {
+      "file": "tests/unit/test_executor_boundary_smoke.py",
+      "category": "tests/",
+      "auto_fixes": [],
+      "manual_fixes": ["RUF059 decision unused -> _decision"],
+      "noqa_added": []
+    },
+    {
+      "file": "tests/unit/test_milestone_flow.py",
+      "category": "tests/",
+      "auto_fixes": [],
+      "manual_fixes": ["F841 result assigned but unused -> dropped assignment"],
+      "noqa_added": []
+    },
+    {
+      "file": "tests/unit/test_release_flow.py",
+      "category": "tests/",
+      "auto_fixes": [
+        "F401 MagicMock unused removed",
+        "F401 pytest unused removed",
+        "F401 GateStatus unused removed (top-level)",
+        "F401 ImplementationResult unused removed",
+        "F401 Milestone unused removed",
+        "F401 MilestonePlan unused removed",
+        "F401 VerificationReport unused removed",
+        "F811 GateStatus redefinition removed (kept local import)"
+      ],
+      "manual_fixes": [],
+      "noqa_added": []
+    },
+    {
+      "file": "tests/unit/test_release_readiness_gate.py",
+      "category": "tests/",
+      "auto_fixes": ["F401 sys unused removed", "F401 MagicMock unused removed"],
+      "manual_fixes": [],
+      "noqa_added": []
+    },
+    {
+      "file": "tests/unit/test_release_workflow_policy.py",
+      "category": "tests/",
+      "auto_fixes": ["F401 pytest unused removed"],
+      "manual_fixes": [],
+      "noqa_added": []
+    },
+    {
+      "file": "tests/unit/test_version_consistency.py",
+      "category": "tests/",
+      "auto_fixes": ["I001 (import sort)"],
+      "manual_fixes": [],
+      "noqa_added": []
+    },
+    {
+      "file": "tests/unit/test_worker_isolator_symlink_hardening.py",
+      "category": "tests/",
+      "auto_fixes": ["I001 (import sort)", "F401 os unused removed"],
+      "manual_fixes": [],
+      "noqa_added": []
+    }
+  ],
+  "noqa_total": 0,
+  "lint_yml_expansion": {
+    "before": "ruff check src/ tests/",
+    "after": "ruff check src tests scripts",
+    "mypy_before": "mypy src/ --ignore-missing-imports --no-strict-optional",
+    "mypy_after": "mypy src/autodev --ignore-missing-imports --no-strict-optional",
+    "scripts_covered": true
+  },
+  "new_files": [
+    "tests/unit/test_lint_workflow_policy.py"
+  ],
+  "policy_tests": {
+    "file": "tests/unit/test_lint_workflow_policy.py",
+    "count": 4,
+    "tests": [
+      "test_lint_workflow_file_exists",
+      "test_lint_workflow_yaml_loads_cleanly",
+      "test_lint_workflow_ruff_covers_scripts",
+      "test_lint_workflow_ruff_covers_src_and_tests"
+    ],
+    "result": "4/4 passed"
+  },
+  "full_suite": {
+    "passed": 1061,
+    "xfailed": 4,
+    "failed": 1,
+    "note": "1 pre-existing failure in test_homebrew_formula_metadata.py::test_formula_sha256_placeholder_is_explicit (sha256 placeholder mismatch, unrelated to ruff changes)"
+  },
+  "verdict": "clean"
+}

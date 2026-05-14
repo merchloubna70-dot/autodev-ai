@@ -1,0 +1,59 @@
+{
+  "audit_id": "autodev_r3_homebrew_publish_time_blocker",
+  "round": "R3-F",
+  "date": "2026-05-14",
+  "agent": "R3-F",
+  "verdict": "honest_blocker_recorded",
+  "homebrew_status": "blocked_with_reason",
+  "homebrew_excluded_from_pypi_rc": true,
+  "formula": {
+    "path": "packaging/homebrew/Formula/autodev-ai.rb",
+    "sha256_state": "placeholder",
+    "sha256_value": "TODO_PUBLISH_SHA256",
+    "has_blocked_comment": true,
+    "version": "0.1.0a1",
+    "url_host": "github.com/merchloubna70-dot"
+  },
+  "checklist": {
+    "path": "packaging/homebrew/PUBLISH_CHECKLIST.md",
+    "exists": true,
+    "step_count": 7
+  },
+  "tests": {
+    "path": "tests/unit/test_homebrew_publish_time_blocker.py",
+    "total": 7,
+    "passed": 7,
+    "failed": 0
+  },
+  "gate_checks": [
+    {
+      "id": "r3_homebrew_publish_time_blocker_clean",
+      "category": "honesty_check",
+      "description": "Formula has placeholder sha256 AND has BLOCKED comment AND PUBLISH_CHECKLIST.md exists",
+      "pass_conditions": [
+        "sha256 field matches TODO_PUBLISH_SHA256 or REPLACE_WITH_PYPI_0_1_0A1_SDIST_SHA256_AT_PUBLISH_TIME",
+        "formula contains string 'BLOCKED for publish'",
+        "packaging/homebrew/PUBLISH_CHECKLIST.md exists"
+      ],
+      "blocking": true,
+      "current_status": "pass"
+    },
+    {
+      "id": "r3_pypi_rc_not_blocked_by_homebrew",
+      "category": "meta_gate",
+      "description": "If r3_homebrew_publish_time_blocker_clean passes, Homebrew blocked-ness is excluded from PyPI RC strict-gate verdict",
+      "pass_conditions": [
+        "r3_homebrew_publish_time_blocker_clean passes",
+        "PyPI RC strict gate does not count homebrew component blocked_with_reason as a PyPI RC blocker"
+      ],
+      "implementation_note": "In gate script: when computing pypi_rc_verdict, skip checks where component=='homebrew' if r3_homebrew_publish_time_blocker_clean is passing. Homebrew appears in output as status:blocked_with_reason, excluded_from_pypi_rc:true",
+      "blocking": false,
+      "current_status": "pass"
+    }
+  ],
+  "full_suite_after": {
+    "passed": 1062,
+    "xfailed": 4,
+    "failed": 0
+  }
+}

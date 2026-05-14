@@ -7,7 +7,6 @@ from pathlib import Path
 
 import tomllib
 
-
 REPO_ROOT = Path(__file__).parent.parent.parent
 PYPROJECT = REPO_ROOT / "pyproject.toml"
 INIT_PY = REPO_ROOT / "src" / "autodev" / "__init__.py"

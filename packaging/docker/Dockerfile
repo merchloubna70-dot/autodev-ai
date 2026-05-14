@@ -1,5 +1,6 @@
+# Base image pinned by digest for reproducibility. Update: see packaging/docker/UPDATE.md
 # Stage 1: builder — install wheel into /install
-FROM python:3.12-slim AS builder
+FROM python@sha256:401f6e1a67dad31a1bd78e9ad22d0ee0a3b52154e6bd30e90be696bb6a3d7461 AS builder
 
 WORKDIR /build
 
@@ -10,7 +11,8 @@ COPY dist/autodev_ai-0.1.0-py3-none-any.whl .
 RUN pip install --no-cache-dir --target /install autodev_ai-0.1.0-py3-none-any.whl
 
 # Stage 2: runtime — lean final image
-FROM python:3.12-slim
+# Base image pinned by digest for reproducibility. Update: see packaging/docker/UPDATE.md
+FROM python@sha256:401f6e1a67dad31a1bd78e9ad22d0ee0a3b52154e6bd30e90be696bb6a3d7461
 
 # Install Node.js (for claude/codex CLIs via npm) — best-effort; binaries
 # can also be volume-mounted from the host (see README.md for details).

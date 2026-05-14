@@ -14,16 +14,12 @@ regression guard: it should start PASSING once path validation is added.
 """
 from __future__ import annotations
 
-import os
-from pathlib import Path
-
 import pytest
 
 from autodev.config import FactoryConfig
 from autodev.executors.executor_router import ExecutorRouter
 from autodev.executors.worker_isolator import WorkerIsolator
 from autodev.utils.command_safety import scan_prompt_for_unsafe
-
 
 # ---------------------------------------------------------------------------
 # F-01 — Denylist: no-space pipe variants are NOT caught
@@ -104,7 +100,14 @@ def test_factory_force_mock_env_base_default_is_true(monkeypatch):
 def test_factory_force_mock_overrides_apply_mode_fail_closed(monkeypatch, tmp_path):
     """F-02: FACTORY_FORCE_MOCK=1 should not fail-closed in apply mode when both CLIs absent."""
     monkeypatch.setenv("FACTORY_FORCE_MOCK", "1")
-    from autodev.schemas import ExecutionBackend, ExecutionRequest, Language, PipelineMode, RiskLevel, TaskType
+    from autodev.schemas import (
+        ExecutionBackend,
+        ExecutionRequest,
+        Language,
+        PipelineMode,
+        RiskLevel,
+        TaskType,
+    )
 
     cfg = FactoryConfig.from_env()
     # Simulate what _build_config() does for mode=apply with allow_mock=None
@@ -156,7 +159,7 @@ def test_fail_closed_without_allow_mock_even_with_force_mock(monkeypatch, tmp_pa
         risk_level=RiskLevel.LOW,
         backend=ExecutionBackend.AUTO,
     )
-    result, decision = router.execute(req)
+    result, _decision = router.execute(req)
     assert result.success is False
     assert result.error_type == "cli_missing_fail_closed"
 

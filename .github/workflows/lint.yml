@@ -22,7 +22,7 @@ jobs:
         run: pip install -e ".[dev]" mypy
 
       - name: ruff check
-        run: ruff check src/ tests/
+        run: ruff check src tests scripts
 
       - name: mypy
-        run: mypy src/ --ignore-missing-imports --no-strict-optional
+        run: mypy src/autodev --ignore-missing-imports --no-strict-optional

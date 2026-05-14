@@ -16,15 +16,13 @@ is monkeypatched to return fake HTTP responses without touching the network.
 """
 from __future__ import annotations
 
-import http.client
 import socket
-import ssl
 import urllib.error
 import urllib.parse
 import urllib.request
 from http.client import HTTPMessage
 from io import BytesIO
-from unittest.mock import MagicMock, patch, call
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -33,9 +31,7 @@ from autodev.adapters.a2a.transports.http import (
     A2AHttpTransport,
     _PinnedHTTPSConnection,
     _resolve_and_pin_host,
-    _build_pinned_opener,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -184,7 +180,7 @@ def test_dns_rebinding_connect_to_pinned_public_ip(monkeypatch) -> None:
     captured_ips = _patch_build_pinned_opener(monkeypatch, [fake_opener])
 
     transport = A2AHttpTransport("http://example.com")
-    status, body = transport._make_request("http://example.com/tasks/send", method="GET")
+    status, _body = transport._make_request("http://example.com/tasks/send", method="GET")
 
     # Request should succeed.
     assert status == 200, f"Expected 200, got {status}"
@@ -286,7 +282,7 @@ def test_redirect_to_public_hostname_allowed(monkeypatch) -> None:
     captured_ips = _patch_build_pinned_opener(monkeypatch, [redirect_opener, second_opener])
 
     transport = A2AHttpTransport("http://example.com")
-    status, body = transport._make_request("http://example.com/api", method="GET")
+    status, _body = transport._make_request("http://example.com/api", method="GET")
 
     assert status == 200
     # Both hops connected to a public IP (pinned).
@@ -394,7 +390,7 @@ def test_allow_private_networks_bypasses_ip_pinning(monkeypatch) -> None:
             "http://127.0.0.1:9999",
             allow_private_networks=True,
         )
-        status, body = transport._make_request("http://127.0.0.1:9999/ping", method="GET")
+        status, _body = transport._make_request("http://127.0.0.1:9999/ping", method="GET")
 
     # _build_pinned_opener must NOT have been called.
     assert pinned_called["called"] is False, (

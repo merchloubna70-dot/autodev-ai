@@ -12,10 +12,8 @@ HIGH-DIST-01 closure tests.
 
 from __future__ import annotations
 
-import hashlib
 import shutil
 import subprocess
-import sys
 import tempfile
 from pathlib import Path
 

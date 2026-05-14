@@ -25,7 +25,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 # ---------------------------------------------------------------------------
 # Type aliases
 # ---------------------------------------------------------------------------
@@ -133,7 +132,7 @@ def check_cli_help_works(repo: Path) -> CheckResult:
     rc_which, _, _ = _run(["which", "autodev"], repo, timeout=5)
     if rc_which != 0:
         # Try via python -m
-        rc2, stdout2, stderr2 = _run(
+        rc2, _stdout2, _stderr2 = _run(
             [sys.executable, "-m", "autodev.cli", "--help"],
             repo,
             timeout=10,
@@ -147,7 +146,7 @@ def check_cli_help_works(repo: Path) -> CheckResult:
             (time.monotonic() - t0) * 1000,
         )
 
-    rc, stdout, stderr = _run(["autodev", "--help"], repo, timeout=10)
+    rc, _stdout, stderr = _run(["autodev", "--help"], repo, timeout=10)
     if rc == 0:
         return _make(name, "pass", "autodev --help exit 0", (time.monotonic() - t0) * 1000, "autodev --help")
     return _make(name, "fail", f"autodev --help exited {rc}: {stderr[:200]}", (time.monotonic() - t0) * 1000)
@@ -319,7 +318,7 @@ def check_mock_executor_works(repo: Path) -> CheckResult:
                 return _make(
                     name,
                     "skip",
-                    f"'classify-input' sub-command not found in CLI; skipping",
+                    "'classify-input' sub-command not found in CLI; skipping",
                     (time.monotonic() - t0) * 1000,
                 )
         except FileNotFoundError:
@@ -348,7 +347,7 @@ def check_packaging_files_exist(repo: Path) -> CheckResult:
     present = [str(p.relative_to(repo)) for p in required if p.exists()]
 
     if not missing:
-        return _make(name, "pass", f"All 3 packaging files present", (time.monotonic() - t0) * 1000, ", ".join(present))
+        return _make(name, "pass", "All 3 packaging files present", (time.monotonic() - t0) * 1000, ", ".join(present))
     return _make(name, "fail", f"Missing packaging files: {missing}", (time.monotonic() - t0) * 1000, ", ".join(present))
 
 
@@ -1043,7 +1042,7 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
     # Print summary to stdout
     summary = report["summary"]
     overall = report["overall"]
-    print(f"\n=== Release Readiness Gate ===")
+    print("\n=== Release Readiness Gate ===")
     print(f"  overall : {overall}")
     print(f"  pass    : {summary['pass']}")
     print(f"  fail    : {summary['fail']}")

@@ -327,5 +327,5 @@ def test_shutdown_graceful():
         env=env,
     )
     payload = json.dumps(INITIALIZE_MSG) + "\n"
-    stdout, _ = proc.communicate(input=payload, timeout=15)
+    _stdout, _ = proc.communicate(input=payload, timeout=15)
     assert proc.returncode == 0, f"Server exited with non-zero code: {proc.returncode}"

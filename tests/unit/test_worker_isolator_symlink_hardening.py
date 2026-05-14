@@ -13,7 +13,6 @@ Attack vectors covered:
 """
 from __future__ import annotations
 
-import os
 from pathlib import Path
 
 import pytest
@@ -22,7 +21,6 @@ from autodev.executors.worker_isolator import (
     WorkerIsolator,
     WorkerIsolatorPathEscapeError,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers
