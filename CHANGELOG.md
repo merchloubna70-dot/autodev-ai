@@ -5,16 +5,58 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+---
+
+## [0.1.0a2] — 2026-05-14 (Pre-Release)
+
+### Fixed
+- 5 pre-publish CI blockers discovered and fixed during v0.1.0a1 tag push:
+  1. `release.yml` step-level `secrets.if` rejected by GitHub Actions schema
+     (split into detector step writing `$GITHUB_OUTPUT` + upload gating on output)
+  2. `tomllib` import broke py3.10 collection in R2-AB tests
+     (added `sys.version_info` check + `tomli` fallback + `tomli` dev dep)
+  3. `test_wheel_cli_version_smoke.py` required pre-built `dist/`
+     (added `skip_if_no_dist` marker to all 6 tests)
+  4. `mypy` missing from `[project.optional-dependencies].dev`
+     (added `mypy>=1.5` to dev extras)
+  5. `Dockerfile` hardcoded old version `dist/autodev_ai-0.1.0-*.whl`
+     (changed to glob `dist/autodev_ai-*.whl`)
+
 ### Added
-- R3 hardening: `AUTODEV_MCP_ALLOW_APPLY` and `AUTODEV_MCP_AUDIT_LOG` env vars
-  for MCP apply-mode gate and audit trail (see R3 hardening docs).
-- `docs/configuration.md` — comprehensive environment and TOML config reference.
-- `docs/troubleshooting.md` — 12-scenario problem-solving guide.
-- `CHANGELOG.md` — this file.
+- Security R4: `secret_redaction.py` masks pypi/anthropic/openai/github/slack
+  tokens + PEM blocks in executor stdout/stderr/logs (idempotent, preserves
+  first 4 chars for debuggability)
+- Security R4: MCP `path_safety.py` preflight validator rejects `.env`,
+  `credentials.json`, `*.pem`, `*.key`, secret-in-basename, path traversal
+  in 6 MCP handlers (scan / deliver_project / run_issue / report /
+  release_check / list_runs)
+- Security R4: branch-name injection rejection (11 patterns: `$()`, backtick,
+  `;`, `&&`, `||`, `|`, `>`, `<`, newline, leading `-`, whitespace) in
+  `worker_isolator` + propagated to `git_adapter` push/checkout/create_branch
+- Security R4: MCP `_validate_required_params` pre-dispatch JSON-Schema check
+  (returns `-32602 Invalid params` if required field missing)
+- R3: `AUTODEV_MCP_ALLOW_APPLY` and `AUTODEV_MCP_AUDIT_LOG` env vars
+- `docs/configuration.md` — environment + TOML reference
+- `docs/troubleshooting.md` — 12-scenario guide
+- `CHANGELOG.md` — this file
+- `scripts/coverage_gate.py` — 3-threshold coverage gate (overall 80 /
+  release 85 / security 90)
+
+### Removed
+- All 10 `pytest.mark.xfail(strict=True)` markers — each closed by a real
+  code fix (not annotation-only). See
+  `docs/validation/autodev_r4_xfail_ledger.{md,json}`.
+
+### Internal
+- Tests: 1062 → 1308 (+246 over 4 hardening rounds)
+- Coverage: 79% → 80.5% line+branch
+- 5 release-readiness rounds documented:
+  R1 release hardening · R2 PyPI blocker closure · R3 PyPI RC final
+  hardening · RC publish prep · R4 security xfail closure
 
 ---
 
-## [0.1.0a1] — 2026-05-14 (Pre-Release)
+## [0.1.0a1] — 2026-05-14 (Pre-Release, superseded by 0.1.0a2)
 
 ### Added
 
