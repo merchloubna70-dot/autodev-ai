@@ -5,6 +5,20 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.1.0a6] — 2026-05-14 (Pre-Release, Docker fix for rename)
+
+### Fixed
+
+- `packaging/docker/Dockerfile` had stale `dist/autodev_ai-*.whl` glob pattern — was missed by v0.1.0a5's rename sed pass because `Dockerfile` has no file extension. Updated to `autodev_x-*.whl` to match the wheel name produced by hatchling under the new `autodev-x` distribution name.
+- Dockerfile `HEALTHCHECK` and `ENTRYPOINT` updated from `autodev` to `autodev-x` (the renamed console-script entry point).
+- Internal comment ("the `autodev` console-script entry-point") updated.
+
+### Context
+
+v0.1.0a5 successfully published the `autodev-x` wheel to PyPI but the Docker build-and-publish workflow failed because the Dockerfile still pointed at the old wheel name. v0.1.0a6 is the first version where PyPI + GHCR + Homebrew formula + SBOM + SLSA + cosign all land green on the new name.
+
+---
+
 ## [0.1.0a5] — 2026-05-14 (Pre-Release, project rename)
 
 ### Changed

@@ -1,41 +1,41 @@
 {
   "gate": "release_readiness",
-  "ran_at": "2026-05-14T13:56:23+00:00",
+  "ran_at": "2026-05-14T14:10:05+00:00",
   "overall": "pass",
   "checks": [
     {
       "name": "package_metadata_valid",
       "status": "pass",
-      "detail": "name=autodev-x version=0.1.0a5 ep=autodev.cli:app",
-      "duration_ms": 1.2,
+      "detail": "name=autodev-x version=0.1.0a6 ep=autodev.cli:app",
+      "duration_ms": 1.1,
       "evidence": "/Users/macworkers/autodev/pyproject.toml"
     },
     {
       "name": "cli_help_works",
       "status": "pass",
       "detail": "autodev-x CLI --help via python -m: exit 0",
-      "duration_ms": 195.0,
+      "duration_ms": 182.4,
       "evidence": ""
     },
     {
       "name": "pytest_evidence",
       "status": "pass",
       "detail": "Smoke pytest passed:\n........                                                                 [100%]\n",
-      "duration_ms": 283.8,
+      "duration_ms": 274.2,
       "evidence": "/Users/macworkers/autodev/tests/unit/test_prfaq_style.py"
     },
     {
       "name": "ruff_passes",
       "status": "pass",
       "detail": "ruff check . exit 0",
-      "duration_ms": 28.9,
+      "duration_ms": 24.7,
       "evidence": ""
     },
     {
       "name": "mypy_passes",
       "status": "pass",
       "detail": "mypy src/autodev exit 0",
-      "duration_ms": 102.7,
+      "duration_ms": 95.3,
       "evidence": ""
     },
     {
@@ -56,14 +56,14 @@
       "name": "a2a_smoke_path_exists",
       "status": "pass",
       "detail": "16 a2a/roundtable test files found",
-      "duration_ms": 2.4,
+      "duration_ms": 1.9,
       "evidence": "tests/integration/test_a2a_http_roundtrip.py, tests/integration/test_a2a_roundtable_e2e.py, tests/integration/test_a2a_server_cli.py, tests/integration/test_cli_roundtable.py, tests/integration/test_parallel_review_via_roundtable.py"
     },
     {
       "name": "mock_executor_works",
       "status": "pass",
       "detail": "FACTORY_FORCE_MOCK=1 /Users/macworkers/autodev-r11-venv/bin/python -m autodev.cli exit 0",
-      "duration_ms": 158.0,
+      "duration_ms": 143.7,
       "evidence": ""
     },
     {
@@ -90,15 +90,15 @@
     {
       "name": "r2_version_consistency",
       "status": "pass",
-      "detail": "version consistent: 0.1.0a5",
-      "duration_ms": 32.5,
+      "detail": "version consistent: 0.1.0a6",
+      "duration_ms": 31.5,
       "evidence": "/Users/macworkers/autodev/pyproject.toml"
     },
     {
       "name": "r2_license_file_present",
       "status": "pass",
       "detail": "LICENSE present with expected MIT content",
-      "duration_ms": 0.2,
+      "duration_ms": 0.1,
       "evidence": "/Users/macworkers/autodev/LICENSE"
     },
     {
@@ -111,9 +111,9 @@
     {
       "name": "r2_wheel_version_works",
       "status": "pass",
-      "detail": "wheel version '0.1.0a5' matches pyproject '0.1.0a5'",
+      "detail": "wheel version '0.1.0a6' matches pyproject '0.1.0a6'",
       "duration_ms": 0.4,
-      "evidence": "/Users/macworkers/autodev/dist/autodev_x-0.1.0a5-py3-none-any.whl"
+      "evidence": "/Users/macworkers/autodev/dist/autodev_x-0.1.0a6-py3-none-any.whl"
     },
     {
       "name": "r2_a2a_http_ssrf_hardened",
@@ -160,8 +160,8 @@
     {
       "name": "r2_macos_info_plist_version_match",
       "status": "pass",
-      "detail": "Info.plist CFBundleShortVersionString='0.1.0a5' contains '0.1.0'",
-      "duration_ms": 0.9,
+      "detail": "Info.plist CFBundleShortVersionString='0.1.0a6' contains '0.1.0'",
+      "duration_ms": 0.8,
       "evidence": "/Users/macworkers/autodev/packaging/desktop/autodev-x.app/Contents/Info.plist"
     },
     {
@@ -175,14 +175,14 @@
       "name": "r3_mypy_clean",
       "status": "pass",
       "detail": "mypy src/autodev: 0 errors",
-      "duration_ms": 101.7,
+      "duration_ms": 94.5,
       "evidence": "Success: no issues found in 176 source files"
     },
     {
       "name": "r3_ruff_clean",
       "status": "pass",
       "detail": "ruff check .: 0 errors",
-      "duration_ms": 26.3,
+      "duration_ms": 23.5,
       "evidence": "All checks passed!"
     },
     {
@@ -216,7 +216,7 @@
     {
       "name": "r3_changelog_present",
       "status": "pass",
-      "detail": "CHANGELOG.md exists (14416 chars), mentions 0.1.0a1",
+      "detail": "CHANGELOG.md exists (15287 chars), mentions 0.1.0a1",
       "duration_ms": 0.0,
       "evidence": ""
     },
