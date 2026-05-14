@@ -1,0 +1,29 @@
+name: Setup autodev
+description: Install Python and autodev-ai with pinned extras. Single source of truth for CI Python env.
+
+inputs:
+  python-version:
+    description: Python version (e.g. "3.10", "3.11", "3.12")
+    required: true
+  extras:
+    description: pip extras to install (comma-separated, e.g. "dev,tui")
+    required: false
+    default: "dev,tui"
+  extra-packages:
+    description: Additional packages to install after the editable install (space-separated)
+    required: false
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Python ${{ inputs.python-version }}
+      uses: actions/setup-python@v6
+      with:
+        python-version: ${{ inputs.python-version }}
+        cache: pip
+
+    - name: Install autodev-ai
+      shell: bash
+      run: |
+        pip install -e ".[${{ inputs.extras }}]" ${{ inputs.extra-packages }}

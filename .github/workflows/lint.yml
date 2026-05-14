@@ -12,14 +12,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v6
+      - name: Setup autodev
+        uses: ./.github/actions/setup-autodev
         with:
           python-version: "3.12"
-          cache: pip
-
-      - name: Install dev dependencies
-        run: pip install -e ".[dev,tui]" mypy
+          extra-packages: mypy
 
       - name: ruff check
         run: ruff check src tests scripts
