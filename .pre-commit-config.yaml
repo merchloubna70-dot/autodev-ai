@@ -1,0 +1,25 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-toml
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.4.10
+    hooks:
+      - id: ruff
+        args: [--fix]
+        types_or: [python, pyi]
+
+  - repo: local
+    hooks:
+      - id: pytest-collected-count
+        name: pytest collected count (>= 1)
+        language: system
+        entry: bash -c 'pytest --collect-only -q 2>&1 | grep -E "^[0-9]+ test" | awk "{if (\$1 < 1) {print \"No tests collected\"; exit 1}}"'
+        pass_filenames: false
+        stages: [pre-push]
