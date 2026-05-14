@@ -24,7 +24,9 @@ audit trail, A2A agent networking, MCP server support, and sprint-mode planning.
 From the GitHub Release wheel:
 
 ```bash
-pip install https://github.com/merchloubna70-dot/autodev-ai/releases/download/v0.1.0-alpha/autodev_ai-0.1.0-py3-none-any.whl
+pip install --pre autodev-ai           # once published on PyPI
+# OR install directly from the GitHub Release wheel:
+pip install https://github.com/merchloubna70-dot/autodev-ai/releases/download/v0.1.0a1/autodev_ai-0.1.0a1-py3-none-any.whl
 ```
 
 From source:

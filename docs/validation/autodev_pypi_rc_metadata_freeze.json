@@ -1,0 +1,158 @@
+{
+  "round": "pypi_rc_metadata_freeze",
+  "version": "0.1.0a1",
+  "package_name": "autodev-ai",
+  "pyproject": {
+    "name": "autodev-ai",
+    "version": "0.1.0a1",
+    "description": "AI-driven software factory: CrewAI + Codex CLI + Claude Code CLI with multi-CLI router, A2A roundtable, MCP server, scale-adaptive delivery from brief to release-ready project.",
+    "requires_python": ">=3.10",
+    "license": "MIT",
+    "license_files": ["LICENSE"],
+    "authors": [{"name": "Software Factory"}],
+    "classifiers_count": 0,
+    "classifiers": [],
+    "dependencies_count": 5,
+    "dependencies": [
+      "pydantic>=2.5,<3.0",
+      "typer[all]>=0.9",
+      "rich>=13.7",
+      "PyYAML>=6.0",
+      "jinja2>=3.1"
+    ],
+    "optional_dependencies": {
+      "crewai": ["crewai>=0.30"],
+      "tui": ["textual>=0.60"],
+      "dev": [
+        "pytest>=8.0",
+        "pytest-asyncio>=0.23",
+        "pytest-cov>=4.1",
+        "ruff>=0.4"
+      ]
+    },
+    "console_scripts": {"autodev": "autodev.cli:app"},
+    "urls": null,
+    "hatch_build": {
+      "targets_wheel_packages": ["src/autodev"]
+    }
+  },
+  "readme": {
+    "present": true,
+    "word_count": 1264,
+    "first_200_chars": "# autodev-ai\n\n[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)\n[![Python ≥3.10](https://img.shields.io/badge/python-%E2%89%A53.10-blue)](https://www.python.org)\n[![PyP",
+    "has_install": true,
+    "has_quickstart": true,
+    "has_license_section": true,
+    "broken_links": ["docs/assets/demo.gif"]
+  },
+  "changelog": {
+    "present": true,
+    "has_0_1_0a1_heading": true,
+    "pre_release_marker": true,
+    "heading_line": "## [0.1.0a1] — 2026-05-14 (Pre-Release)"
+  },
+  "license_file": {
+    "present": true,
+    "type": "MIT",
+    "holder": "autodev-ai contributors",
+    "year": "2026"
+  },
+  "version_consistency": {
+    "pyproject": "0.1.0a1",
+    "package_dunder": "0.1.0a1",
+    "importlib_metadata": "0.1.0a1",
+    "match": true
+  },
+  "twine_check": {
+    "wheel": "PASSED",
+    "sdist": "PASSED"
+  },
+  "wheel_top_files": [
+    "autodev/__init__.py",
+    "autodev/cli.py",
+    "autodev/config.py",
+    "autodev/release_readiness_gate.py",
+    "autodev/schemas.py",
+    "autodev/state.py",
+    "autodev/adapters/__init__.py",
+    "autodev/adapters/convention_loader.py",
+    "autodev/adapters/distillator.py",
+    "autodev/adapters/embeddings_index.py",
+    "autodev/adapters/filesystem_adapter.py",
+    "autodev/adapters/git_adapter.py",
+    "autodev/adapters/github_adapter.py",
+    "autodev/adapters/mcp_client.py",
+    "autodev/adapters/opus_adapter.py",
+    "autodev/adapters/pydantic_ai_bridge.py",
+    "autodev/adapters/a2a/__init__.py",
+    "autodev/adapters/a2a/client.py",
+    "autodev/adapters/a2a/handlers.py",
+    "autodev/adapters/a2a/roster.py"
+  ],
+  "dist_artifacts": [
+    "autodev_ai-0.1.0a1-py3-none-any.whl",
+    "autodev_ai-0.1.0a1.tar.gz"
+  ],
+  "verdict": "frozen",
+  "post_audit_fixes_applied": [
+    "F-1 CLOSED: Added 14 trove classifiers to pyproject.toml [project] (Development Status :: 3 - Alpha, License :: OSI Approved :: MIT License, Programming Language :: Python :: 3.10/3.11/3.12, Typing :: Typed, etc.)",
+    "F-2 CLOSED: Added [project.urls] section with Homepage / Repository / Issues / Changelog / Documentation pointing at merchloubna70-dot/autodev-ai",
+    "F-3 CLOSED: README.md install snippet now references 0.1.0a1 wheel URL (was 0.1.0); `pip install --pre autodev-ai` documented as primary path"
+  ],
+  "post_fix_artifacts": {
+    "wheel": "dist/autodev_ai-0.1.0a1-py3-none-any.whl sha256=395e2102e6eb80269de215bb716c1751d5169dcbb4b2ce42be22fca5a55e5b94",
+    "sdist": "dist/autodev_ai-0.1.0a1.tar.gz sha256=0a84c81e38ee9dfa95112e487932af52e599ea27d6943e0aa33b390dfc2fd410",
+    "twine_check": "PASSED for both",
+    "fresh_venv_smoke": "autodev --version = autodev-ai 0.1.0a1; pip show shows Home-page + License"
+  },
+  "findings": [
+    {
+      "severity": "RESOLVED",
+      "detail": "F-1: classifiers — closed by Opus post-audit (14 classifiers added)."
+    },
+    {
+      "severity": "RESOLVED",
+      "detail": "F-2: project.urls — closed by Opus post-audit (5 URLs added)."
+    },
+    {
+      "severity": "INFO",
+      "detail": "docs/assets/demo.gif placeholder remains in HTML comment in README.md — not rendered, not a publish blocker."
+    },
+    {
+      "severity": "RESOLVED",
+      "detail": "F-3: README install URL — closed by Opus post-audit (now references autodev_ai-0.1.0a1-py3-none-any.whl)."
+    },
+    {
+      "severity": "INFO",
+      "detail": "authors field contains only {name: 'Software Factory'} with no email. Valid for PyPI but minimal; consider adding contact email."
+    },
+    {
+      "severity": "PASS",
+      "detail": "version is exactly 0.1.0a1 in pyproject.toml."
+    },
+    {
+      "severity": "PASS",
+      "detail": "__version__ in src/autodev/__init__.py resolves via importlib.metadata to 0.1.0a1 — no drift."
+    },
+    {
+      "severity": "PASS",
+      "detail": "console_scripts entry autodev = autodev.cli:app matches actual app = typer.Typer(...) at src/autodev/cli.py line 26."
+    },
+    {
+      "severity": "PASS",
+      "detail": "twine check: wheel PASSED, sdist PASSED."
+    },
+    {
+      "severity": "PASS",
+      "detail": "LICENSE is MIT, year 2026, holder 'autodev-ai contributors'."
+    },
+    {
+      "severity": "PASS",
+      "detail": "CHANGELOG.md contains '## [0.1.0a1] — 2026-05-14 (Pre-Release)' heading."
+    },
+    {
+      "severity": "PASS",
+      "detail": "Both dist artifacts present: wheel and sdist."
+    }
+  ]
+}

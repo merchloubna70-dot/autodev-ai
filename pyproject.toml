@@ -19,6 +19,29 @@ dependencies = [
     "PyYAML>=6.0",
     "jinja2>=3.1",
 ]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Software Development",
+    "Topic :: Software Development :: Code Generators",
+    "Topic :: Software Development :: Build Tools",
+    "Typing :: Typed",
+]
+
+[project.urls]
+Homepage = "https://github.com/merchloubna70-dot/autodev-ai"
+Repository = "https://github.com/merchloubna70-dot/autodev-ai"
+Issues = "https://github.com/merchloubna70-dot/autodev-ai/issues"
+Changelog = "https://github.com/merchloubna70-dot/autodev-ai/blob/main/CHANGELOG.md"
+Documentation = "https://github.com/merchloubna70-dot/autodev-ai/blob/main/README.md"
 
 [project.optional-dependencies]
 crewai = ["crewai>=0.30"]

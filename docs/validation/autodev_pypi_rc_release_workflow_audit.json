@@ -1,0 +1,115 @@
+{
+  "round": "pypi_rc_release_workflow_audit",
+  "workflow_file": ".github/workflows/release.yml",
+  "yaml_valid": true,
+  "triggers": {
+    "tags": "v*.*.*",
+    "tag_glob_matches_v0_1_0a1": true,
+    "workflow_dispatch": false
+  },
+  "jobs": [
+    {
+      "name": "test",
+      "needs": null,
+      "steps_count": 6,
+      "runs": ["ruff check .", "mypy src/autodev", "python -m pytest tests/ -q"],
+      "steps": [
+        {"id": 1, "name": "actions/checkout@v4", "secret_class": "safe"},
+        {"id": 2, "name": "Set up Python 3.12 (cached pip)", "secret_class": "safe"},
+        {"id": 3, "name": "Install package with dev extras (pip install -e .[dev])", "secret_class": "safe"},
+        {"id": 4, "name": "Lint with ruff", "secret_class": "safe"},
+        {"id": 5, "name": "Type-check with mypy", "secret_class": "safe"},
+        {"id": 6, "name": "Run pytest suite", "secret_class": "safe"}
+      ]
+    },
+    {
+      "name": "publish",
+      "needs": "test",
+      "steps_count": 7,
+      "runs": ["python -m build", "python -m twine check dist/*", "softprops/action-gh-release@v2", "twine upload (guarded)"],
+      "steps": [
+        {"id": 1, "name": "actions/checkout@v4", "secret_class": "safe"},
+        {"id": 2, "name": "Set up Python 3.12 (cached pip)", "secret_class": "safe"},
+        {"id": 3, "name": "Install build tools (pip install --upgrade build twine)", "secret_class": "safe"},
+        {"id": 4, "name": "Build wheel and sdist (python -m build)", "secret_class": "safe"},
+        {"id": 5, "name": "Check distribution artifacts (python -m twine check dist/*)", "secret_class": "safe"},
+        {"id": 6, "name": "Attach to GitHub Release (softprops/action-gh-release@v2)", "secret_class": "safe"},
+        {"id": 7, "name": "Publish to PyPI (twine upload)", "secret_class": "gated"}
+      ]
+    }
+  ],
+  "secret_handling": {
+    "pypi_api_token_referenced_count": 2,
+    "token_printed_to_stdout": false,
+    "token_persisted_to_file": false,
+    "twine_upload_guard": "if: ${{ secrets.PYPI_API_TOKEN != '' }}",
+    "token_scope": "env-var local to Publish to PyPI step only (env: PYPI_API_TOKEN)",
+    "token_passed_via": "-p \"$PYPI_API_TOKEN\" flag to twine upload --non-interactive",
+    "notes": [
+      "Token is injected as a step-scoped env var, not exported at job or workflow level.",
+      "No echo, cat, or print of the token is present anywhere in the file.",
+      "PYPI_API_TOKEN is not written to any file or artifact.",
+      "GitHub automatically masks secret values in logs even if accidentally echoed; defense-in-depth.",
+      "Using -p \"$PYPI_API_TOKEN\" on the CLI technically passes the token as a process argument, which may be visible in /proc/<pid>/cmdline on Linux. Preferred alternative: use TWINE_PASSWORD env var instead of -p flag. Classified as low-risk finding — process args are masked by GitHub runner but worth noting."
+    ]
+  },
+  "permissions": {
+    "workflow_level": {
+      "contents": "write"
+    },
+    "job_level": {},
+    "notes": [
+      "contents:write is required for softprops/action-gh-release@v2 to create the GitHub Release and upload artifacts.",
+      "No id-token:write is present — OIDC trusted publishing is NOT used. Token-based auth only.",
+      "No packages:write or other elevated permissions are set.",
+      "Permissions are minimal for the declared purpose."
+    ]
+  },
+  "environment_protection": {
+    "present": false,
+    "name": null,
+    "notes": [
+      "Neither the 'test' nor 'publish' job declares an 'environment:' key.",
+      "This means there is NO manual-approval gate before the PyPI upload step.",
+      "Any tag matching v*.*.* pushed to the repo will trigger a publish attempt immediately after tests pass.",
+      "For a pre-release (alpha/RC) workflow this is by design but operators should be aware that accidental tag pushes will trigger a live PyPI upload if the token is set."
+    ]
+  },
+  "tag_glob_analysis": {
+    "pattern": "v*.*.*",
+    "test_tag": "v0.1.0a1",
+    "match": true,
+    "explanation": "GitHub Actions uses fnmatch-style globs for tag patterns. The pattern 'v*.*.*' splits on literal dots. The first segment 'v*' matches 'v0', the second '*' matches '1', and the third '*' matches '0a1' (wildcards are greedy and match any characters including alphanumerics). Therefore 'v0.1.0a1' is matched."
+  },
+  "workflow_dispatch_analysis": {
+    "present": false,
+    "impact": "There is no manual trigger. Publish can only be initiated by pushing a tag. This reduces accidental publish risk from manual UI clicks but provides no emergency re-run capability without re-tagging."
+  },
+  "publish_behavior": {
+    "if_token_set": "Runs test job (ruff + mypy + pytest) -> publish job: builds wheel+sdist, validates with twine check, attaches artifacts to GitHub Release, uploads to PyPI.",
+    "if_token_unset": "Runs test job -> publish job: builds wheel+sdist, validates with twine check, attaches artifacts to GitHub Release. PyPI upload step is skipped (if-condition evaluates false). No upload occurs."
+  },
+  "findings": [
+    {
+      "severity": "low",
+      "category": "secret_exposure_risk",
+      "detail": "PYPI_API_TOKEN is passed as a CLI argument via -p \"$PYPI_API_TOKEN\". Process arguments may be visible in /proc/<pid>/cmdline on Linux before they are masked. The safer pattern is to set TWINE_PASSWORD as a step env var and omit the -p flag entirely, as twine reads TWINE_PASSWORD automatically. GitHub runner log masking still protects log output, so actual exposure risk is very low."
+    },
+    {
+      "severity": "info",
+      "category": "no_environment_protection",
+      "detail": "No 'environment:' declaration on the publish job means there is no required-reviewer gate before PyPI publish. For a 0.1.0a1 alpha this is acceptable, but consider adding 'environment: pypi' with required reviewers for stable releases."
+    },
+    {
+      "severity": "info",
+      "category": "no_workflow_dispatch",
+      "detail": "There is no workflow_dispatch trigger. Manual re-runs without a tag push are not possible. If a publish fails mid-way (e.g., twine check passes but upload fails), re-running requires deleting and re-pushing the tag."
+    },
+    {
+      "severity": "info",
+      "category": "action_pinning",
+      "detail": "Actions are pinned to major version tags (actions/checkout@v4, actions/setup-python@v5, softprops/action-gh-release@v2) rather than immutable SHA digests. This allows supply-chain risk if action maintainers push malicious commits to the tag. Low risk for these well-audited actions but SHA pinning is best practice."
+    }
+  ],
+  "verdict": "ready_for_tag_push"
+}

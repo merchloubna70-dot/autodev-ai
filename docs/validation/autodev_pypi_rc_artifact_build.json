@@ -1,0 +1,64 @@
+{
+  "round": "pypi_rc_artifact_build",
+  "version": "0.1.0a1",
+  "build_date": "2026-05-14",
+  "auditor": "Opus (Phase 1 of RC publish prep)",
+  "build_command": "rm -rf dist build *.egg-info && python -m build",
+  "build_result": "success",
+  "build_isolated": true,
+  "build_backend": "hatchling>=1.21",
+  "artifacts": {
+    "wheel": {
+      "filename": "autodev_ai-0.1.0a1-py3-none-any.whl",
+      "sha256": "395e2102e6eb80269de215bb716c1751d5169dcbb4b2ce42be22fca5a55e5b94",
+      "platform": "py3-none-any (universal pure-Python wheel)",
+      "path": "dist/autodev_ai-0.1.0a1-py3-none-any.whl",
+      "note": "Final hash after RC-A metadata fixes (classifiers + project.urls + README URL); earlier preflight hash 5f5b51… is superseded."
+    },
+    "sdist": {
+      "filename": "autodev_ai-0.1.0a1.tar.gz",
+      "sha256": "0a84c81e38ee9dfa95112e487932af52e599ea27d6943e0aa33b390dfc2fd410",
+      "path": "dist/autodev_ai-0.1.0a1.tar.gz",
+      "note": "Final hash after RC-A metadata fixes; earlier preflight hash 243c9f… is superseded."
+    }
+  },
+  "twine_check": {
+    "wheel": "PASSED",
+    "sdist": "PASSED",
+    "command": "python -m twine check dist/*"
+  },
+  "install_smoke": {
+    "test_venv": "/tmp/pypi-rc-smoke (python3.12)",
+    "install_command": "pip install dist/autodev_ai-0.1.0a1-py3-none-any.whl",
+    "install_exit_code": 0,
+    "results": {
+      "autodev_--version": "autodev-ai 0.1.0a1",
+      "autodev_--version_exit": 0,
+      "autodev_--help_exit": 0,
+      "autodev_--help_first_line": "Usage: autodev [OPTIONS] COMMAND [ARGS]...",
+      "python_-m_autodev.cli_--version": "autodev-ai 0.1.0a1",
+      "python_-m_autodev.cli_--version_exit": 0
+    },
+    "all_passed": true
+  },
+  "reproducibility_caveats": [
+    "Wheel filename is deterministic (py3-none-any) but byte-level reproducibility depends on hatchling + Python version at build time. Different hatchling minor versions may emit different metadata ordering.",
+    "sdist tarball includes a timestamp in PKG-INFO; not strictly bit-reproducible across rebuilds at different times. PyPI verifies sha256 of the upload, so the recorded hash here is the authoritative one for this exact build."
+  ],
+  "validation_commands_run": [
+    "rm -rf dist build && find . -maxdepth 2 -name '*.egg-info' -type d -exec rm -rf {} +",
+    "python -m build",
+    "shasum -a 256 dist/*",
+    "python -m twine check dist/*",
+    "python3.12 -m venv /tmp/pypi-rc-smoke",
+    "/tmp/pypi-rc-smoke/bin/pip install dist/autodev_ai-0.1.0a1-py3-none-any.whl",
+    "/tmp/pypi-rc-smoke/bin/autodev --version",
+    "/tmp/pypi-rc-smoke/bin/autodev --help",
+    "/tmp/pypi-rc-smoke/bin/python -m autodev.cli --version"
+  ],
+  "verdict": "publishable",
+  "publishable_to_pypi": true,
+  "blocks": [
+    "Operational: PYPI_API_TOKEN GitHub secret must be set before tag push triggers PyPI upload."
+  ]
+}

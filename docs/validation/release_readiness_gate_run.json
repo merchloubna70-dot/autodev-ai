@@ -1,41 +1,41 @@
 {
   "gate": "release_readiness",
-  "ran_at": "2026-05-14T03:50:50+00:00",
-  "overall": "fail",
+  "ran_at": "2026-05-14T04:45:06+00:00",
+  "overall": "pass",
   "checks": [
     {
       "name": "package_metadata_valid",
       "status": "pass",
       "detail": "name=autodev-ai version=0.1.0a1 ep=autodev.cli:app",
-      "duration_ms": 1.8,
+      "duration_ms": 2.1,
       "evidence": "/Users/macworkers/autodev/pyproject.toml"
     },
     {
       "name": "cli_help_works",
       "status": "pass",
       "detail": "autodev CLI --help via python -m: exit 0",
-      "duration_ms": 214.5,
+      "duration_ms": 274.3,
       "evidence": ""
     },
     {
       "name": "pytest_evidence",
       "status": "pass",
       "detail": "Smoke pytest passed:\n........                                                                 [100%]\n",
-      "duration_ms": 331.4,
+      "duration_ms": 348.0,
       "evidence": "/Users/macworkers/autodev/tests/unit/test_prfaq_style.py"
     },
     {
       "name": "ruff_passes",
-      "status": "skip",
-      "detail": "ruff not on PATH",
-      "duration_ms": 1.8,
+      "status": "pass",
+      "detail": "ruff check . exit 0",
+      "duration_ms": 57.9,
       "evidence": ""
     },
     {
       "name": "mypy_passes",
-      "status": "fail",
-      "detail": "mypy exit 1:\nsrc/autodev/adapters/a2a/transports/http.py:136: error: Argument 1 to \"_is_private_address\" has incompatible type \"str | int\"; expected \"str\"  [arg-type]\nsrc/autodev/adapters/pydantic_ai_bridge.py:137: error: No overload variant of \"Agent\" matches argument types \"str\", \"type[InputClassification]\", \"str\"  [call-overload]\nsrc/autodev/adapters/pydantic_ai_bridge.py:137: note: Possible overload varian",
-      "duration_ms": 613.5,
+      "status": "pass",
+      "detail": "mypy src/autodev exit 0",
+      "duration_ms": 188.4,
       "evidence": ""
     },
     {
@@ -55,99 +55,99 @@
     {
       "name": "a2a_smoke_path_exists",
       "status": "pass",
-      "detail": "12 a2a/roundtable test files found",
-      "duration_ms": 2.1,
+      "detail": "13 a2a/roundtable test files found",
+      "duration_ms": 2.7,
       "evidence": "tests/integration/test_a2a_http_roundtrip.py, tests/integration/test_a2a_roundtable_e2e.py, tests/integration/test_a2a_server_cli.py, tests/integration/test_cli_roundtable.py, tests/integration/test_parallel_review_via_roundtable.py"
     },
     {
       "name": "mock_executor_works",
-      "status": "skip",
-      "detail": "autodev not on PATH or classify-input not available; skipping mock executor check",
-      "duration_ms": 278.2,
+      "status": "pass",
+      "detail": "FACTORY_FORCE_MOCK=1 /Users/macworkers/autodev/.venv/bin/python -m autodev.cli exit 0",
+      "duration_ms": 199.4,
       "evidence": ""
     },
     {
       "name": "packaging_files_exist",
       "status": "pass",
       "detail": "All 3 packaging files present",
-      "duration_ms": 0.2,
+      "duration_ms": 0.4,
       "evidence": "packaging/docker/Dockerfile, packaging/pyinstaller/autodev.spec, packaging/homebrew/Formula/autodev-ai.rb"
     },
     {
       "name": "no_dangerous_release_claims",
       "status": "pass",
       "detail": "No forbidden release claims found in README.md",
-      "duration_ms": 0.1,
+      "duration_ms": 1.5,
       "evidence": "/Users/macworkers/autodev/README.md"
     },
     {
       "name": "release_blockers_recorded",
       "status": "pass",
       "detail": "Release evidence files found: ['autodev_release_hardening_round.md', 'autodev_release_hardening_round.json', 'autodev_release_readiness_gate.json', 'autodev_release_readiness_gate.md']",
-      "duration_ms": 0.4,
+      "duration_ms": 0.5,
       "evidence": "/Users/macworkers/autodev/docs/validation/autodev_release_hardening_round.md"
     },
     {
       "name": "r2_version_consistency",
       "status": "pass",
       "detail": "version consistent: 0.1.0a1",
-      "duration_ms": 41.7,
+      "duration_ms": 48.2,
       "evidence": "/Users/macworkers/autodev/pyproject.toml"
     },
     {
       "name": "r2_license_file_present",
       "status": "pass",
       "detail": "LICENSE present with expected MIT content",
-      "duration_ms": 0.1,
+      "duration_ms": 0.5,
       "evidence": "/Users/macworkers/autodev/LICENSE"
     },
     {
       "name": "r2_license_metadata_match",
       "status": "pass",
       "detail": "[project] license field present: {'text': 'MIT'}",
-      "duration_ms": 0.2,
+      "duration_ms": 0.6,
       "evidence": "/Users/macworkers/autodev/pyproject.toml"
     },
     {
       "name": "r2_wheel_version_works",
       "status": "pass",
       "detail": "wheel version '0.1.0a1' matches pyproject '0.1.0a1'",
-      "duration_ms": 0.3,
+      "duration_ms": 1.4,
       "evidence": "/Users/macworkers/autodev/dist/autodev_ai-0.1.0a1-py3-none-any.whl"
     },
     {
       "name": "r2_a2a_http_ssrf_hardened",
       "status": "pass",
       "detail": "A2AHttpSSRFError present; 13 SSRF test functions",
-      "duration_ms": 0.2,
+      "duration_ms": 0.8,
       "evidence": "/Users/macworkers/autodev/tests/unit/test_a2a_http_ssrf_hardening.py"
     },
     {
       "name": "r2_milestone_flow_tested",
       "status": "pass",
       "detail": "test_milestone_flow.py exists with 8 test functions",
-      "duration_ms": 0.1,
+      "duration_ms": 0.4,
       "evidence": "/Users/macworkers/autodev/tests/unit/test_milestone_flow.py"
     },
     {
       "name": "r2_release_flow_tested",
       "status": "pass",
       "detail": "test_release_flow.py exists with 7 test functions",
-      "duration_ms": 1.0,
+      "duration_ms": 0.2,
       "evidence": "/Users/macworkers/autodev/tests/unit/test_release_flow.py"
     },
     {
       "name": "r2_release_workflow_pytest_gate",
       "status": "pass",
       "detail": "release.yml contains pytest token AND needs: directive",
-      "duration_ms": 0.1,
+      "duration_ms": 0.2,
       "evidence": "/Users/macworkers/autodev/.github/workflows/release.yml"
     },
     {
       "name": "r2_homebrew_metadata_owner_fixed",
       "status": "pass",
       "detail": "Homebrew formula owner is 'merchloubna70-dot/autodev-ai' (correct)",
-      "duration_ms": 0.0,
+      "duration_ms": 0.2,
       "evidence": "/Users/macworkers/autodev/packaging/homebrew/Formula/autodev-ai.rb"
     },
     {
@@ -161,21 +161,107 @@
       "name": "r2_macos_info_plist_version_match",
       "status": "pass",
       "detail": "Info.plist CFBundleShortVersionString='0.1.0a1' contains '0.1.0'",
-      "duration_ms": 2.8,
+      "duration_ms": 2.5,
       "evidence": "/Users/macworkers/autodev/packaging/desktop/autodev-ai.app/Contents/Info.plist"
     },
     {
       "name": "r2_remaining_blockers_recorded",
       "status": "pass",
-      "detail": "autodev_release_hardening_round.json has release_blockers array (10 items)",
-      "duration_ms": 0.3,
-      "evidence": "/Users/macworkers/autodev/docs/validation/autodev_release_hardening_round.json"
+      "detail": "R2 blocker closure file found: autodev_r2_pypi_release_blocker_closure.json",
+      "duration_ms": 0.0,
+      "evidence": "/Users/macworkers/autodev/docs/validation/autodev_r2_pypi_release_blocker_closure.json"
+    },
+    {
+      "name": "r3_mypy_clean",
+      "status": "pass",
+      "detail": "mypy src/autodev: 0 errors",
+      "duration_ms": 123.1,
+      "evidence": "Success: no issues found in 171 source files"
+    },
+    {
+      "name": "r3_ruff_clean",
+      "status": "pass",
+      "detail": "ruff check .: 0 errors",
+      "duration_ms": 30.1,
+      "evidence": "All checks passed!"
+    },
+    {
+      "name": "r3_lint_yml_scans_scripts",
+      "status": "pass",
+      "detail": "lint.yml ruff step includes scripts/",
+      "duration_ms": 0.0,
+      "evidence": ""
+    },
+    {
+      "name": "r3_mcp_apply_guardrail_present",
+      "status": "pass",
+      "detail": "MCP dual-gate: allow_apply param + AUTODEV_MCP_ALLOW_APPLY env both referenced",
+      "duration_ms": 0.0,
+      "evidence": ""
+    },
+    {
+      "name": "r3_a2a_dns_rebinding_pinned",
+      "status": "pass",
+      "detail": "IP-pin symbols present: _resolve_and_pin_host / _PinnedHTTP[S]Handler",
+      "duration_ms": 0.0,
+      "evidence": ""
+    },
+    {
+      "name": "r3_worker_isolator_symlink_safe",
+      "status": "pass",
+      "detail": "WorkerIsolatorPathEscapeError exception present",
+      "duration_ms": 0.0,
+      "evidence": ""
+    },
+    {
+      "name": "r3_changelog_present",
+      "status": "pass",
+      "detail": "CHANGELOG.md exists (4871 chars), mentions 0.1.0a1",
+      "duration_ms": 0.0,
+      "evidence": ""
+    },
+    {
+      "name": "r3_configuration_doc_present",
+      "status": "pass",
+      "detail": "configuration.md exists (9098 chars)",
+      "duration_ms": 0.0,
+      "evidence": ""
+    },
+    {
+      "name": "r3_troubleshooting_doc_present",
+      "status": "pass",
+      "detail": "troubleshooting.md exists (8722 chars)",
+      "duration_ms": 0.0,
+      "evidence": ""
+    },
+    {
+      "name": "r3_docker_base_digest_pinned",
+      "status": "pass",
+      "detail": "2 FROM line(s) all digest-pinned (@sha256:<64-hex>)",
+      "duration_ms": 0.0,
+      "evidence": ""
+    },
+    {
+      "name": "r3_homebrew_publish_time_blocker_clean",
+      "status": "pass",
+      "detail": "Homebrew formula is honestly BLOCKED with placeholder + checklist",
+      "duration_ms": 0.0,
+      "evidence": ""
+    },
+    {
+      "name": "r3_pypi_rc_not_blocked_by_homebrew",
+      "status": "pass",
+      "detail": "Homebrew is honestly blocked \u2192 does not block PyPI RC verdict",
+      "duration_ms": 0.0,
+      "evidence": ""
     }
   ],
-  "strict_pass": false,
+  "strict_pass": true,
   "summary": {
-    "pass": 21,
-    "fail": 1,
-    "skip": 2
-  }
+    "pass": 36,
+    "fail": 0,
+    "skip": 0
+  },
+  "pypi_rc_verdict": "pass",
+  "pypi_rc_excluded_from_strict": []
 }

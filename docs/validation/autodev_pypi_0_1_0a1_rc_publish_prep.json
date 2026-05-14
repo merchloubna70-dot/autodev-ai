@@ -1,0 +1,158 @@
+{
+  "round": "autodev_pypi_0_1_0a1_rc_publish_prep",
+  "status": "completed",
+  "overall_result": "pass",
+  "audit_date": "2026-05-14",
+  "auditor": "7-agent round (RC-A/B/C/D/E + RC-F/G Opus aggregator)",
+  "predecessor_rounds": [
+    "autodev_release_hardening_round (R1)",
+    "autodev_r2_pypi_release_blocker_closure (R2)",
+    "autodev_r3_pypi_rc_final_hardening (R3)"
+  ],
+  "version": "0.1.0a1",
+  "pypi_rc_publish_readiness": "allowed",
+  "pypi_actual_publish": "blocked_until_secret_or_user_tag",
+  "homebrew": "blocked_with_reason",
+  "production_enterprise_use": "blocked",
+  "release_readiness_matrix": {
+    "internal_dogfood": "allowed",
+    "public_beta": "allowed",
+    "pypi_0_1_0a1_rc": "allowed",
+    "pypi_actual_publish": "operationally_blocked_until_secret_or_tag",
+    "docker": "allowed_with_limitations",
+    "homebrew_tap_publish": "blocked_with_reason",
+    "production_enterprise_use": "blocked_scope_deferred"
+  },
+  "artifact_hashes": {
+    "wheel": "395e2102e6eb80269de215bb716c1751d5169dcbb4b2ce42be22fca5a55e5b94",
+    "wheel_filename": "autodev_ai-0.1.0a1-py3-none-any.whl",
+    "sdist": "0a84c81e38ee9dfa95112e487932af52e599ea27d6943e0aa33b390dfc2fd410",
+    "sdist_filename": "autodev_ai-0.1.0a1.tar.gz",
+    "twine_check": "PASSED for both",
+    "note": "These are the FINAL hashes after RC-A metadata fixes (classifiers + project.urls + README URL). Initial preflight hashes (5f5b51… / 243c9f…) are superseded."
+  },
+  "rc_closure_matrix": {
+    "metadata_freeze": "pass",
+    "artifact_build": "pass",
+    "release_workflow_audit": "ready_for_tag_push",
+    "release_notes": "drafted",
+    "publish_checklist": "complete",
+    "rollback_plan": "complete",
+    "final_gate_run": "36 pass / 0 fail / 0 skip; all 4 strict modes exit 0"
+  },
+  "rc_closure_detail": {
+    "metadata_freeze": "RC-A initial verdict 'inconsistencies' with 3 actionable findings (F-1 no classifiers, F-2 no [project.urls], F-3 README pip URL missing a1 suffix). Opus applied all 3 fixes inline: 14 trove classifiers + 5 [project.urls] + README URL corrected. Post-fix verdict: frozen.",
+    "artifact_build": "Clean rebuild via `python -m build` (hatchling>=1.21). wheel + sdist sha256 captured. twine check PASSED for both. Fresh python3.12 venv install + `autodev --version` returns `autodev-ai 0.1.0a1` exactly. `pip show autodev-ai` exposes Home-page + License correctly.",
+    "release_workflow_audit": "RC-C static audit of .github/workflows/release.yml. Trigger v*.*.* matches v0.1.0a1. Job chain test→publish with needs:test. Token guard `if: secrets.PYPI_API_TOKEN != ''` prevents accidental publish. 1 LOW finding: token passed as `-p $PYPI_API_TOKEN` CLI flag briefly visible in /proc/<pid>/cmdline (mitigated by GitHub runner masking). 2 INFO findings: no workflow_dispatch, actions pinned by major-version tag not SHA — acceptable for alpha. Verdict: ready_for_tag_push.",
+    "release_notes": "RC-D produced docs/release_notes/v0.1.0a1.md (1,946 words, 15 sections). Explicit alpha + Homebrew-blocked + production-enterprise-blocked statements. No false-publish claims anywhere.",
+    "publish_checklist": "RC-E produced docs/release/pypi_0_1_0a1_publish_checklist.md with 6 preflight + 5 publish + 10 post-publish steps.",
+    "rollback_plan": "RC-E produced docs/release/pypi_0_1_0a1_rollback_plan.md covering PyPI yank, GitHub release delete, Docker tag repoint, forward-only fix policy, and notify procedure.",
+    "final_gate_run": "Gate runs: 36/36 pass; --strict / --strict-r2 / --strict-r3 / --strict-rc all exit 0. python -m autodev.release_readiness_gate also exit 0."
+  },
+  "required_user_actions": [
+    {
+      "step": 1,
+      "action": "Set GitHub Secret PYPI_API_TOKEN",
+      "url": "https://github.com/merchloubna70-dot/autodev-ai/settings/secrets/actions",
+      "detail": "Generate token at https://pypi.org/manage/account/token/ (scope: autodev-ai or account-wide). Paste into a new GitHub secret named exactly PYPI_API_TOKEN. Without this, release.yml runs but skips twine upload — GitHub Release still gets the wheel+sdist attached.",
+      "skippable": false
+    },
+    {
+      "step": 2,
+      "action": "Push tag v0.1.0a1",
+      "commands": [
+        "git status --short    # expect empty",
+        "git tag -a v0.1.0a1 -m 'autodev-ai v0.1.0a1 — first PyPI RC'",
+        "git push origin v0.1.0a1"
+      ],
+      "detail": "Triggers .github/workflows/release.yml. Test job runs ruff+mypy+pytest first; publish job depends on test success.",
+      "skippable": false
+    },
+    {
+      "step": 3,
+      "action": "Watch workflow",
+      "commands": ["gh run watch --repo merchloubna70-dot/autodev-ai"],
+      "detail": "Live tail of the GitHub Actions run. Expect ~3-5 min.",
+      "skippable": true
+    },
+    {
+      "step": 4,
+      "action": "Post-publish verification",
+      "commands": [
+        "pip index versions autodev-ai --pre   # expect 0.1.0a1",
+        "pip install --pre autodev-ai==0.1.0a1 # in fresh venv",
+        "autodev --version                     # autodev-ai 0.1.0a1",
+        "autodev --help"
+      ],
+      "skippable": false
+    },
+    {
+      "step": 5,
+      "action": "Update Homebrew formula sha256 from PyPI metadata",
+      "commands": [
+        "curl -L 'https://files.pythonhosted.org/packages/source/a/autodev-ai/autodev_ai-0.1.0a1.tar.gz' | shasum -a 256",
+        "# patch packaging/homebrew/Formula/autodev-ai.rb: replace TODO_PUBLISH_SHA256 with the real hash",
+        "# remove the 'BLOCKED' leading comment",
+        "brew audit --formula packaging/homebrew/Formula/autodev-ai.rb"
+      ],
+      "detail": "Per packaging/homebrew/PUBLISH_CHECKLIST.md. After this, Homebrew tap publish is unblocked.",
+      "skippable": true
+    }
+  ],
+  "remaining_limitations": [
+    "PyPI 0.1.0a1 is not yet published — gating only on user adding PYPI_API_TOKEN secret and pushing the v0.1.0a1 tag.",
+    "Homebrew tap remains BLOCKED until PyPI publish + sha256 patch (5-min step 5 above).",
+    "Production enterprise use: 4 documented residuals (egress proxy SSRF / kernel BGP / MCP audit log integrity / cleanup TOCTOU) + 4 deferred features (SLSA / SBOM / per-caller MCP auth / signed Docker). All scope-deferred to R4.",
+    "Docker `:latest` tag is rolling, not digest-pinned for consumers. The base image inside Dockerfile IS digest-pinned for reproducibility, but the published image tag itself is mutable. Users wanting immutable references should pull `0.1.0a1` not `latest`.",
+    "macOS .app launcher signed/notarized status not validated."
+  ],
+  "validation_commands_run": [
+    "python --version → 3.12",
+    "git status --short → empty after Phase 2 dispatch",
+    "ruff check . → All checks passed!",
+    "mypy src/autodev → Success: 0 issues / 171 files",
+    "pytest tests/ → 1062 passed, 4 xfailed",
+    "rm -rf dist build && python -m build → success (rebuilt twice — once preflight, once post-RC-A metadata fixes)",
+    "twine check dist/* → PASSED for wheel + sdist",
+    "python3.12 -m venv + pip install wheel + autodev --version → autodev-ai 0.1.0a1",
+    "pip show autodev-ai → Home-page + License populated",
+    "python scripts/release_readiness_gate.py → 36 pass / 0 fail / 0 skip",
+    "python scripts/release_readiness_gate.py --strict → exit 0",
+    "python scripts/release_readiness_gate.py --strict-r2 → exit 0",
+    "python scripts/release_readiness_gate.py --strict-r3 → exit 0",
+    "python scripts/release_readiness_gate.py --strict-rc → exit 0",
+    "python -m autodev.release_readiness_gate → exit 0",
+    "python -m json.tool on all 5 RC validation reports → all valid"
+  ],
+  "evidence_files": [
+    "docs/validation/autodev_pypi_0_1_0a1_rc_publish_prep.{md,json} (this aggregator)",
+    "docs/validation/autodev_pypi_rc_metadata_freeze.{md,json}",
+    "docs/validation/autodev_pypi_rc_artifact_build.{md,json}",
+    "docs/validation/autodev_pypi_rc_release_workflow_audit.{md,json}",
+    "docs/validation/autodev_pypi_rc_release_gate_final.{md,json}",
+    "docs/release_notes/v0.1.0a1.md (1,946 words)",
+    "docs/release/pypi_0_1_0a1_publish_checklist.md",
+    "docs/release/pypi_0_1_0a1_rollback_plan.md",
+    "docs/validation/release_readiness_gate_run.json (live gate output)"
+  ],
+  "files_modified_this_round": [
+    "pyproject.toml (+14 classifiers + 5 [project.urls])",
+    "README.md (pip URL 0.1.0 → 0.1.0a1 + --pre note)",
+    "dist/autodev_ai-0.1.0a1-py3-none-any.whl (rebuilt)",
+    "dist/autodev_ai-0.1.0a1.tar.gz (rebuilt)"
+  ],
+  "go_no_go": {
+    "PyPI 0.1.0a1 RC publish readiness": "GO",
+    "PyPI actual publish (RC tag push)": "GO conditional on user setting PYPI_API_TOKEN GitHub secret",
+    "Homebrew tap publish": "NO-GO until PyPI publish + formula sha256 update (procedure documented)",
+    "Docker tag v0.1.0a1 (via GitHub Actions docker-publish.yml)": "GO (parallel to PyPI; triggered by same v*.*.* tag push)",
+    "production enterprise use": "NO-GO scope-deferred to R4"
+  },
+  "recommend_tag_push_now": false,
+  "recommend_tag_push_after": [
+    "User sets PYPI_API_TOKEN GitHub secret",
+    "User reads docs/release/pypi_0_1_0a1_publish_checklist.md preflight section",
+    "User reviews docs/release_notes/v0.1.0a1.md and is comfortable with its content"
+  ],
+  "next_round_recommendation": "After tag push completes successfully: open R4 — Enterprise Hardening (SLSA provenance via cosign, SBOM in release.yml, per-caller MCP auth, egress sandbox docs, fd-pin alternative for WorkerIsolator cleanup, MCP audit log off /tmp + mode 0600)."
+}
