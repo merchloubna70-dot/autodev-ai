@@ -1,0 +1,123 @@
+{
+  "round": "autodev_post_publish_v0_1_0a3_round",
+  "status": "completed",
+  "overall_result": "pass",
+  "audit_date": "2026-05-14",
+  "scope": "Publish v0.1.0a3 (typer + gate shim fixes) to PyPI + GitHub Release + Docker multi-arch; backfill Homebrew formula sha256 to 0.1.0a3",
+  "tag": "v0.1.0a3",
+  "main_commit_for_release": "cc76f05",
+  "pypi": {
+    "state": "published_verified",
+    "version": "0.1.0a3",
+    "sdist": {
+      "filename": "autodev_ai-0.1.0a3.tar.gz",
+      "size_bytes": 850688,
+      "sha256": "a137ba2c7f94727506f8d250f675ef5e6d4d4dd60718ef3e185d330c4d17d063",
+      "url": "https://files.pythonhosted.org/packages/d3/ac/9886ff77ddf66571a989a8438566871e45b65e2b8550c04a63855a45893b/autodev_ai-0.1.0a3.tar.gz",
+      "sha256_independently_verified": true,
+      "verification_method": "curl + shasum -a 256 match against PyPI JSON API .urls[].digests.sha256"
+    },
+    "wheel": {
+      "filename": "autodev_ai-0.1.0a3-py3-none-any.whl",
+      "sha256": "9d180900edc2b9ee0277365f09907f3ed78e520520f1f721de0fa79a01efcae5"
+    },
+    "fresh_venv_smoke": {
+      "venv_python": "3.12",
+      "install_warning_typer_extra_all": "ABSENT",
+      "autodev_version_output": "autodev-ai 0.1.0a3",
+      "module_form_gate_traceback": "ABSENT (exit 0 / 31 pass + 5 honest fails because cwd=/tmp has no source files)"
+    }
+  },
+  "docker": {
+    "state": "published_verified",
+    "registry": "ghcr.io/merchloubna70-dot/autodev-ai",
+    "tag": "v0.1.0a3",
+    "arches": ["linux/amd64", "linux/arm64"],
+    "workflow_run_id": "25850692990",
+    "workflow_conclusion": "success"
+  },
+  "github_release": {
+    "state": "published_verified",
+    "tag": "v0.1.0a3",
+    "workflow_run_id": "25850692937",
+    "workflow_conclusion": "success",
+    "jobs": {
+      "test": "success",
+      "publish": "success"
+    }
+  },
+  "homebrew": {
+    "formula_state": "backfilled_to_a3",
+    "canonical_path": "packaging/homebrew/Formula/autodev-ai.rb",
+    "tap_mirror_path": "packaging/homebrew/tap/Formula/autodev-ai.rb",
+    "url_updated": true,
+    "sha256_updated": true,
+    "version_updated": true,
+    "transitive_resources_unchanged": true,
+    "tap_repo_state": "pending_user_action",
+    "tap_repo_target": "merchloubna70-dot/homebrew-autodev",
+    "tap_publish_checklist": "docs/release/homebrew_tap_publish_checklist.md"
+  },
+  "publish_timeline_utc_2026_05_14": [
+    {"time": "08:37", "event": "v0.1.0a3 bump merged on main (cc76f05)", "ci": "Test+Lint success"},
+    {"time": "08:42", "event": "git push origin v0.1.0a3"},
+    {"time": "08:43", "event": "release.yml + docker-publish.yml started", "release_run_id": "25850692937", "docker_run_id": "25850692990"},
+    {"time": "08:47", "event": "release.yml conclusion=success — PyPI 0.1.0a3 live"},
+    {"time": "08:48", "event": "docker-publish.yml conclusion=success — ghcr.io:0.1.0a3 live"},
+    {"time": "08:51", "event": "PyPI simple index synced; fresh-venv install verified"},
+    {"time": "08:52", "event": "Homebrew formula sha256 backfilled (independently verified)"}
+  ],
+  "changes_this_round": {
+    "src": [],
+    "tests": [],
+    "packaging": [
+      "pyproject.toml — version 0.1.0a2 → 0.1.0a3 (committed in cc76f05)",
+      "packaging/homebrew/Formula/autodev-ai.rb — url/sha256/version backfilled from 0.1.0a2 to 0.1.0a3",
+      "packaging/homebrew/tap/Formula/autodev-ai.rb — same backfill (mirror)"
+    ],
+    "docs": [
+      "CHANGELOG.md — [0.1.0a3] section added (committed in cc76f05)",
+      "docs/validation/autodev_post_publish_v0_1_0a3_round.{md,json} — this aggregator"
+    ]
+  },
+  "remaining_blockers": [
+    {
+      "id": "HOMEBREW-TAP-REPO",
+      "severity": "user_action",
+      "effort": "~10 min",
+      "what": "Create merchloubna70-dot/homebrew-autodev repo + push formula from packaging/homebrew/tap/Formula/autodev-ai.rb (now backfilled to 0.1.0a3)"
+    },
+    {
+      "id": "PYPI-TOKEN-ROTATION",
+      "severity": "user_action",
+      "effort": "~5 min",
+      "what": "Defense-in-depth rotation per docs/release/pypi_token_rotation_checklist.md (chat-exposure mitigation)"
+    },
+    {
+      "id": "PROD-ENTERPRISE",
+      "severity": "scope_deferred_r6_plus",
+      "effort": "8-12 hr",
+      "what": "SLSA + SBOM + cosign + per-caller MCP auth + macOS Apple Dev ID signing + coverage lift"
+    }
+  ],
+  "remaining_risks": [
+    "PYPI_API_TOKEN was pasted in chat history earlier; the secret was set via stdin pipe (no argv, no file write, no echo) but rotation is recommended defense-in-depth and remains pending user action.",
+    "Homebrew tap repo not yet created; users running `brew tap merchloubna70-dot/autodev` will get a 404 until user follows the tap-publish checklist."
+  ],
+  "quality_red_lines_upheld": [
+    "Did NOT read or print PYPI_API_TOKEN",
+    "Did NOT request user paste a token",
+    "Did NOT touch token rotation (still pending user)",
+    "Did NOT create the Homebrew tap repo (still pending user)",
+    "Did NOT push to a tap repo",
+    "Did NOT fabricate any sha256 (a137ba2c...d063 independently verified by curl + shasum -a 256)",
+    "Did NOT bypass CI (main cc76f05 Test+Lint success before tag push; release.yml + docker-publish.yml both success before this report)",
+    "Did NOT mark Homebrew as tap-published; only formula-backfilled with tap-publish pending",
+    "Did NOT mark production enterprise as ready"
+  ],
+  "next_steps_user_optional": [
+    "Run docs/release/pypi_token_rotation_checklist.md (~5 min)",
+    "Run docs/release/homebrew_tap_publish_checklist.md (~10 min) — formula is now staged at 0.1.0a3",
+    "(Optional R6) SLSA + SBOM + cosign on Docker; per-caller MCP auth; coverage lift on aspirational modules"
+  ]
+}

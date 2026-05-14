@@ -1,14 +1,15 @@
-# Backfilled 2026-05-14 from real PyPI 0.1.0a2 publish.
-# URL points to canonical PyPI sdist; sha256 from https://pypi.org/pypi/autodev-ai/0.1.0a2/json.
+# Backfilled 2026-05-14 from real PyPI 0.1.0a3 publish.
+# URL points to canonical PyPI sdist; sha256 from https://pypi.org/pypi/autodev-ai/0.1.0a3/json
+# (independently re-verified by curl + shasum -a 256).
 # `brew audit --strict` should now pass.
 class AutodevAi < Formula
   include Language::Python::Virtualenv
 
   desc "AI-driven software factory: CrewAI + Codex CLI + Claude Code CLI"
   homepage "https://github.com/merchloubna70-dot/autodev-ai"
-  url "https://files.pythonhosted.org/packages/b0/4a/27e49dba9ee2846bff62ee934ee61896a820ba0f4031cc6c4df576b66d9b/autodev_ai-0.1.0a2.tar.gz"
-  sha256 "246f5f60810c1832051f9219fd141fe63ce87bbafec0125412d18cea326c291d"
-  version "0.1.0a2"
+  url "https://files.pythonhosted.org/packages/d3/ac/9886ff77ddf66571a989a8438566871e45b65e2b8550c04a63855a45893b/autodev_ai-0.1.0a3.tar.gz"
+  sha256 "a137ba2c7f94727506f8d250f675ef5e6d4d4dd60718ef3e185d330c4d17d063"
+  version "0.1.0a3"
   license "MIT"
 
   depends_on "python@3.12"
