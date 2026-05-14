@@ -14,6 +14,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   compliance toolchains (grype, trivy, syft).
 - cosign keyless image signing (Sigstore) on every tag push — `ghcr.io/merchloubna70-dot/autodev-ai` images now carry detached Fulcio OIDC signatures recorded in the Rekor transparency log; see `docs/release/cosign_verification.md`.
 - SLSA L3 provenance attestation (slsa-framework generator) on tag push — `.github/workflows/slsa.yml` produces an in-toto attestation backed by GitHub Actions OIDC for every wheel/sdist; see `docs/release/slsa_verification.md`.
+- **MCP per-caller authentication with scope-based authorization + per-caller audit logs (backward compatible with legacy shared-token mode)** — new `src/autodev/mcp_server/identity.py` introduces `CallerIdentity`, `IdentityRegistry`, and `requires_scope`. Set `AUTODEV_MCP_IDENTITIES` to a JSON registry file to activate per-caller mode; each caller gets its own hashed token and scopes (`mcp:read` / `mcp:write` / `mcp:apply`). Apply mode is now a **triple gate**: mcp:apply scope + `AUTODEV_MCP_ALLOW_APPLY=1` env + `allow_apply=true` request flag. Audit log entries now include a `caller_id` field (legacy mode records `"legacy_shared_token"`). Fully backward compatible: unset `AUTODEV_MCP_IDENTITIES` keeps existing single-token or open-stdio behavior.
 ---
 
 ## [0.1.0a3] — 2026-05-14 (Pre-Release)

@@ -2,6 +2,11 @@
 
 Each Tool maps a name + JSON Schema + handler callable.
 All handlers are synchronous for v1; long-running tools execute inline.
+
+Scope vocabulary (see identity.py):
+    mcp:read   — read-only tools
+    mcp:write  — write / planning tools (no filesystem mutations)
+    mcp:apply  — tools that may mutate the filesystem (apply mode)
 """
 from __future__ import annotations
 
@@ -14,7 +19,26 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from .identity import LEGACY_CALLER_ID, SCOPE_APPLY, get_current_caller
 from .path_safety import MCPPathSafetyError, _validate_safe_path
+
+# ---------------------------------------------------------------------------
+# Tool → required scope mapping (exported so server.py can enforce)
+# ---------------------------------------------------------------------------
+
+TOOL_SCOPES: dict[str, str] = {
+    # Read-only tools
+    "autodev_scan": "mcp:read",
+    "autodev_list_runs": "mcp:read",
+    "autodev_report": "mcp:read",
+    "autodev_release_check": "mcp:read",
+    # Write / planning tools
+    "autodev_classify_input": "mcp:write",
+    "autodev_create_prd": "mcp:write",
+    "autodev_roundtable": "mcp:write",
+    "autodev_run_issue": "mcp:write",
+    "autodev_deliver_project": "mcp:write",
+}
 
 # ---------------------------------------------------------------------------
 # Apply-mode guardrail helpers
@@ -25,6 +49,14 @@ _ENV_AUDIT_LOG = "AUTODEV_MCP_AUDIT_LOG"
 _DEFAULT_AUDIT_LOG = "/tmp/autodev_mcp_audit.log"
 
 
+def _get_caller_id() -> str:
+    """Return the caller_id for the current request, or LEGACY_CALLER_ID."""
+    caller = get_current_caller()
+    if caller is None:
+        return LEGACY_CALLER_ID
+    return caller.caller_id
+
+
 def _write_audit_log(
     tool_name: str,
     params: dict[str, Any],
@@ -32,7 +64,12 @@ def _write_audit_log(
     decision: str,
     reason: str | None = None,
 ) -> None:
-    """Write a structured audit entry to stderr and the audit log file."""
+    """Write a structured audit entry to stderr and the audit log file.
+
+    The entry always includes a ``caller_id`` field attributed to the current
+    request's authenticated identity.  In legacy single-token mode this is
+    ``"legacy_shared_token"``; in per-caller mode it is the caller's unique ID.
+    """
     # Sanitize params: redact any key containing 'secret', 'token', 'password', 'key'
     _REDACT_KEYS = {"secret", "token", "password", "key"}
     sanitized: dict[str, Any] = {
@@ -41,6 +78,7 @@ def _write_audit_log(
     }
     entry: dict[str, Any] = {
         "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        "caller_id": _get_caller_id(),
         "tool": tool_name,
         "params": sanitized,
         "repo_path": repo_path,
@@ -73,20 +111,33 @@ def _check_apply_mode_allowed(
 ) -> dict[str, Any] | None:
     """Return an isError dict if apply mode is disallowed, else None (allowed).
 
-    Checks:
-      1. allow_apply param must be True
-      2. AUTODEV_MCP_ALLOW_APPLY env var must be "1"
+    Checks (TRIPLE gate):
+      1. mcp:apply scope on the current caller identity
+         (skipped in legacy mode — legacy identity has all scopes)
+      2. allow_apply param must be True
+      3. AUTODEV_MCP_ALLOW_APPLY env var must be "1"
 
     Writes an audit log entry regardless of outcome.
     """
-    allow_apply_param = bool(args.get("allow_apply", False))
-    server_permit = os.environ.get(_ENV_ALLOW_APPLY, "0") == "1"
+    # Gate 1: scope check
+    caller = get_current_caller()
+    if caller is not None and not caller.has_scope(SCOPE_APPLY):
+        reason = (
+            f"Apply mode requires mcp:apply scope; "
+            f"caller {caller.caller_id!r} does not have it"
+        )
+        _write_audit_log(tool_name, args, repo_path, "denied", reason)
+        return {"isError": True, "content": [{"type": "text", "text": reason}]}
 
+    # Gate 2: explicit request opt-in
+    allow_apply_param = bool(args.get("allow_apply", False))
     if not allow_apply_param:
         reason = "Apply mode requires allow_apply=true explicit opt-in"
         _write_audit_log(tool_name, args, repo_path, "denied", reason)
         return {"isError": True, "content": [{"type": "text", "text": reason}]}
 
+    # Gate 3: server environment flag
+    server_permit = os.environ.get(_ENV_ALLOW_APPLY, "0") == "1"
     if not server_permit:
         reason = (
             f"Server is not configured to permit apply mode; "
