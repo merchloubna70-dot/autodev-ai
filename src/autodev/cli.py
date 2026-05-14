@@ -163,6 +163,7 @@ def deliver_project(
     push: bool = typer.Option(False, "--push"),
     tag: bool = typer.Option(False, "--tag"),
     scale: Optional[str] = typer.Option(None, "--scale", help="Project scale: bug-fix|small|medium|enterprise (auto-inferred if not given)"),
+    style: str = typer.Option("prd", "--style", help="Document style: prd (default) or prfaq (Amazon Working Backwards)"),
 ) -> None:
     """Run the Project Delivery Mode flow (brief / PRD / empty repo)."""
     import sys
@@ -192,6 +193,7 @@ def deliver_project(
         allow_mock=cfg.allow_mock_executor, from_scratch=bool(_parse_tri_bool(from_scratch)),
         commit=commit, push=push, tag=tag,
         scale=resolved_scale,
+        prd_style=style,
     ))
     typer.echo(
         f"run_id={run.run_id} mode={pmode.value} mock={run.state.mock_execution_used} "
@@ -215,6 +217,7 @@ def classify_input(input_path: str = typer.Option(..., "--input")) -> None:
 def create_prd(
     project_brief: str = typer.Option(..., "--project-brief"),
     output: str = typer.Option(".dev-factory/prd.md", "--output"),
+    style: str = typer.Option("prd", "--style", help="Document style: prd (default) or prfaq (Amazon Working Backwards)"),
 ) -> None:
     text = _read(project_brief)
     pm = ProductManagerAgent()
@@ -222,8 +225,8 @@ def create_prd(
     writer = PRDWriterAgent()
     brief = pm.build_brief(text)
     fr, nf, ac = req.derive(brief=brief, source_text=text)
-    prd = writer.write(brief=brief, functional=fr, non_functional=nf, acceptance=ac)
-    write_text(output, writer.render_markdown(prd))
+    prd = writer.write(brief=brief, functional=fr, non_functional=nf, acceptance=ac, style=style)
+    write_text(output, writer.render_markdown(prd, style=style))
     write_json(Path(output).with_suffix(".json"), prd)
     typer.echo(f"wrote {output}")
 
@@ -906,6 +909,85 @@ def document_project_cmd(
 
 
 # --- END BMAD-13 DOCUMENT-PROJECT ---
+
+# --- BMAD-7 SPRINT ---
+
+
+@app.command("sprint-start")
+def sprint_start_cmd(
+    repo_path: str = typer.Option(".", "--repo-path", help="Repo / project root"),
+    goal: str = typer.Option("", "--goal", help="Sprint goal statement"),
+    product_name: str = typer.Option("", "--product-name", help="Product name"),
+    duration_days: int = typer.Option(14, "--duration-days", help="Planned sprint duration in days"),
+) -> None:
+    """Open a new BMAD sprint under .autodev/sprints/sprint-NNN/."""
+    from .flows.sprint_flow import SprintFlow
+    from .schemas import SprintInput
+
+    inp = SprintInput(
+        repo_path=repo_path,
+        product_name=product_name,
+        goal=goal,
+        duration_days=duration_days,
+    )
+    state = SprintFlow().start_sprint(inp)
+    typer.echo(f"sprint_id={state.sprint_id} started_at={state.started_at}")
+    typer.echo(f"planning={state.planning_artifacts_path}")
+    typer.echo(f"implementation={state.implementation_artifacts_path}")
+    if state.previous_sprint_id:
+        typer.echo(f"previous={state.previous_sprint_id}")
+
+
+@app.command("sprint-status")
+def sprint_status_cmd(
+    repo_path: str = typer.Option(".", "--repo-path", help="Repo / project root"),
+    sprint_id: Optional[str] = typer.Option(None, "--sprint-id", help="Sprint ID (e.g. sprint-001); defaults to latest"),
+) -> None:
+    """Report health metrics for the current or specified sprint."""
+    from .flows.sprint_flow import SprintFlow
+
+    status = SprintFlow().status(repo_path, sprint_id)
+    typer.echo(f"sprint_id={status.sprint_id} health={status.health}")
+    typer.echo(f"tasks_total={status.tasks_total} done={status.tasks_done} failed={status.tasks_failed}")
+    typer.echo(f"progress={status.progress_pct:.1f}%")
+    if status.blockers:
+        typer.echo(f"blockers={status.blockers}")
+
+
+@app.command("sprint-retro")
+def sprint_retro_cmd(
+    repo_path: str = typer.Option(".", "--repo-path", help="Repo / project root"),
+    sprint_id: str = typer.Option(..., "--sprint-id", help="Sprint ID to retrospect (e.g. sprint-001)"),
+) -> None:
+    """Run a retrospective analysis for the given sprint and save report."""
+    from .flows.sprint_flow import SprintFlow
+
+    report = SprintFlow().retrospective(repo_path, sprint_id)
+    typer.echo(f"sprint_id={report.sprint_id}")
+    typer.echo(f"well={len(report.what_went_well)} wrong={len(report.what_went_wrong)}")
+    typer.echo(f"actions={len(report.actions_for_next_sprint)}")
+    typer.echo(f"carryover_ac={len(report.carryover_acceptance_criteria)}")
+    typer.echo(f"generated_at={report.generated_at}")
+
+
+@app.command("sprint-correct")
+def sprint_correct_cmd(
+    repo_path: str = typer.Option(".", "--repo-path", help="Repo / project root"),
+    sprint_id: str = typer.Option(..., "--sprint-id", help="Sprint ID to analyse"),
+    change: str = typer.Option(..., "--change", help="Description of the proposed change"),
+) -> None:
+    """Analyse impact of a change across PRD/Epic/Arch/UX and emit a proposal."""
+    from .flows.sprint_flow import SprintFlow
+
+    proposal = SprintFlow().correct_course(repo_path, sprint_id, change)
+    typer.echo(f"sprint_id={proposal.sprint_id}")
+    typer.echo(f"impacts={len(proposal.impacts)}")
+    for imp in proposal.impacts:
+        typer.echo(f"  [{imp.severity.value}] {imp.artifact}: {imp.change_summary}")
+    typer.echo(f"actions={len(proposal.recommended_actions)}")
+
+
+# --- END BMAD-7 SPRINT ---
 
 if __name__ == "__main__":  # pragma: no cover
     app()

@@ -77,3 +77,22 @@ class FactoryConfig:
         if os.environ.get("FACTORY_CLAUDE_CMD"):
             cfg.claude_code.command_template = os.environ["FACTORY_CLAUDE_CMD"]
         return cfg
+
+    @classmethod
+    def from_stack(cls, repo_path: "str | None" = None) -> "FactoryConfig":
+        """Build a FactoryConfig by layering TOML config files then env vars.
+
+        Loads 4 layers in priority order:
+          1. ~/.config/autodev/config.toml     (user-global)
+          2. {repo}/.autodev/config.toml       (project team-base)
+          3. {repo}/.autodev/config.user.toml  (project user override)
+          4. Environment variables              (runtime, via from_env)
+
+        Missing files are silently skipped.
+        """
+        from .utils.config_stack import ConfigStack
+
+        # Start from env-layer base (backward compat)
+        cfg = cls.from_env()
+        stack = ConfigStack(repo_path=repo_path).load()
+        return stack.materialize_into(cfg)

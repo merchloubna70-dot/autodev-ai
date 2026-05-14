@@ -62,6 +62,7 @@ class ProjectDeliveryInput:
     push: bool = False
     tag: bool = False
     scale: Scale | None = None
+    prd_style: str = "prd"
 
 
 class ProjectDeliveryFlow:
