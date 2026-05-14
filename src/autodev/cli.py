@@ -408,7 +408,23 @@ def replay(
     repo_path: str = typer.Option(".", "--repo-path"),
     from_stage: str = typer.Option("planning", "--from-stage"),
     from_step: str | None = typer.Option(None, "--from-step", help="Resume at a named micro-file step"),
+    diff: list[str] | None = typer.Option(None, "--diff", help="Diff two run IDs: --diff <run-id-A> --diff <run-id-B>"),  # noqa: B008
 ) -> None:
+    """Replay a pipeline run from a given stage, or diff two run artifact trees."""
+    if diff is not None:
+        # --diff mode: compare two run artifact trees
+        if len(diff) != 2:
+            typer.echo("[autodev] --diff requires exactly 2 run IDs: --diff <run-id-A> --diff <run-id-B>", err=True)
+            raise typer.Exit(code=2)
+        import json as _json
+
+        from .flows.replay_diff_flow import ReplayDiffFlow
+
+        run_id_a, run_id_b = diff
+        result = ReplayDiffFlow().diff(run_id_a, run_id_b, repo_path=repo_path)
+        typer.echo(_json.dumps(result.to_dict(), indent=2))
+        return
+
     from .flows.replay_flow import ReplayFlow
     run = ReplayFlow().replay(
         run_id=run_id,
@@ -1012,6 +1028,7 @@ def sprint_start_cmd(
     goal: str = typer.Option("", "--goal", help="Sprint goal statement"),
     product_name: str = typer.Option("", "--product-name", help="Product name"),
     duration_days: int = typer.Option(14, "--duration-days", help="Planned sprint duration in days"),
+    watch: bool = typer.Option(False, "--watch/--no-watch", help="Watch .autodev/sprints/*.md and reload on change (stays foreground)"),
 ) -> None:
     """Open a new BMAD sprint under .autodev/sprints/sprint-NNN/."""
     from .flows.sprint_flow import SprintFlow
@@ -1029,6 +1046,42 @@ def sprint_start_cmd(
     typer.echo(f"implementation={state.implementation_artifacts_path}")
     if state.previous_sprint_id:
         typer.echo(f"previous={state.previous_sprint_id}")
+
+    if watch:
+        import signal
+        from pathlib import Path as _Path
+
+        from ._watcher import SprintWatcher
+
+        sprints_dir = _Path(repo_path) / ".autodev" / "sprints"
+
+        def _on_reload(changed: _Path) -> None:
+            typer.echo(f"[sprint-watch] reloaded: {changed}")
+
+        watcher = SprintWatcher(
+            sprints_dir=sprints_dir,
+            on_reload=_on_reload,
+            debounce_seconds=0.5,
+        )
+        watcher.start()
+        typer.echo(f"[sprint-watch] watching {sprints_dir} — Ctrl-C to stop")
+
+        def _stop(sig, frame):  # noqa: ARG001
+            watcher.stop()
+            raise typer.Exit()
+
+        signal.signal(signal.SIGINT, _stop)
+        signal.signal(signal.SIGTERM, _stop)
+
+        # Block in foreground until interrupted
+        import time as _time
+        try:
+            while watcher.is_alive():
+                _time.sleep(0.5)
+        except (KeyboardInterrupt, SystemExit):
+            pass
+        finally:
+            watcher.stop()
 
 
 @app.command("sprint-status")
