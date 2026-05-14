@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>autodev-x roundtable — {{ topic | truncate(80) }}</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0d1117; color: #c9d1d9; line-height: 1.6;
+    }
+    h1, h2, h3 { color: #e6edf3; }
+    .container { max-width: 960px; margin: 0 auto; padding: 24px 16px; }
+
+    /* ── Topic header ────────────────────────────────────────────────── */
+    .topic-header {
+      background: #161b22; border: 1px solid #30363d; border-radius: 8px;
+      padding: 20px 24px; margin-bottom: 24px;
+    }
+    .topic-header h1 { font-size: 1.4rem; margin-bottom: 10px; }
+    .meta-row { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px; border-radius: 12px;
+      font-size: 0.75rem; font-weight: 600;
+    }
+    .badge-blue   { background: #1f3a5f; color: #79c0ff; border: 1px solid #1f6feb; }
+    .badge-purple { background: #2a1a4e; color: #bc8cff; border: 1px solid #6e40c9; }
+    .badge-gray   { background: #21262d; color: #8b949e; border: 1px solid #30363d; }
+
+    /* ── Participants pill row ───────────────────────────────────────── */
+    .participants { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+    .participant-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 14px; background: #1c2128;
+      border: 1px solid #30363d; border-radius: 20px;
+      font-size: 0.82rem; color: #e6edf3;
+    }
+    .participant-dot {
+      width: 8px; height: 8px; border-radius: 50%; background: #79c0ff;
+    }
+
+    /* ── Agent analysis cards ────────────────────────────────────────── */
+    .agent-card {
+      background: #161b22; border: 1px solid #30363d; border-radius: 8px;
+      margin-bottom: 16px; overflow: hidden;
+    }
+    .agent-card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 18px; background: #1c2128;
+      border-bottom: 1px solid #30363d; cursor: pointer; user-select: none;
+    }
+    .agent-card-header:hover { background: #22272e; }
+    .agent-name { font-weight: 600; font-size: 0.95rem; color: #e6edf3; }
+    .agent-card-body { padding: 16px 18px; white-space: pre-wrap; font-size: 0.88rem; }
+    .agent-card-body.collapsed { display: none; }
+    .toggle { color: #8b949e; font-size: 1rem; transition: transform .2s; }
+
+    /* ── Code blocks inside agent responses ─────────────────────────── */
+    .agent-card-body pre {
+      background: #0d1117; border: 1px solid #30363d; border-radius: 6px;
+      padding: 12px; overflow-x: auto; margin: 8px 0;
+    }
+
+    /* ── Consensus banner ───────────────────────────────────────────── */
+    .consensus-banner {
+      background: linear-gradient(135deg, #0d2137 0%, #0d1a0d 100%);
+      border: 1px solid #1f6feb; border-left: 4px solid #58a6ff;
+      border-radius: 8px; padding: 20px 24px; margin-top: 24px;
+    }
+    .consensus-banner h2 {
+      font-size: 1rem; color: #79c0ff; margin-bottom: 10px; letter-spacing: .02em;
+    }
+    .consensus-text { font-size: 0.9rem; white-space: pre-wrap; }
+
+    /* ── Misc ────────────────────────────────────────────────────────── */
+    .empty-state { color: #8b949e; font-style: italic; padding: 16px 0; }
+    footer { text-align: center; color: #8b949e; font-size: 0.75rem; padding: 32px 0 16px; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ── Topic header ──────────────────────────────────────────────────── -->
+  <div class="topic-header">
+    <h1>Roundtable Discussion</h1>
+    <p style="color:#8b949e;margin-bottom:14px;font-size:0.82rem;">Topic</p>
+    <p style="font-size:1.05rem;color:#e6edf3;margin-bottom:16px;">{{ topic }}</p>
+    <div class="meta-row">
+      <span class="badge badge-blue">{{ participants | length }} participant{{ 's' if participants | length != 1 else '' }}</span>
+      <span class="badge badge-gray">{{ generated_at }}</span>
+      {% if conversation_id %}
+      <span class="badge badge-purple" title="{{ conversation_id }}">id: {{ conversation_id[:12] }}…</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ── Participants ───────────────────────────────────────────────────── -->
+  {% if participants %}
+  <div class="participants">
+    {% for name in participants %}
+    <div class="participant-pill">
+      <div class="participant-dot"></div>
+      {{ name }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- ── Agent analysis cards ──────────────────────────────────────────── -->
+  <h2 style="font-size:1rem;color:#8b949e;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;">
+    Agent Analyses
+  </h2>
+
+  {% if agent_analyses %}
+    {% for analysis in agent_analyses %}
+    <div class="agent-card">
+      <div class="agent-card-header" onclick="toggleCard(this)">
+        <span class="agent-name">{{ analysis.agent_name }}</span>
+        <span class="toggle">▼</span>
+      </div>
+      <div class="agent-card-body">{{ analysis.text | e }}</div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="empty-state">No agent analyses recorded.</div>
+  {% endif %}
+
+  <!-- ── Consensus banner ──────────────────────────────────────────────── -->
+  <div class="consensus-banner">
+    <h2>Synthesized Consensus</h2>
+    {% if consensus_text %}
+    <div class="consensus-text">{{ consensus_text | e }}</div>
+    {% else %}
+    <div class="empty-state">No consensus text produced.</div>
+    {% endif %}
+  </div>
+
+  <footer>
+    Generated by <strong>autodev-x</strong> roundtable export &mdash; {{ generated_at }}
+  </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+<script>
+function toggleCard(header) {
+  const body = header.nextElementSibling;
+  const toggle = header.querySelector('.toggle');
+  const collapsed = body.classList.toggle('collapsed');
+  toggle.style.transform = collapsed ? 'rotate(-90deg)' : '';
+}
+</script>
+</body>
+</html>

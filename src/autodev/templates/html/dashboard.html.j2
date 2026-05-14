@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>autodev-x dashboard — {{ run.run_id }}</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+      background: #0d1117; color: #c9d1d9; line-height: 1.5;
+    }
+    a { color: #58a6ff; }
+    h1, h2, h3 { color: #e6edf3; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 24px 16px; }
+
+    /* ── Run summary card ──────────────────────────────────────────────── */
+    .summary-card {
+      background: #161b22; border: 1px solid #30363d; border-radius: 8px;
+      padding: 20px 24px; margin-bottom: 24px;
+    }
+    .summary-card h1 { font-size: 1.4rem; margin-bottom: 12px; }
+    .summary-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px;
+    }
+    .kv { display: flex; flex-direction: column; }
+    .kv .label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: .05em; color: #8b949e; }
+    .kv .value { font-size: 0.9rem; color: #e6edf3; font-weight: 500; }
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 12px;
+      font-size: 0.75rem; font-weight: 600;
+    }
+    .badge-green  { background: #1a4731; color: #56d364; border: 1px solid #2ea043; }
+    .badge-yellow { background: #3d2b00; color: #e3b341; border: 1px solid #9e6a03; }
+    .badge-red    { background: #4d1118; color: #f85149; border: 1px solid #da3633; }
+    .badge-gray   { background: #21262d; color: #8b949e; border: 1px solid #30363d; }
+
+    /* ── Stage sections ──────────────────────────────────────────────── */
+    .stage-section {
+      background: #161b22; border: 1px solid #30363d; border-radius: 8px;
+      margin-bottom: 16px; overflow: hidden;
+    }
+    .stage-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 20px; cursor: pointer; user-select: none;
+      background: #1c2128; border-bottom: 1px solid #30363d;
+    }
+    .stage-header:hover { background: #22272e; }
+    .stage-header h2 { font-size: 1rem; }
+    .stage-header .toggle { font-size: 1rem; color: #8b949e; transition: transform .2s; }
+    .stage-body { padding: 16px 20px; }
+    .stage-body.collapsed { display: none; }
+
+    /* ── Artifact files ───────────────────────────────────────────────── */
+    .artifact-file { margin-bottom: 16px; }
+    .artifact-name {
+      font-size: 0.8rem; color: #8b949e; font-family: monospace;
+      margin-bottom: 4px; padding: 4px 8px; background: #0d1117;
+      border-radius: 4px 4px 0 0; border: 1px solid #30363d;
+    }
+    .json-block-wrapper { position: relative; }
+    .json-block-wrapper pre {
+      margin: 0; border-radius: 0 0 4px 4px; max-height: 400px; overflow-y: auto;
+      border: 1px solid #30363d; border-top: none;
+    }
+
+    /* ── Executor routing diagram ────────────────────────────────────── */
+    .routing-table {
+      width: 100%; border-collapse: collapse; font-size: 0.85rem;
+    }
+    .routing-table th, .routing-table td {
+      padding: 8px 12px; text-align: left;
+      border-bottom: 1px solid #21262d;
+    }
+    .routing-table th { color: #8b949e; font-weight: 500; background: #0d1117; }
+    .routing-table tr:hover td { background: #1c2128; }
+    .executor-pill {
+      display: inline-block; padding: 2px 8px; border-radius: 10px;
+      font-size: 0.72rem; font-weight: 600; background: #1f3a5f; color: #79c0ff;
+      border: 1px solid #1f6feb;
+    }
+
+    /* ── Gate verdicts ───────────────────────────────────────────────── */
+    .gate-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px;
+    }
+    .gate-chip {
+      display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+      background: #0d1117; border: 1px solid #30363d; border-radius: 6px;
+      font-size: 0.82rem;
+    }
+    .gate-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .dot-pass  { background: #56d364; }
+    .dot-fail  { background: #f85149; }
+    .dot-warn  { background: #e3b341; }
+    .dot-skip  { background: #8b949e; }
+
+    /* ── Findings ────────────────────────────────────────────────────── */
+    .finding { padding: 10px 14px; border-left: 3px solid #30363d; margin-bottom: 8px; background: #0d1117; border-radius: 0 4px 4px 0; }
+    .finding.sev-critical { border-color: #f85149; }
+    .finding.sev-high     { border-color: #e3b341; }
+    .finding.sev-medium   { border-color: #58a6ff; }
+    .finding.sev-low      { border-color: #56d364; }
+    .finding .sev-label   { font-size: 0.72rem; text-transform: uppercase; font-weight: 600; margin-bottom: 2px; }
+
+    /* ── SVG executor routing ────────────────────────────────────────── */
+    .routing-svg { overflow: visible; display: block; }
+    .rt-node rect { fill: #1c2128; stroke: #30363d; stroke-width: 1; rx: 4; }
+    .rt-node text { fill: #c9d1d9; font-size: 12px; font-family: monospace; }
+    .rt-edge { stroke: #1f6feb; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+
+    /* ── Misc ────────────────────────────────────────────────────────── */
+    .empty-state { color: #8b949e; font-style: italic; padding: 12px 0; }
+    footer { text-align: center; color: #8b949e; font-size: 0.75rem; padding: 32px 0 16px; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ── Run summary card ───────────────────────────────────────────────── -->
+  <div class="summary-card">
+    <h1>autodev-x dashboard</h1>
+    <div class="summary-grid">
+      <div class="kv">
+        <span class="label">Run ID</span>
+        <span class="value">{{ run.run_id }}</span>
+      </div>
+      <div class="kv">
+        <span class="label">Mode</span>
+        <span class="value">
+          <span class="badge {% if run.mode == 'apply' %}badge-green{% else %}badge-yellow{% endif %}">
+            {{ run.mode or 'dry-run' }}
+          </span>
+        </span>
+      </div>
+      <div class="kv">
+        <span class="label">Status</span>
+        <span class="value">
+          {% if run.finished_at %}
+            <span class="badge badge-green">done</span>
+          {% else %}
+            <span class="badge badge-yellow">running</span>
+          {% endif %}
+        </span>
+      </div>
+      <div class="kv">
+        <span class="label">Mock</span>
+        <span class="value">
+          <span class="badge {% if run.mock_execution_used %}badge-yellow{% else %}badge-gray{% endif %}">
+            {{ 'yes' if run.mock_execution_used else 'no' }}
+          </span>
+        </span>
+      </div>
+      <div class="kv">
+        <span class="label">Started</span>
+        <span class="value">{{ (run.started_at or '—')[:19] }}</span>
+      </div>
+      <div class="kv">
+        <span class="label">Finished</span>
+        <span class="value">{{ (run.finished_at or '—')[:19] }}</span>
+      </div>
+      <div class="kv">
+        <span class="label">Milestones</span>
+        <span class="value">{{ run.milestone_count }}</span>
+      </div>
+      <div class="kv">
+        <span class="label">Tasks</span>
+        <span class="value">{{ run.task_count }}</span>
+      </div>
+      <div class="kv">
+        <span class="label">Languages</span>
+        <span class="value">{{ (run.languages | join(', ')) or '—' }}</span>
+      </div>
+      {% if run.errors %}
+      <div class="kv">
+        <span class="label">Errors</span>
+        <span class="value"><span class="badge badge-red">{{ run.errors | length }}</span></span>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ── Gate verdicts ─────────────────────────────────────────────────── -->
+  {% if run.gate_statuses %}
+  <div class="stage-section">
+    <div class="stage-header" onclick="toggleSection(this)">
+      <h2>Quality Gate Verdicts</h2>
+      <span class="toggle">▼</span>
+    </div>
+    <div class="stage-body">
+      <div class="gate-grid">
+        {% for gate_name, status in run.gate_statuses.items() %}
+        <div class="gate-chip">
+          <div class="gate-dot
+            {% if status in ('passed', 'pass', 'success', 'GoForRelease') %}dot-pass
+            {% elif status in ('failed', 'fail', 'error', 'NotReleaseReady') %}dot-fail
+            {% elif status in ('warning', 'warn') %}dot-warn
+            {% else %}dot-skip{% endif %}">
+          </div>
+          <span>{{ gate_name }}</span>
+          <span class="badge
+            {% if status in ('passed', 'pass', 'success', 'GoForRelease') %}badge-green
+            {% elif status in ('failed', 'fail', 'error', 'NotReleaseReady') %}badge-red
+            {% else %}badge-gray{% endif %}" style="margin-left:auto">{{ status }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ── Severity findings ─────────────────────────────────────────────── -->
+  {% if run.severity_findings %}
+  <div class="stage-section">
+    <div class="stage-header" onclick="toggleSection(this)">
+      <h2>Severity Findings ({{ run.severity_findings | length }})</h2>
+      <span class="toggle">▼</span>
+    </div>
+    <div class="stage-body">
+      {% for f in run.severity_findings %}
+      {% set sev = (f.severity or 'low') | lower %}
+      <div class="finding sev-{{ sev }}">
+        <div class="sev-label">{{ sev }}</div>
+        <div>{{ f.message or f.description or f | string }}</div>
+        {% if f.file %}<div style="font-size:0.78rem;color:#8b949e;margin-top:4px;">{{ f.file }}</div>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ── Executor routing diagram ──────────────────────────────────────── -->
+  {% if routing_rows %}
+  <div class="stage-section">
+    <div class="stage-header" onclick="toggleSection(this)">
+      <h2>Executor Routing</h2>
+      <span class="toggle">▼</span>
+    </div>
+    <div class="stage-body">
+      <table class="routing-table">
+        <thead>
+          <tr>
+            <th>Task</th>
+            <th>Milestone</th>
+            <th>Executor</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in routing_rows %}
+          <tr>
+            <td>{{ row.task_id }}</td>
+            <td>{{ row.milestone_id or '—' }}</td>
+            <td><span class="executor-pill">{{ row.executor or 'auto' }}</span></td>
+            <td>
+              <span class="badge
+                {% if row.success %}badge-green
+                {% elif row.success == false %}badge-red
+                {% else %}badge-gray{% endif %}">
+                {% if row.success %}pass{% elif row.success == false %}fail{% else %}?{% endif %}
+              </span>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ── Per-stage artifact sections ───────────────────────────────────── -->
+  {% for stage in stages %}
+  <div class="stage-section">
+    <div class="stage-header" onclick="toggleSection(this)">
+      <h2>{{ stage.name | title }} ({{ stage.files | length }} artifact{{ 's' if stage.files | length != 1 else '' }})</h2>
+      <span class="toggle">▼</span>
+    </div>
+    <div class="stage-body">
+      {% if stage.files %}
+        {% for artifact in stage.files %}
+        <div class="artifact-file">
+          <div class="artifact-name">{{ artifact.relative_path }}</div>
+          <div class="json-block-wrapper">
+            <pre><code class="language-{% if artifact.language %}{{ artifact.language }}{% else %}json{% endif %}">{{ artifact.content | e }}</code></pre>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty-state">No artifacts for this stage.</div>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+
+  <footer>
+    Generated by <strong>autodev-x</strong> dashboard export &mdash; {{ generated_at }}
+  </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+<script>
+function toggleSection(header) {
+  const body = header.nextElementSibling;
+  const toggle = header.querySelector('.toggle');
+  const collapsed = body.classList.toggle('collapsed');
+  toggle.style.transform = collapsed ? 'rotate(-90deg)' : '';
+}
+</script>
+</body>
+</html>
