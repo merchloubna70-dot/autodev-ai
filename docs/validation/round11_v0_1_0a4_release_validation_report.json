@@ -1,0 +1,53 @@
+{
+  "round": 11,
+  "subject": "v0.1.0a4 release candidate validation",
+  "date": "2026-05-14",
+  "tag": "v0.1.0a4",
+  "head_commit_at_tag": "9759c2e790042ce80af5934444e59d7e30b7d1cb",
+  "decision": "PASS",
+  "steps": [
+    {"id": 1, "subject": "confirm main clean + log", "result": "PASS", "evidence": "git status empty at round start; HEAD a83e939"},
+    {"id": 2, "subject": "local gate (ruff/mypy/pytest/build/twine)", "result": "PASS", "metrics": {"ruff_errors": 0, "mypy_issues": 0, "mypy_files_checked": 176, "pytest_passed": 2026, "pytest_skipped": 6, "pytest_failed": 0, "coverage_overall_pct": 91.8, "build_wheel": "autodev_ai-0.1.0a4-py3-none-any.whl", "build_sdist": "autodev_ai-0.1.0a4.tar.gz", "twine_check": "PASSED"}},
+    {"id": 3, "subject": "release-readiness gate strict/r2/r3/rc", "result": "PASS", "metrics": {"strict": "36/36", "strict_r2": "36/36", "strict_r3": "36/36", "strict_rc": "36/36"}, "note": "first run failed mypy_passes + r3_mypy_clean; fix in cf02c72"},
+    {"id": 4, "subject": "v0.1.0a4 release notes", "result": "PASS", "artifact": "docs/release_notes/v0.1.0a4.md"},
+    {"id": 5, "subject": "version bump to 0.1.0a4", "result": "PASS", "files_bumped": ["pyproject.toml", "README.md", "CHANGELOG.md", "packaging/desktop/autodev-ai.app/Contents/Info.plist"]},
+    {"id": "6+7", "subject": "tag v0.1.0a4 + push", "result": "PASS (after retag)", "note": "first tag at 764dfa4 produced 0 artifacts (release.yml test job failed); retagged at 9759c2e after fix commits a621408 + 9759c2e"},
+    {"id": 8, "subject": "post-publish verify (pip + docker + CLI)", "result": "PASS", "evidence": {"pypi_install": "autodev-ai 0.1.0a4", "docker_pull_digest": "sha256:62a716aaebb2f7c853055a39d37f4f64fa455e04f4fc92ca724dff11a6b1a44d", "docker_run_version": "autodev-ai 0.1.0a4", "cli_help_subcommands_visible": true, "release_check_help_flags": ["--run-id", "--repo-path"]}},
+    {"id": 9, "subject": "Homebrew formula bump + smoke", "result": "PASS (caveat)", "evidence": {"formulas_bumped": ["packaging/homebrew/Formula/autodev-ai.rb", "packaging/homebrew/tap/Formula/autodev-ai.rb"], "sdist_sha256_reverified": "5c876cce67a0193bae82a5f518e827429dffa35618ca3f40f5fbad21ec5e7a3e", "brew_style_clean": true, "tap_commit": "b477f4d", "tap_repo": "merchloubna70-dot/homebrew-autodev", "brew_info_resolves_to": "0.1.0a4"}, "caveat": "local brew install smoke blocked by macOS system Python libexpat ABI mismatch (homebrew python@3.12 bottle requires libexpat 2.7+, /usr/lib/libexpat.1.dylib is 2.6); independent of formula"},
+    {"id": 10, "subject": "final report", "result": "PASS", "artifacts": ["docs/validation/round11_v0_1_0a4_release_validation_report.md", "docs/validation/round11_v0_1_0a4_release_validation_report.json"]}
+  ],
+  "released_artifacts": {
+    "pypi_wheel": {"filename": "autodev_ai-0.1.0a4-py3-none-any.whl", "size_bytes": 337033, "sha256": "7dda66495d8251d08c1da44b69e93f8d0fc2792fb424acff9da713081b4e5049"},
+    "pypi_sdist": {"filename": "autodev_ai-0.1.0a4.tar.gz", "size_bytes": 1020669, "sha256": "5c876cce67a0193bae82a5f518e827429dffa35618ca3f40f5fbad21ec5e7a3e"},
+    "ghcr_image": {"ref": "ghcr.io/merchloubna70-dot/autodev-ai:v0.1.0a4", "digest": "sha256:62a716aaebb2f7c853055a39d37f4f64fa455e04f4fc92ca724dff11a6b1a44d", "platforms": ["amd64", "arm64"]},
+    "github_release": {"tag": "v0.1.0a4", "attachments": ["wheel", "sdist", "sbom.cdx.json", "sbom.spdx.json", "slsa.intoto.jsonl"]},
+    "homebrew_tap": {"repo": "merchloubna70-dot/homebrew-autodev", "commit": "b477f4d", "version_resolved": "0.1.0a4"}
+  },
+  "supply_chain": {
+    "slsa_l3_provenance": "live",
+    "cosign_keyless_image_signature": "live",
+    "sbom_cyclonedx_1_5": "live",
+    "sbom_spdx_2_3": "live"
+  },
+  "workflows_at_tag": {
+    "Lint": "success",
+    "Test": "success",
+    "Release": "success",
+    "Docker": "success",
+    "SLSA Provenance": "success",
+    "SBOM": "success"
+  },
+  "defects_fixed_during_round": [
+    {"commit": "cf02c72", "defect": "tui/dashboard.action_quit sync override of textual.App.action_quit (must be async)", "detector": "release_readiness_gate strict mypy"},
+    {"commit": "a621408", "defect": "release.yml not migrated to setup-autodev composite (installed [dev] only, broke on textual import)", "detector": "Release workflow test job failure on first v0.1.0a4 tag push"},
+    {"commit": "9759c2e", "defect": "Info.plist CFBundleShortVersionString + CFBundleVersion lagged pyproject at 0.1.0a3", "detector": "test_homebrew_formula_metadata.py BLOCKER-PKG-03"}
+  ],
+  "deltas_vs_a3": {
+    "test_count": {"a3": 1597, "a4": 2026, "delta": 429},
+    "overall_coverage_pct": {"a3": 80.5, "a4": 91.8, "delta": 11.3},
+    "supply_chain_attestations_live": {"a3": 0, "a4": 3, "added": ["SLSA L3", "cosign image signing", "SBOM (CycloneDX + SPDX)"]},
+    "mcp_auth_modes": {"a3": ["legacy-shared-token"], "a4": ["legacy-shared-token", "per-caller IdentityRegistry with scope RBAC"]},
+    "coverage_gate_exemptions_removed": ["src/autodev/release_readiness_gate.py", "src/autodev/tui/dashboard.py", "src/autodev/tui/widgets.py"]
+  },
+  "next_strategic_decision_pending": "when to cut 0.1.0 final (out of R11 scope)"
+}
