@@ -1,5 +1,5 @@
-# Backfilled 2026-05-14 from real PyPI 0.1.0a4 publish.
-# URL points to canonical PyPI sdist; sha256 from https://pypi.org/pypi/autodev-x/0.1.0a4/json
+# Backfilled 2026-05-14 from real PyPI 0.1.0a6 publish (autodev-x rename, supersedes autodev-ai).
+# URL points to canonical PyPI sdist; sha256 from https://pypi.org/pypi/autodev-x/0.1.0a6/json
 # (independently re-verified by curl + shasum -a 256).
 # `brew audit --strict` should now pass.
 class AutodevX < Formula
@@ -7,9 +7,9 @@ class AutodevX < Formula
 
   desc "AI-driven software factory: CrewAI + Codex CLI + Claude Code CLI"
   homepage "https://github.com/merchloubna70-dot/autodev-x"
-  url "https://files.pythonhosted.org/packages/3c/63/f9e48227cdf4d7e114c6950658b291a28a56f37538371d364b50dba6fd8a/autodev_x-0.1.0a4.tar.gz"
-  version "0.1.0a4"
-  sha256 "5c876cce67a0193bae82a5f518e827429dffa35618ca3f40f5fbad21ec5e7a3e"
+  url "https://files.pythonhosted.org/packages/a1/e9/252fb2ab17a73dd05bdb1749eb27c2d4638f3793dde7203f444284fa1ff1/autodev_x-0.1.0a6.tar.gz"
+  version "0.1.0a6"
+  sha256 "698c0be1d4474efa5594a3da22369372f15f9f5f698bbb31eab5a7dada393f4b"
   license "MIT"
 
   depends_on "python@3.12"
