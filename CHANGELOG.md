@@ -14,6 +14,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `scripts/verify_release.sh`: wraps `cosign verify` + optional `slsa-verifier` for supply-chain provenance checks on a tagged release.
 - `autodev-x ci-run` subcommand: auto-detects GitHub Actions / GitLab CI / Drone via env vars, runs `deliver-project` with sensible CI defaults, writes a Markdown summary to `$GITHUB_STEP_SUMMARY` on GitHub Actions, and emits correct exit codes for the CI runner.
 - `deliver-project --resume-from <milestone>` flag: resumes an existing run from a named artifact stage (`input|product|architecture|planning|execution|quality|verification|delivery`), clearing downstream artifacts before replaying — useful for incremental pipelines and partial re-runs.
+- `deliver-project --skill-pack <name>` flag with 5 curated templates (rust-binary, fastapi-service, cli-tool, nextjs-app, python-package); when `--project-brief` is omitted, the brief is auto-generated from the pack's template. New `src/autodev/skill_packs/` module.
+- `deliver-project --dry-cost` flag: estimates total tokens and Claude Max / Codex Pro cap usage from brief size and agent fan-out heuristics; exits without running the pipeline; outputs JSON. New `src/autodev/cost.py` with `CostEstimator` + `CostLedger`.
+- `deliver-project --judges N` flag (0-7, default 0): adds a Borda-voting TournamentGate after QualityGate, inspired by `ai-autodev`. New `src/autodev/gates/tournament_gate.py` with subprocess judge runner + tie-break logic.
+- `autodev-x dashboard --export-html <path>` flag: emits a self-contained HTML5 file of the latest artifact tree (per-stage sections, executor-routing table, Prism.js JSON syntax highlighting) without launching the Textual TUI. New `src/autodev/tui/html_export.py` + `src/autodev/templates/html/dashboard.html.j2`.
+
 ## [0.1.0a6] — 2026-05-14 (Pre-Release, Docker fix for rename)
 
 ### Fixed
