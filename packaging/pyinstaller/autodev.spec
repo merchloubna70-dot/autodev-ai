@@ -108,7 +108,7 @@ hiddenimports = _autodev_modules + _extra_hidden
 # Analysis
 # ---------------------------------------------------------------------------
 a = Analysis(
-    ["../../src/autodev/cli.py"],
+    ["autodev_entry.py"],
     pathex=["../../src"],
     binaries=[],
     datas=[
@@ -138,7 +138,6 @@ a = Analysis(
         "pdb",
         "profile",
         "cProfile",
-        "difflib",
         "ftplib",
         "imaplib",
         "mailbox",
@@ -149,7 +148,6 @@ a = Analysis(
         "turtle",
         "turtledemo",
         "lib2to3",
-        "distutils",
         "ensurepip",
         "venv",
         "test",
