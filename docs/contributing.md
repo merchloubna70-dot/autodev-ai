@@ -1,11 +1,11 @@
-# Contributing to autodev-ai
+# Contributing to autodev-x
 
 ## Dev Setup
 
 ```bash
 # Clone and install in editable mode with dev extras
-git clone https://github.com/<org>/autodev-ai.git
-cd autodev-ai
+git clone https://github.com/<org>/autodev-x.git
+cd autodev-x
 pip install -e ".[dev]"
 
 # Install pre-commit hooks

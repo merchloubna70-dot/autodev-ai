@@ -3,8 +3,8 @@ requires = ["hatchling>=1.21"]
 build-backend = "hatchling.build"
 
 [project]
-name = "autodev-ai"
-version = "0.1.0a4"
+name = "autodev-x"
+version = "0.1.0a5"
 description = "AI-driven software factory: CrewAI + Codex CLI + Claude Code CLI with multi-CLI router, A2A roundtable, MCP server, scale-adaptive delivery from brief to release-ready project."
 keywords = ["ai", "agent", "codex", "claude", "crewai", "a2a", "mcp", "software-factory"]
 readme = "README.md"
@@ -40,11 +40,11 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/merchloubna70-dot/autodev-ai"
-Repository = "https://github.com/merchloubna70-dot/autodev-ai"
-Issues = "https://github.com/merchloubna70-dot/autodev-ai/issues"
-Changelog = "https://github.com/merchloubna70-dot/autodev-ai/blob/main/CHANGELOG.md"
-Documentation = "https://github.com/merchloubna70-dot/autodev-ai/blob/main/README.md"
+Homepage = "https://github.com/merchloubna70-dot/autodev-x"
+Repository = "https://github.com/merchloubna70-dot/autodev-x"
+Issues = "https://github.com/merchloubna70-dot/autodev-x/issues"
+Changelog = "https://github.com/merchloubna70-dot/autodev-x/blob/main/CHANGELOG.md"
+Documentation = "https://github.com/merchloubna70-dot/autodev-x/blob/main/README.md"
 
 [project.optional-dependencies]
 crewai = ["crewai>=0.30"]
@@ -59,7 +59,7 @@ dev = [
 ]
 
 [project.scripts]
-autodev = "autodev.cli:app"
+autodev-x = "autodev.cli:app"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/autodev"]

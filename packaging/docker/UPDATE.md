@@ -54,7 +54,7 @@ After updating the digest, verify the image builds successfully:
 
 ```bash
 # Build from the packaging/docker directory (wheel must exist in dist/ first)
-docker build packaging/docker/ -t autodev-ai:digest-update-smoke
+docker build packaging/docker/ -t autodev-x:digest-update-smoke
 
 # Run the unit test suite to confirm the new digest passes structural checks
 .venv/bin/python -m pytest tests/unit/test_docker_digest_pinning.py -v

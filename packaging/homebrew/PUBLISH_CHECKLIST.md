@@ -2,7 +2,7 @@
 
 **Status: BLOCKED — do not publish this formula until all steps below are completed.**
 
-This formula is blocked pending live PyPI availability of `autodev-ai 0.1.0a1`.
+This formula is blocked pending live PyPI availability of `autodev-x 0.1.0a1`.
 Complete every step in order before pushing to a Homebrew tap.
 
 ## Steps
@@ -10,7 +10,7 @@ Complete every step in order before pushing to a Homebrew tap.
 1. **Confirm PyPI 0.1.0a1 is published**
 
    ```
-   pip index versions autodev-ai --pre
+   pip index versions autodev-x --pre
    ```
 
    Expected output must include `0.1.0a1`. If the package is not listed, stop here.
@@ -19,7 +19,7 @@ Complete every step in order before pushing to a Homebrew tap.
 
    Look up the sdist URL from PyPI JSON API:
    ```
-   curl -s https://pypi.org/pypi/autodev-ai/0.1.0a1/json | python3 -c \
+   curl -s https://pypi.org/pypi/autodev-x/0.1.0a1/json | python3 -c \
      "import sys,json; [print(f['url']) for f in json.load(sys.stdin)['urls'] if f['packagetype']=='sdist']"
    ```
 
@@ -30,14 +30,14 @@ Complete every step in order before pushing to a Homebrew tap.
 
 3. **Update Formula `url` and `sha256` fields**
 
-   In `packaging/homebrew/Formula/autodev-ai.rb`:
+   In `packaging/homebrew/Formula/autodev-x.rb`:
    - Replace the `url` value with the canonical PyPI sdist URL (not the GitHub releases URL).
    - Replace `sha256 "TODO_PUBLISH_SHA256"` with the computed sha256 from step 2.
 
 4. **Run `brew audit`**
 
    ```
-   brew audit --formula packaging/homebrew/Formula/autodev-ai.rb
+   brew audit --formula packaging/homebrew/Formula/autodev-x.rb
    ```
 
    Fix any warnings or errors before proceeding.
@@ -45,7 +45,7 @@ Complete every step in order before pushing to a Homebrew tap.
 5. **Install and smoke-test**
 
    ```
-   brew install --build-from-source packaging/homebrew/Formula/autodev-ai.rb
+   brew install --build-from-source packaging/homebrew/Formula/autodev-x.rb
    ```
 
 6. **Verify CLI version**
@@ -58,7 +58,7 @@ Complete every step in order before pushing to a Homebrew tap.
 
 7. **Push to a Homebrew tap repository**
 
-   Copy the updated formula to the tap repo (e.g. `homebrew-autodev-ai`) and open a PR or push directly to main, per that repo's contributing guidelines.
+   Copy the updated formula to the tap repo (e.g. `homebrew-autodev-x`) and open a PR or push directly to main, per that repo's contributing guidelines.
 
 ## Notes
 

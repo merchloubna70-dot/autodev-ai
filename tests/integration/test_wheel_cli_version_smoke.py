@@ -1,7 +1,7 @@
 """
 Integration smoke tests for the built wheel distribution.
 
-Verifies that dist/autodev_ai-0.1.0a1-py3-none-any.whl installs correctly
+Verifies that dist/autodev_x-0.1.0a1-py3-none-any.whl installs correctly
 into a clean virtual environment and that the CLI reports the correct version.
 
 These tests create a temporary venv, install the wheel, and invoke the CLI;
@@ -21,11 +21,11 @@ import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DIST_DIR = REPO_ROOT / "dist"
-WHEEL_NAME = "autodev_ai-0.1.0a1-py3-none-any.whl"
-SDIST_NAME = "autodev_ai-0.1.0a1.tar.gz"
+WHEEL_NAME = "autodev_x-0.1.0a1-py3-none-any.whl"
+SDIST_NAME = "autodev_x-0.1.0a1.tar.gz"
 WHEEL_PATH = DIST_DIR / WHEEL_NAME
 SDIST_PATH = DIST_DIR / SDIST_NAME
-EXPECTED_VERSION_STRING = "autodev-ai 0.1.0a1"
+EXPECTED_VERSION_STRING = "autodev-x 0.1.0a1"
 
 pytestmark = pytest.mark.integration
 
@@ -65,7 +65,7 @@ def _python312() -> str | None:
 
 @skip_if_no_dist
 def test_wheel_file_exists():
-    """dist/autodev_ai-0.1.0a1-py3-none-any.whl must exist after build."""
+    """dist/autodev_x-0.1.0a1-py3-none-any.whl must exist after build."""
     assert WHEEL_PATH.exists(), (
         f"Wheel not found at {WHEEL_PATH}. Run: python -m build"
     )
@@ -73,7 +73,7 @@ def test_wheel_file_exists():
 
 @skip_if_no_dist
 def test_sdist_file_exists():
-    """dist/autodev_ai-0.1.0a1.tar.gz must exist after build."""
+    """dist/autodev_x-0.1.0a1.tar.gz must exist after build."""
     assert SDIST_PATH.exists(), (
         f"Sdist not found at {SDIST_PATH}. Run: python -m build"
     )
@@ -133,7 +133,7 @@ def clean_venv():
 @skip_if_no_dist
 def test_wheel_installs_in_clean_venv(clean_venv):
     """
-    Installing dist/autodev_ai-0.1.0a1-py3-none-any.whl into a fresh
+    Installing dist/autodev_x-0.1.0a1-py3-none-any.whl into a fresh
     python3.12 venv must exit 0.
 
     The fixture already asserts exit 0 on install; reaching this point means
@@ -163,7 +163,7 @@ def test_wheel_autodev_help_works(clean_venv):
 @skip_if_no_dist
 def test_wheel_autodev_version_outputs_0_1_0a1(clean_venv):
     """
-    `autodev --version` must output exactly 'autodev-ai 0.1.0a1'
+    `autodev --version` must output exactly 'autodev-x 0.1.0a1'
     (closes HIGH-DIST-01).
     """
     autodev_bin = str(clean_venv / "autodev")
@@ -184,7 +184,7 @@ def test_wheel_autodev_version_outputs_0_1_0a1(clean_venv):
 @skip_if_no_dist
 def test_wheel_module_form_version_works(clean_venv):
     """
-    `python -m autodev.cli --version` must also output 'autodev-ai 0.1.0a1'.
+    `python -m autodev.cli --version` must also output 'autodev-x 0.1.0a1'.
     """
     python_bin = str(clean_venv / "python")
     result = subprocess.run(

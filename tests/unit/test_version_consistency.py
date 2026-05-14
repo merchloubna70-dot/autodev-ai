@@ -39,7 +39,7 @@ def test_package_version_matches_metadata() -> None:
 
     import autodev
 
-    metadata_ver = _v("autodev-ai")
+    metadata_ver = _v("autodev-x")
     assert autodev.__version__ == metadata_ver, (
         f"autodev.__version__ {autodev.__version__!r} != metadata {metadata_ver!r}"
     )
@@ -69,5 +69,5 @@ def test_python_m_autodev_cli_version() -> None:
     assert result.returncode == 0, f"CLI exited with {result.returncode}: {result.stderr}"
     from importlib.metadata import version as _v
 
-    v = _v("autodev-ai")
+    v = _v("autodev-x")
     assert v in result.stdout, f"version {v!r} not in output: {result.stdout!r}"

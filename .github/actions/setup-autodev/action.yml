@@ -1,5 +1,5 @@
 name: Setup autodev
-description: Install Python and autodev-ai with pinned extras. Single source of truth for CI Python env.
+description: Install Python and autodev-x with pinned extras. Single source of truth for CI Python env.
 
 inputs:
   python-version:
@@ -23,7 +23,7 @@ runs:
         python-version: ${{ inputs.python-version }}
         cache: pip
 
-    - name: Install autodev-ai
+    - name: Install autodev-x
       shell: bash
       run: |
         pip install -e ".[${{ inputs.extras }}]" ${{ inputs.extra-packages }}

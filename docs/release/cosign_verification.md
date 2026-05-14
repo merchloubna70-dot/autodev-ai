@@ -1,6 +1,6 @@
 # Container Image Verification with Cosign (Keyless / Sigstore)
 
-Every `ghcr.io/merchloubna70-dot/autodev-ai` image pushed on a version tag is
+Every `ghcr.io/merchloubna70-dot/autodev-x` image pushed on a version tag is
 automatically signed using **keyless Sigstore signing** — no private key is
 stored in the repository or CI environment.
 
@@ -28,8 +28,8 @@ brew install cosign          # macOS
 Verify a specific release:
 
 ```bash
-cosign verify ghcr.io/merchloubna70-dot/autodev-ai:v0.1.0a3 \
-  --certificate-identity-regexp='https://github.com/merchloubna70-dot/autodev-ai/.+' \
+cosign verify ghcr.io/merchloubna70-dot/autodev-x:v0.1.0a3 \
+  --certificate-identity-regexp='https://github.com/merchloubna70-dot/autodev-x/.+' \
   --certificate-oidc-issuer=https://token.actions.githubusercontent.com
 ```
 
@@ -44,7 +44,7 @@ Any tampered or unsigned image causes a non-zero exit.
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
-  name: verify-autodev-ai-signature
+  name: verify-autodev-x-signature
 spec:
   validationFailureAction: Enforce
   rules:
@@ -54,11 +54,11 @@ spec:
           kinds: [Pod]
       verifyImages:
         - imageReferences:
-            - "ghcr.io/merchloubna70-dot/autodev-ai:*"
+            - "ghcr.io/merchloubna70-dot/autodev-x:*"
           attestors:
             - entries:
                 - keyless:
-                    subject: "https://github.com/merchloubna70-dot/autodev-ai/.+"
+                    subject: "https://github.com/merchloubna70-dot/autodev-x/.+"
                     issuer: "https://token.actions.githubusercontent.com"
 ```
 
@@ -68,15 +68,15 @@ spec:
 apiVersion: policy.sigstore.dev/v1beta1
 kind: ClusterImagePolicy
 metadata:
-  name: autodev-ai-keyless
+  name: autodev-x-keyless
 spec:
   images:
-    - glob: "ghcr.io/merchloubna70-dot/autodev-ai**"
+    - glob: "ghcr.io/merchloubna70-dot/autodev-x**"
   authorities:
     - keyless:
         identities:
           - issuer: https://token.actions.githubusercontent.com
-            subjectRegExp: 'https://github\.com/merchloubna70-dot/autodev-ai/.+'
+            subjectRegExp: 'https://github\.com/merchloubna70-dot/autodev-x/.+'
 ```
 
 ## Audit the Rekor log

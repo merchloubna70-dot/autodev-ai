@@ -5,6 +5,30 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.1.0a5] — 2026-05-14 (Pre-Release, project rename)
+
+### Changed
+
+- **Project renamed: `autodev-ai` → `autodev-x`.** Reason: at v0.1.0a4 (2026-05-14), web search surfaced an unaffiliated PyPI project `ai-autodev` by Mohamed Ameen (v0.30.1, conceptually adjacent multi-agent orchestrator) which also installs its CLI entry point as `autodev` — direct binary name collision. Rather than coexist with collision documented as "we'll rename if it becomes a real user problem," we renamed preemptively while no external users yet depended on the old name (repo was <24h public, 0 installs, 0 stars, 0 external issues).
+- **PyPI distribution name:** `autodev-ai` → `autodev-x`. The last release under the old name is `autodev-ai==0.1.0a4`. No deprecation shim published.
+- **CLI binary name:** `autodev` → `autodev-x`. Resolves the `ai-autodev` collision: `pip install autodev-x` now installs an `autodev-x` executable that does not collide with `ai-autodev`'s `autodev` executable.
+- **GitHub repository:** `merchloubna70-dot/autodev-ai` → `merchloubna70-dot/autodev-x`. GitHub auto-redirects the old URL.
+- **GHCR image:** `ghcr.io/merchloubna70-dot/autodev-ai:*` → `ghcr.io/merchloubna70-dot/autodev-x:*`. Old images at the `autodev-ai` path remain accessible but receive no new pushes.
+- **Homebrew formula:** `Formula/autodev-ai.rb` renamed to `Formula/autodev-x.rb` (class `AutodevAi` → `AutodevX`). The tap itself remains at `merchloubna70-dot/homebrew-autodev` — only the formula file is renamed. Users now `brew install merchloubna70-dot/autodev/autodev-x`.
+
+### Unchanged across the rename
+
+- Python import path remains `import autodev` (internal package layout untouched; ~200 source files unaffected). Only user-facing distribution + binary names changed.
+- License: still MIT.
+- All v0.1.0a4 functionality is preserved verbatim — this is purely an identity change.
+- Supply-chain pipeline (SLSA L3 + cosign + SBOM) continues unchanged; cosign certificate identity now matches the new repo URL.
+
+### Why `-x` and not `-cli`
+
+`autodev-cli` was the original recommendation (self-describing, captures the CLI-first USP). Rejected in favor of `-x` to preserve future-mode flexibility — should a server/library/TUI mode ever ship, a name that explicitly says "CLI" would fight the project. `-x` reads as a family/edition marker (cf. macOS X, Tesla Model X) and stays semantically open. The PRD's CLI-first positioning is now carried in Section 5 differentiation rather than in the name itself.
+
+---
+
 ## [0.1.0a4] — 2026-05-14 (Pre-Release)
 
 ### Added

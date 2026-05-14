@@ -1,8 +1,8 @@
-# autodev-ai v0.1.0a1 — Rollback Plan
+# autodev-x v0.1.0a1 — Rollback Plan
 
 **Version:** 0.1.0a1
-**PyPI project:** `autodev-ai`
-**GitHub repo:** `merchloubna70-dot/autodev-ai`
+**PyPI project:** `autodev-x`
+**GitHub repo:** `merchloubna70-dot/autodev-x`
 **Prepared:** 2026-05-14
 
 > This plan covers what to do if v0.1.0a1 must be pulled after it has been
@@ -17,7 +17,7 @@
 Initiate rollback if ANY of the following conditions is true:
 
 1. **Install failure on a supported Python version.**
-   `pip install --pre autodev-ai==0.1.0a1` fails on a clean venv running
+   `pip install --pre autodev-x==0.1.0a1` fails on a clean venv running
    CPython 3.10, 3.11, or 3.12 on a supported platform (Linux x86_64,
    macOS arm64, macOS x86_64, Windows x86_64).
 
@@ -47,7 +47,7 @@ see Section D (Forward-only fix policy).
 
 > PyPI does NOT delete published files. Yanking marks the version as
 > "do not install" for dependency resolvers that respect PEP 592, but any
-> user who has already pinned `autodev-ai==0.1.0a1` in a lock file will
+> user who has already pinned `autodev-x==0.1.0a1` in a lock file will
 > continue to download the yanked artifact. Yanking is the correct and
 > safe first response — it stops new installs without breaking existing
 > pinned environments.
@@ -56,23 +56,23 @@ see Section D (Forward-only fix policy).
 ```bash
 # Replace <short reason> with a plain-English description, e.g.:
 #   "install crash on Python 3.10 – see GitHub issue #42"
-twine yank --reason "<short reason>" autodev-ai==0.1.0a1
+twine yank --reason "<short reason>" autodev-x==0.1.0a1
 ```
 `twine yank` requires the same credentials used to upload (either the
-`PYPI_API_TOKEN` or a local `~/.pypirc` entry for the `autodev-ai` project).
+`PYPI_API_TOKEN` or a local `~/.pypirc` entry for the `autodev-x` project).
 
 **Option 2 — PyPI web UI:**
 1. Log in to https://pypi.org with the project owner account.
 2. Navigate to:
    ```
-   https://pypi.org/manage/project/autodev-ai/release/0.1.0a1/
+   https://pypi.org/manage/project/autodev-x/release/0.1.0a1/
    ```
 3. Click **Options** → **Yank this release**.
 4. Enter the reason string and confirm.
 
 **Confirm the yank took effect:**
 ```bash
-pip index versions autodev-ai --pre
+pip index versions autodev-x --pre
 ```
 Yanked versions appear with a `[YANKED]` suffix in the output.
 The version must remain visible (not absent) — absence would indicate
@@ -88,7 +88,7 @@ from GitHub.
 
 ```bash
 # Delete the GitHub Release (not the git tag — see warning below).
-gh release delete v0.1.0a1 --yes --repo merchloubna70-dot/autodev-ai
+gh release delete v0.1.0a1 --yes --repo merchloubna70-dot/autodev-x
 ```
 
 > **WARNING — Do NOT delete the git tag `v0.1.0a1`.**
@@ -137,7 +137,7 @@ The correct procedure after a yank is:
 
 The Docker image published alongside the release is stored at:
 ```
-ghcr.io/merchloubna70-dot/autodev-ai:0.1.0a1
+ghcr.io/merchloubna70-dot/autodev-x:0.1.0a1
 ```
 
 Individual image layers pushed to ghcr.io are **immutable by digest**.
@@ -149,10 +149,10 @@ admin access, but the rolling `:latest` pointer can be moved immediately.
 # Find the digest of the last known-good build.
 # Replace <previous-sha> with the sha256 digest from the prior release
 # (check the GitHub Packages page or your release log).
-docker pull ghcr.io/merchloubna70-dot/autodev-ai@sha256:<previous-sha>
-docker tag  ghcr.io/merchloubna70-dot/autodev-ai@sha256:<previous-sha> \
-            ghcr.io/merchloubna70-dot/autodev-ai:latest
-docker push ghcr.io/merchloubna70-dot/autodev-ai:latest
+docker pull ghcr.io/merchloubna70-dot/autodev-x@sha256:<previous-sha>
+docker tag  ghcr.io/merchloubna70-dot/autodev-x@sha256:<previous-sha> \
+            ghcr.io/merchloubna70-dot/autodev-x:latest
+docker push ghcr.io/merchloubna70-dot/autodev-x:latest
 ```
 
 Users who pin to `:latest` will receive the previous good image on their

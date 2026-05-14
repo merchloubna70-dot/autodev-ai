@@ -8,7 +8,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository_owner }}/autodev-ai
+  IMAGE_NAME: ${{ github.repository_owner }}/autodev-x
 
 jobs:
   # ── Job 1: smoke-test locally before pushing ───────────────────────────────
@@ -39,15 +39,15 @@ jobs:
           file: packaging/docker/Dockerfile
           platforms: linux/amd64
           load: true
-          tags: autodev-ai:test
+          tags: autodev-x:test
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Smoke test — autodev --help
-        run: docker run --rm autodev-ai:test --help
+        run: docker run --rm autodev-x:test --help
 
       - name: Smoke test — autodev --version
-        run: docker run --rm autodev-ai:test --version
+        run: docker run --rm autodev-x:test --version
 
   # ── Job 2: multi-arch build + push to GHCR ─────────────────────────────────
   publish:

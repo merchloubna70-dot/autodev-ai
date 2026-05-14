@@ -24,17 +24,17 @@ def repo(tmp_path: Path) -> Path:
     """Minimal fake repo with the required structure (base + R2 prerequisites)."""
     # pyproject.toml — version starts with 0.1.0, has license field
     (tmp_path / "pyproject.toml").write_text(
-        '[project]\nname = "autodev-ai"\nversion = "0.1.0"\nrequires-python = ">=3.10"\n'
+        '[project]\nname = "autodev-x"\nversion = "0.1.0"\nrequires-python = ">=3.10"\n'
         'license = {text = "MIT"}\n'
-        '[project.scripts]\nautodev = "autodev.cli:app"\n',
+        '[project.scripts]\nautodev-x = "autodev.cli:app"\n',
         encoding="utf-8",
     )
     # README
-    (tmp_path / "README.md").write_text("# autodev-ai\n", encoding="utf-8")
+    (tmp_path / "README.md").write_text("# autodev-x\n", encoding="utf-8")
 
     # LICENSE file with MIT content
     (tmp_path / "LICENSE").write_text(
-        "MIT License\n\nCopyright (c) 2026 autodev-ai contributors\n"
+        "MIT License\n\nCopyright (c) 2026 autodev-x contributors\n"
         "\nPermission is hereby granted, free of charge...\n",
         encoding="utf-8",
     )
@@ -99,9 +99,9 @@ def repo(tmp_path: Path) -> Path:
     formula_dir = tmp_path / "packaging" / "homebrew" / "Formula"
     formula_dir.mkdir(parents=True)
     # R3-F: honestly blocked formula
-    (formula_dir / "autodev-ai.rb").write_text(
+    (formula_dir / "autodev-x.rb").write_text(
         '# STATUS: BLOCKED for publish until PyPI 0.1.0a1 sha256 is real\n'
-        'url "https://github.com/merchloubna70-dot/autodev-ai/releases/..."\n'
+        'url "https://github.com/merchloubna70-dot/autodev-x/releases/..."\n'
         'sha256 "TODO_PUBLISH_SHA256"\n',
         encoding="utf-8",
     )
@@ -147,12 +147,12 @@ def repo(tmp_path: Path) -> Path:
         encoding="utf-8",
     )
     (docs / "troubleshooting.md").write_text(
-        "# Troubleshooting\n\n" + ("Common issues and fixes for autodev-ai users. " * 20),
+        "# Troubleshooting\n\n" + ("Common issues and fixes for autodev-x users. " * 20),
         encoding="utf-8",
     )
 
     # R2: macOS Info.plist
-    plist_dir = tmp_path / "packaging" / "desktop" / "autodev-ai.app" / "Contents"
+    plist_dir = tmp_path / "packaging" / "desktop" / "autodev-x.app" / "Contents"
     plist_dir.mkdir(parents=True)
     (plist_dir / "Info.plist").write_text(
         '<?xml version="1.0" encoding="UTF-8"?>\n'
@@ -355,7 +355,7 @@ def test_output_json_written_to_disk(repo: Path) -> None:
 
 def test_r2_version_consistency_fails_on_wrong_version(tmp_path: Path) -> None:
     (tmp_path / "pyproject.toml").write_text(
-        '[project]\nname = "autodev-ai"\nversion = "1.2.3"\nrequires-python = ">=3.10"\n',
+        '[project]\nname = "autodev-x"\nversion = "1.2.3"\nrequires-python = ">=3.10"\n',
         encoding="utf-8",
     )
     with patch.object(gate, "_run", return_value=(0, "1.2.3", "")):
@@ -366,7 +366,7 @@ def test_r2_version_consistency_fails_on_wrong_version(tmp_path: Path) -> None:
 
 def test_r2_version_consistency_passes_when_consistent(tmp_path: Path) -> None:
     (tmp_path / "pyproject.toml").write_text(
-        '[project]\nname = "autodev-ai"\nversion = "0.1.0a1"\nrequires-python = ">=3.10"\n',
+        '[project]\nname = "autodev-x"\nversion = "0.1.0a1"\nrequires-python = ">=3.10"\n',
         encoding="utf-8",
     )
     with patch.object(gate, "_run", return_value=(0, "0.1.0a1\n", "")):
@@ -400,7 +400,7 @@ def test_r2_license_file_present_passes_with_mit(tmp_path: Path) -> None:
 
 def test_r2_license_metadata_match_fails_when_missing(tmp_path: Path) -> None:
     (tmp_path / "pyproject.toml").write_text(
-        '[project]\nname = "autodev-ai"\nversion = "0.1.0"\nrequires-python = ">=3.10"\n',
+        '[project]\nname = "autodev-x"\nversion = "0.1.0"\nrequires-python = ">=3.10"\n',
         encoding="utf-8",
     )
     result = gate.check_r2_license_metadata_match(tmp_path)
@@ -410,7 +410,7 @@ def test_r2_license_metadata_match_fails_when_missing(tmp_path: Path) -> None:
 
 def test_r2_license_metadata_match_passes_with_field(tmp_path: Path) -> None:
     (tmp_path / "pyproject.toml").write_text(
-        '[project]\nname = "autodev-ai"\nversion = "0.1.0"\n'
+        '[project]\nname = "autodev-x"\nversion = "0.1.0"\n'
         'requires-python = ">=3.10"\nlicense = {text = "MIT"}\n',
         encoding="utf-8",
     )
@@ -432,9 +432,9 @@ def test_r2_wheel_version_works_skips_when_no_dist(tmp_path: Path) -> None:
 def test_r2_wheel_version_works_passes_when_matching(tmp_path: Path) -> None:
     dist = tmp_path / "dist"
     dist.mkdir()
-    (dist / "autodev_ai-0.1.0a1-py3-none-any.whl").write_text("", encoding="utf-8")
+    (dist / "autodev_x-0.1.0a1-py3-none-any.whl").write_text("", encoding="utf-8")
     (tmp_path / "pyproject.toml").write_text(
-        '[project]\nname = "autodev-ai"\nversion = "0.1.0a1"\nrequires-python = ">=3.10"\n',
+        '[project]\nname = "autodev-x"\nversion = "0.1.0a1"\nrequires-python = ">=3.10"\n',
         encoding="utf-8",
     )
     result = gate.check_r2_wheel_version_works(tmp_path)
@@ -551,8 +551,8 @@ def test_r2_release_workflow_pytest_gate_passes(tmp_path: Path) -> None:
 def test_r2_homebrew_metadata_owner_fixed_fails_on_old_owner(tmp_path: Path) -> None:
     formula_dir = tmp_path / "packaging" / "homebrew" / "Formula"
     formula_dir.mkdir(parents=True)
-    (formula_dir / "autodev-ai.rb").write_text(
-        'url "https://github.com/macworkers/autodev-ai/releases/..."\n', encoding="utf-8"
+    (formula_dir / "autodev-x.rb").write_text(
+        'url "https://github.com/macworkers/autodev-x/releases/..."\n', encoding="utf-8"
     )
     result = gate.check_r2_homebrew_metadata_owner_fixed(tmp_path)
     assert result["status"] == "fail"
@@ -562,8 +562,8 @@ def test_r2_homebrew_metadata_owner_fixed_fails_on_old_owner(tmp_path: Path) -> 
 def test_r2_homebrew_metadata_owner_fixed_passes_with_correct_owner(tmp_path: Path) -> None:
     formula_dir = tmp_path / "packaging" / "homebrew" / "Formula"
     formula_dir.mkdir(parents=True)
-    (formula_dir / "autodev-ai.rb").write_text(
-        'url "https://github.com/merchloubna70-dot/autodev-ai/releases/..."\n', encoding="utf-8"
+    (formula_dir / "autodev-x.rb").write_text(
+        'url "https://github.com/merchloubna70-dot/autodev-x/releases/..."\n', encoding="utf-8"
     )
     result = gate.check_r2_homebrew_metadata_owner_fixed(tmp_path)
     assert result["status"] == "pass"
@@ -577,7 +577,7 @@ def test_r2_homebrew_metadata_owner_fixed_passes_with_correct_owner(tmp_path: Pa
 def test_r2_homebrew_sha256_not_stale_fails_on_stale_hash(tmp_path: Path) -> None:
     formula_dir = tmp_path / "packaging" / "homebrew" / "Formula"
     formula_dir.mkdir(parents=True)
-    (formula_dir / "autodev-ai.rb").write_text(
+    (formula_dir / "autodev-x.rb").write_text(
         'sha256 "744375fb0bad1234567890abcdef"\n', encoding="utf-8"
     )
     result = gate.check_r2_homebrew_sha256_not_stale(tmp_path)
@@ -588,7 +588,7 @@ def test_r2_homebrew_sha256_not_stale_fails_on_stale_hash(tmp_path: Path) -> Non
 def test_r2_homebrew_sha256_not_stale_passes_with_fresh_hash(tmp_path: Path) -> None:
     formula_dir = tmp_path / "packaging" / "homebrew" / "Formula"
     formula_dir.mkdir(parents=True)
-    (formula_dir / "autodev-ai.rb").write_text(
+    (formula_dir / "autodev-x.rb").write_text(
         'sha256 "abcdef1234567890goodhash"\n', encoding="utf-8"
     )
     result = gate.check_r2_homebrew_sha256_not_stale(tmp_path)
@@ -606,7 +606,7 @@ def test_r2_macos_info_plist_version_match_skips_when_missing(tmp_path: Path) ->
 
 
 def test_r2_macos_info_plist_version_match_passes_with_correct_version(tmp_path: Path) -> None:
-    plist_dir = tmp_path / "packaging" / "desktop" / "autodev-ai.app" / "Contents"
+    plist_dir = tmp_path / "packaging" / "desktop" / "autodev-x.app" / "Contents"
     plist_dir.mkdir(parents=True)
     import plistlib
     plist_data = {"CFBundleShortVersionString": "0.1.0a1"}

@@ -1,4 +1,4 @@
-# autodev-ai Docker Image
+# autodev-x Docker Image
 
 ## Build locally
 
@@ -9,19 +9,19 @@ bash packaging/docker/build.sh
 ## Pull from GHCR
 
 ```bash
-docker pull ghcr.io/macworkers/autodev-ai:latest
+docker pull ghcr.io/macworkers/autodev-x:latest
 ```
 
 ## Run
 
 ```bash
 # Basic help
-docker run --rm ghcr.io/macworkers/autodev-ai:latest --help
+docker run --rm ghcr.io/macworkers/autodev-x:latest --help
 
 # Deliver a project with a brief file in the current directory
 docker run --rm \
     -v $PWD:/workspace \
-    ghcr.io/macworkers/autodev-ai:latest \
+    ghcr.io/macworkers/autodev-x:latest \
     deliver-project --project-brief brief.md --mode dry-run
 ```
 
@@ -42,7 +42,7 @@ docker run --rm \
     -v $PWD:/workspace \
     -v $(which codex):/usr/local/bin/codex:ro \
     -v $(which claude):/usr/local/bin/claude:ro \
-    ghcr.io/macworkers/autodev-ai:latest --help
+    ghcr.io/macworkers/autodev-x:latest --help
 ```
 
 ### Option B — mount config directories
@@ -52,13 +52,13 @@ docker run --rm \
     -v $PWD:/workspace \
     -v ~/.codex:/home/autodev/.codex:ro \
     -v ~/.config/claude:/home/autodev/.config/claude:ro \
-    ghcr.io/macworkers/autodev-ai:latest --help
+    ghcr.io/macworkers/autodev-x:latest --help
 ```
 
 ### Option C — derive a custom image
 
 ```dockerfile
-FROM ghcr.io/macworkers/autodev-ai:latest
+FROM ghcr.io/macworkers/autodev-x:latest
 USER root
 RUN npm install -g @anthropic-ai/claude-code @openai/codex
 USER autodev
@@ -67,4 +67,4 @@ USER autodev
 ## Multi-arch
 
 Images are built for `linux/amd64` and `linux/arm64` via GitHub Actions and pushed
-to `ghcr.io/macworkers/autodev-ai` on every `v*.*.*` tag.
+to `ghcr.io/macworkers/autodev-x` on every `v*.*.*` tag.

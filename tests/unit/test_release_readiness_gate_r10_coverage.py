@@ -64,12 +64,12 @@ def full_repo(tmp_path: Path) -> Path:
 def _populate_full_repo(p: Path) -> None:
     """Write the minimal file tree for a complete-pass repo."""
     (p / "pyproject.toml").write_text(
-        '[project]\nname = "autodev-ai"\nversion = "0.1.0"\nrequires-python = ">=3.10"\n'
+        '[project]\nname = "autodev-x"\nversion = "0.1.0"\nrequires-python = ">=3.10"\n'
         'license = {text = "MIT"}\n'
-        '[project.scripts]\nautodev = "autodev.cli:app"\n',
+        '[project.scripts]\nautodev-x = "autodev.cli:app"\n',
         encoding="utf-8",
     )
-    (p / "README.md").write_text("# autodev-ai\n", encoding="utf-8")
+    (p / "README.md").write_text("# autodev-x\n", encoding="utf-8")
     (p / "LICENSE").write_text(
         "MIT License\n\nPermission is hereby granted, free of charge...\n",
         encoding="utf-8",
@@ -117,9 +117,9 @@ def _populate_full_repo(p: Path) -> None:
     (pyinst / "autodev.spec").write_text("# spec\n", encoding="utf-8")
     formula_dir = p / "packaging" / "homebrew" / "Formula"
     formula_dir.mkdir(parents=True)
-    (formula_dir / "autodev-ai.rb").write_text(
+    (formula_dir / "autodev-x.rb").write_text(
         "# STATUS: BLOCKED for publish\n"
-        'url "https://github.com/merchloubna70-dot/autodev-ai/releases/..."\n'
+        'url "https://github.com/merchloubna70-dot/autodev-x/releases/..."\n'
         'sha256 "TODO_PUBLISH_SHA256"\n',
         encoding="utf-8",
     )
@@ -147,7 +147,7 @@ def _populate_full_repo(p: Path) -> None:
     (isolator_dir / "worker_isolator.py").write_text(
         "class WorkerIsolatorPathEscapeError(Exception): pass\n", encoding="utf-8"
     )
-    plist_dir = p / "packaging" / "desktop" / "autodev-ai.app" / "Contents"
+    plist_dir = p / "packaging" / "desktop" / "autodev-x.app" / "Contents"
     plist_dir.mkdir(parents=True)
     plist_data = {"CFBundleShortVersionString": "0.1.0a1"}
     with open(plist_dir / "Info.plist", "wb") as fh:
@@ -211,7 +211,7 @@ def test_run_success_returns_tuple(tmp_path: Path) -> None:
 def test_package_metadata_valid_missing_autodev_entrypoint(tmp_path: Path) -> None:
     """Fails when [project.scripts] exists but 'autodev' key is absent."""
     (tmp_path / "pyproject.toml").write_text(
-        '[project]\nname = "autodev-ai"\nversion = "0.1.0"\nrequires-python = ">=3.10"\n'
+        '[project]\nname = "autodev-x"\nversion = "0.1.0"\nrequires-python = ">=3.10"\n'
         '[project.scripts]\nother_cli = "autodev.cli:app"\n',
         encoding="utf-8",
     )
@@ -223,8 +223,8 @@ def test_package_metadata_valid_missing_autodev_entrypoint(tmp_path: Path) -> No
 def test_package_metadata_valid_wrong_cli_ref(tmp_path: Path) -> None:
     """Fails when 'autodev' entry-point does not reference autodev.cli."""
     (tmp_path / "pyproject.toml").write_text(
-        '[project]\nname = "autodev-ai"\nversion = "0.1.0"\nrequires-python = ">=3.10"\n'
-        '[project.scripts]\nautodev = "some.other.module:main"\n',
+        '[project]\nname = "autodev-x"\nversion = "0.1.0"\nrequires-python = ">=3.10"\n'
+        '[project.scripts]\nautodev-x = "some.other.module:main"\n',
         encoding="utf-8",
     )
     result = gate.check_package_metadata_valid(tmp_path)
@@ -248,9 +248,9 @@ def test_package_metadata_valid_parse_error(tmp_path: Path) -> None:
 def test_cli_help_works_on_path_pass(tmp_path: Path) -> None:
     """When autodev is on PATH and --help exits 0 → pass."""
     def fake_run(cmd, cwd, timeout=30):
-        if cmd == ["which", "autodev"]:
+        if cmd == ["which", "autodev-x"]:
             return 0, "/usr/local/bin/autodev", ""
-        if cmd == ["autodev", "--help"]:
+        if cmd == ["autodev-x", "--help"]:
             return 0, "usage ...", ""
         return 1, "", "error"
 
@@ -263,9 +263,9 @@ def test_cli_help_works_on_path_pass(tmp_path: Path) -> None:
 def test_cli_help_works_on_path_fail(tmp_path: Path) -> None:
     """When autodev is on PATH but --help exits non-zero → fail."""
     def fake_run(cmd, cwd, timeout=30):
-        if cmd == ["which", "autodev"]:
+        if cmd == ["which", "autodev-x"]:
             return 0, "/usr/local/bin/autodev", ""
-        if cmd == ["autodev", "--help"]:
+        if cmd == ["autodev-x", "--help"]:
             return 1, "", "something went wrong"
         return 1, "", ""
 
@@ -278,7 +278,7 @@ def test_cli_help_works_on_path_fail(tmp_path: Path) -> None:
 def test_cli_help_works_python_m_pass(tmp_path: Path) -> None:
     """When autodev not on PATH but python -m works → pass."""
     def fake_run(cmd, cwd, timeout=30):
-        if cmd == ["which", "autodev"]:
+        if cmd == ["which", "autodev-x"]:
             return 1, "", ""
         # python -m autodev.cli --help
         return 0, "usage ...", ""
@@ -457,7 +457,7 @@ def test_mock_executor_works_file_not_found_then_skip(tmp_path: Path) -> None:
 def test_mock_executor_works_timeout(tmp_path: Path) -> None:
     """TimeoutExpired during mock executor → fail."""
     with patch("autodev.release_readiness_gate.subprocess.run",
-               side_effect=subprocess.TimeoutExpired(cmd=["autodev"], timeout=15)):
+               side_effect=subprocess.TimeoutExpired(cmd=["autodev-x"], timeout=15)):
         result = gate.check_mock_executor_works(tmp_path)
     assert result["status"] == "fail"
     assert "timed out" in result["detail"]
@@ -522,7 +522,7 @@ def test_release_blockers_recorded_only_gate_report(tmp_path: Path) -> None:
 def test_r2_version_consistency_skip_when_import_fails(tmp_path: Path) -> None:
     """Returns skip when importing autodev fails (rc != 0)."""
     (tmp_path / "pyproject.toml").write_text(
-        '[project]\nname = "autodev-ai"\nversion = "0.1.0a1"\nrequires-python = ">=3.10"\n',
+        '[project]\nname = "autodev-x"\nversion = "0.1.0a1"\nrequires-python = ">=3.10"\n',
         encoding="utf-8",
     )
     with patch.object(gate, "_run", return_value=(1, "", "ModuleNotFoundError")):
@@ -534,7 +534,7 @@ def test_r2_version_consistency_skip_when_import_fails(tmp_path: Path) -> None:
 def test_r2_version_consistency_mismatch(tmp_path: Path) -> None:
     """Fails when pyproject version != module __version__."""
     (tmp_path / "pyproject.toml").write_text(
-        '[project]\nname = "autodev-ai"\nversion = "0.1.0a1"\nrequires-python = ">=3.10"\n',
+        '[project]\nname = "autodev-x"\nversion = "0.1.0a1"\nrequires-python = ">=3.10"\n',
         encoding="utf-8",
     )
     with patch.object(gate, "_run", return_value=(0, "0.1.0b99\n", "")):
@@ -600,7 +600,7 @@ def test_r2_wheel_version_works_missing_toml_with_dist(tmp_path: Path) -> None:
     """Fails when dist has a wheel but pyproject.toml is absent."""
     dist = tmp_path / "dist"
     dist.mkdir()
-    (dist / "autodev_ai-0.1.0a1-py3-none-any.whl").write_text("", encoding="utf-8")
+    (dist / "autodev_x-0.1.0a1-py3-none-any.whl").write_text("", encoding="utf-8")
     # No pyproject.toml
     result = gate.check_r2_wheel_version_works(tmp_path)
     assert result["status"] == "fail"
@@ -611,7 +611,7 @@ def test_r2_wheel_version_works_parse_error(tmp_path: Path) -> None:
     """Fails gracefully when pyproject.toml cannot be parsed."""
     dist = tmp_path / "dist"
     dist.mkdir()
-    (dist / "autodev_ai-0.1.0a1-py3-none-any.whl").write_text("", encoding="utf-8")
+    (dist / "autodev_x-0.1.0a1-py3-none-any.whl").write_text("", encoding="utf-8")
     (tmp_path / "pyproject.toml").write_bytes(b"\xff\xfe bad toml")
     result = gate.check_r2_wheel_version_works(tmp_path)
     assert result["status"] == "fail"
@@ -624,7 +624,7 @@ def test_r2_wheel_version_works_bad_filename(tmp_path: Path) -> None:
     dist.mkdir()
     (dist / "badwheelname.whl").write_text("", encoding="utf-8")
     (tmp_path / "pyproject.toml").write_text(
-        '[project]\nname = "autodev-ai"\nversion = "0.1.0a1"\nrequires-python = ">=3.10"\n',
+        '[project]\nname = "autodev-x"\nversion = "0.1.0a1"\nrequires-python = ">=3.10"\n',
         encoding="utf-8",
     )
     result = gate.check_r2_wheel_version_works(tmp_path)
@@ -636,9 +636,9 @@ def test_r2_wheel_version_works_version_mismatch(tmp_path: Path) -> None:
     """Fails when wheel version does not match pyproject version."""
     dist = tmp_path / "dist"
     dist.mkdir()
-    (dist / "autodev_ai-0.2.0-py3-none-any.whl").write_text("", encoding="utf-8")
+    (dist / "autodev_x-0.2.0-py3-none-any.whl").write_text("", encoding="utf-8")
     (tmp_path / "pyproject.toml").write_text(
-        '[project]\nname = "autodev-ai"\nversion = "0.1.0a1"\nrequires-python = ">=3.10"\n',
+        '[project]\nname = "autodev-x"\nversion = "0.1.0a1"\nrequires-python = ">=3.10"\n',
         encoding="utf-8",
     )
     result = gate.check_r2_wheel_version_works(tmp_path)
@@ -751,8 +751,8 @@ def test_r2_homebrew_metadata_no_correct_owner(tmp_path: Path) -> None:
     """Fails when formula has neither old nor new owner."""
     formula_dir = tmp_path / "packaging" / "homebrew" / "Formula"
     formula_dir.mkdir(parents=True)
-    (formula_dir / "autodev-ai.rb").write_text(
-        'url "https://github.com/unknown_user/autodev-ai/releases/..."\n',
+    (formula_dir / "autodev-x.rb").write_text(
+        'url "https://github.com/unknown_user/autodev-x/releases/..."\n',
         encoding="utf-8",
     )
     result = gate.check_r2_homebrew_metadata_owner_fixed(tmp_path)
@@ -767,7 +767,7 @@ def test_r2_homebrew_metadata_no_correct_owner(tmp_path: Path) -> None:
 
 def test_r2_macos_info_plist_wrong_version(tmp_path: Path) -> None:
     """Fails when CFBundleShortVersionString does not contain '0.1.0'."""
-    plist_dir = tmp_path / "packaging" / "desktop" / "autodev-ai.app" / "Contents"
+    plist_dir = tmp_path / "packaging" / "desktop" / "autodev-x.app" / "Contents"
     plist_dir.mkdir(parents=True)
     plist_data = {"CFBundleShortVersionString": "2.0.0"}
     with open(plist_dir / "Info.plist", "wb") as fh:
@@ -779,7 +779,7 @@ def test_r2_macos_info_plist_wrong_version(tmp_path: Path) -> None:
 
 def test_r2_macos_info_plist_parse_error(tmp_path: Path) -> None:
     """Fails gracefully when Info.plist cannot be parsed."""
-    plist_dir = tmp_path / "packaging" / "desktop" / "autodev-ai.app" / "Contents"
+    plist_dir = tmp_path / "packaging" / "desktop" / "autodev-x.app" / "Contents"
     plist_dir.mkdir(parents=True)
     (plist_dir / "Info.plist").write_bytes(b"not a valid plist!!!")
     result = gate.check_r2_macos_info_plist_version_match(tmp_path)
@@ -1016,7 +1016,7 @@ def test_r3_homebrew_publish_time_blocker_missing_checklist(tmp_path: Path) -> N
     """Fails when PUBLISH_CHECKLIST.md is absent (even if formula exists)."""
     formula_dir = tmp_path / "packaging" / "homebrew" / "Formula"
     formula_dir.mkdir(parents=True)
-    (formula_dir / "autodev-ai.rb").write_text(
+    (formula_dir / "autodev-x.rb").write_text(
         "# BLOCKED\nsha256 \"TODO_PUBLISH_SHA256\"\n", encoding="utf-8"
     )
     # No PUBLISH_CHECKLIST.md
@@ -1030,8 +1030,8 @@ def test_r3_homebrew_publish_time_blocker_state_b_post_publish(tmp_path: Path) -
     formula_dir = tmp_path / "packaging" / "homebrew" / "Formula"
     formula_dir.mkdir(parents=True)
     real_sha = "a" * 64  # 64 lowercase hex chars
-    (formula_dir / "autodev-ai.rb").write_text(
-        f'url "https://files.pythonhosted.org/packages/autodev-ai-0.1.0a1.tar.gz"\n'
+    (formula_dir / "autodev-x.rb").write_text(
+        f'url "https://files.pythonhosted.org/packages/autodev-x-0.1.0a1.tar.gz"\n'
         f'sha256 "{real_sha}"\n',
         encoding="utf-8",
     )
@@ -1047,7 +1047,7 @@ def test_r3_homebrew_publish_time_blocker_ambiguous_state(tmp_path: Path) -> Non
     """Fails when formula is in ambiguous state (no placeholder, no real sha, no canonical url)."""
     formula_dir = tmp_path / "packaging" / "homebrew" / "Formula"
     formula_dir.mkdir(parents=True)
-    (formula_dir / "autodev-ai.rb").write_text(
+    (formula_dir / "autodev-x.rb").write_text(
         "# some formula\n"
         'url "https://example.com/something.tar.gz"\n'
         'sha256 "short_not_64_hex"\n',
@@ -1065,7 +1065,7 @@ def test_r3_pypi_rc_not_blocked_by_homebrew_pass(tmp_path: Path) -> None:
     """Passes when homebrew blocker check passes."""
     formula_dir = tmp_path / "packaging" / "homebrew" / "Formula"
     formula_dir.mkdir(parents=True)
-    (formula_dir / "autodev-ai.rb").write_text(
+    (formula_dir / "autodev-x.rb").write_text(
         "# BLOCKED\nsha256 \"TODO_PUBLISH_SHA256\"\n", encoding="utf-8"
     )
     (tmp_path / "packaging" / "homebrew" / "PUBLISH_CHECKLIST.md").write_text(

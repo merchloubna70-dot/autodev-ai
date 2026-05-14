@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Release Readiness Gate — 36 read-only checks for autodev-ai (12 base + 12 R2 + 12 R3).
+Release Readiness Gate — 36 read-only checks for autodev-x (12 base + 12 R2 + 12 R3).
 
 This is the canonical implementation.  It lives in the installable package so that
 both of the following invocations work regardless of install method (editable, wheel,
@@ -103,15 +103,15 @@ def check_package_metadata_valid(repo: Path) -> CheckResult:
             return _make(name, "fail", f"Missing required keys: {missing}", (time.monotonic() - t0) * 1000)
 
         scripts = project.get("scripts", {})
-        if "autodev" not in scripts:
+        if "autodev-x" not in scripts:
             return _make(
                 name,
                 "fail",
-                "Entry-point 'autodev' not found in [project.scripts]",
+                "Entry-point 'autodev-x' not found in [project.scripts]",
                 (time.monotonic() - t0) * 1000,
             )
 
-        ep = scripts["autodev"]
+        ep = scripts["autodev-x"]
         if "autodev.cli" not in ep:
             return _make(
                 name,
@@ -135,8 +135,8 @@ def check_cli_help_works(repo: Path) -> CheckResult:
     name = "cli_help_works"
     t0 = time.monotonic()
 
-    # Check if autodev is available
-    rc_which, _, _ = _run(["which", "autodev"], repo, timeout=5)
+    # Check if autodev-x is available
+    rc_which, _, _ = _run(["which", "autodev-x"], repo, timeout=5)
     if rc_which != 0:
         # Try via python -m
         rc2, _stdout2, _stderr2 = _run(
@@ -145,18 +145,18 @@ def check_cli_help_works(repo: Path) -> CheckResult:
             timeout=10,
         )
         if rc2 == 0:
-            return _make(name, "pass", "autodev CLI --help via python -m: exit 0", (time.monotonic() - t0) * 1000)
+            return _make(name, "pass", "autodev-x CLI --help via python -m: exit 0", (time.monotonic() - t0) * 1000)
         return _make(
             name,
             "skip",
-            "autodev not on PATH and python -m autodev.cli --help failed; skip",
+            "autodev-x not on PATH and python -m autodev.cli --help failed; skip",
             (time.monotonic() - t0) * 1000,
         )
 
-    rc, _stdout, stderr = _run(["autodev", "--help"], repo, timeout=10)
+    rc, _stdout, stderr = _run(["autodev-x", "--help"], repo, timeout=10)
     if rc == 0:
-        return _make(name, "pass", "autodev --help exit 0", (time.monotonic() - t0) * 1000, "autodev --help")
-    return _make(name, "fail", f"autodev --help exited {rc}: {stderr[:200]}", (time.monotonic() - t0) * 1000)
+        return _make(name, "pass", "autodev-x --help exit 0", (time.monotonic() - t0) * 1000, "autodev-x --help")
+    return _make(name, "fail", f"autodev-x --help exited {rc}: {stderr[:200]}", (time.monotonic() - t0) * 1000)
 
 
 def check_pytest_evidence(repo: Path) -> CheckResult:
@@ -305,7 +305,7 @@ def check_mock_executor_works(repo: Path) -> CheckResult:
         tmp.close()
         # Try via installed command first, then via python module
         for cmd in (
-            ["autodev", "classify-input", "--input", tmp.name],
+            ["autodev-x", "classify-input", "--input", tmp.name],
             [sys.executable, "-m", "autodev.cli", "classify-input", "--input", tmp.name],
         ):
             try:
@@ -357,7 +357,7 @@ def check_packaging_files_exist(repo: Path) -> CheckResult:
     required = [
         repo / "packaging" / "docker" / "Dockerfile",
         repo / "packaging" / "pyinstaller" / "autodev.spec",
-        repo / "packaging" / "homebrew" / "Formula" / "autodev-ai.rb",
+        repo / "packaging" / "homebrew" / "Formula" / "autodev-x.rb",
     ]
     missing = [str(p.relative_to(repo)) for p in required if not p.exists()]
     present = [str(p.relative_to(repo)) for p in required if p.exists()]
@@ -776,26 +776,26 @@ def check_r2_homebrew_metadata_owner_fixed(repo: Path) -> CheckResult:
     name = "r2_homebrew_metadata_owner_fixed"
     t0 = time.monotonic()
 
-    formula = repo / "packaging" / "homebrew" / "Formula" / "autodev-ai.rb"
+    formula = repo / "packaging" / "homebrew" / "Formula" / "autodev-x.rb"
     if not formula.exists():
         return _make(name, "fail", "Homebrew formula not found", (time.monotonic() - t0) * 1000)
 
     text = formula.read_text(encoding="utf-8", errors="replace")
 
-    if "macworkers/autodev-ai" in text:
+    if "macworkers/autodev-x" in text:
         return _make(
             name,
             "fail",
-            "Formula still contains old owner 'macworkers/autodev-ai' (should be 'merchloubna70-dot/autodev-ai')",
+            "Formula still contains old owner 'macworkers/autodev-x' (should be 'merchloubna70-dot/autodev-x')",
             (time.monotonic() - t0) * 1000,
             str(formula),
         )
 
-    if "merchloubna70-dot/autodev-ai" not in text:
+    if "merchloubna70-dot/autodev-x" not in text:
         return _make(
             name,
             "fail",
-            "Formula does not contain expected owner 'merchloubna70-dot/autodev-ai'",
+            "Formula does not contain expected owner 'merchloubna70-dot/autodev-x'",
             (time.monotonic() - t0) * 1000,
             str(formula),
         )
@@ -803,7 +803,7 @@ def check_r2_homebrew_metadata_owner_fixed(repo: Path) -> CheckResult:
     return _make(
         name,
         "pass",
-        "Homebrew formula owner is 'merchloubna70-dot/autodev-ai' (correct)",
+        "Homebrew formula owner is 'merchloubna70-dot/autodev-x' (correct)",
         (time.monotonic() - t0) * 1000,
         str(formula),
     )
@@ -813,7 +813,7 @@ def check_r2_homebrew_sha256_not_stale(repo: Path) -> CheckResult:
     name = "r2_homebrew_sha256_not_stale"
     t0 = time.monotonic()
 
-    formula = repo / "packaging" / "homebrew" / "Formula" / "autodev-ai.rb"
+    formula = repo / "packaging" / "homebrew" / "Formula" / "autodev-x.rb"
     if not formula.exists():
         return _make(name, "fail", "Homebrew formula not found", (time.monotonic() - t0) * 1000)
 
@@ -842,7 +842,7 @@ def check_r2_macos_info_plist_version_match(repo: Path) -> CheckResult:
     name = "r2_macos_info_plist_version_match"
     t0 = time.monotonic()
 
-    plist_path = repo / "packaging" / "desktop" / "autodev-ai.app" / "Contents" / "Info.plist"
+    plist_path = repo / "packaging" / "desktop" / "autodev-x.app" / "Contents" / "Info.plist"
     if not plist_path.exists():
         return _make(
             name,
@@ -1094,7 +1094,7 @@ def check_r3_homebrew_publish_time_blocker_clean(repo: Path) -> CheckResult:
 
     name = "r3_homebrew_publish_time_blocker_clean"
     t0 = time.monotonic()
-    formula = repo / "packaging" / "homebrew" / "Formula" / "autodev-ai.rb"
+    formula = repo / "packaging" / "homebrew" / "Formula" / "autodev-x.rb"
     checklist = repo / "packaging" / "homebrew" / "PUBLISH_CHECKLIST.md"
     dur = (time.monotonic() - t0) * 1000
     if not formula.exists():
@@ -1257,7 +1257,7 @@ def build_report(repo: Path, checks_to_run: list | None = None) -> dict[str, Any
 
 
 def main(argv: list[str] | None = None) -> dict[str, Any]:
-    parser = argparse.ArgumentParser(description="autodev-ai Release Readiness Gate (36 checks)")
+    parser = argparse.ArgumentParser(description="autodev-x Release Readiness Gate (36 checks)")
     parser.add_argument("--repo-path", default=".", help="Path to the repository root")
     parser.add_argument(
         "--output",

@@ -1,8 +1,8 @@
-# autodev-ai v0.1.0a1 — PyPI Publish Checklist
+# autodev-x v0.1.0a1 — PyPI Publish Checklist
 
 **Version:** 0.1.0a1
-**PyPI project:** `autodev-ai`
-**GitHub repo:** `mechloubna70-dot/autodev-ai`
+**PyPI project:** `autodev-x`
+**GitHub repo:** `mechloubna70-dot/autodev-x`
 **Prepared:** 2026-05-14
 **Status:** READY TO EXECUTE (release engineer sign-off required before each command)
 
@@ -22,12 +22,12 @@ If any step fails, STOP and resolve before continuing.
 
   Navigate to:
   ```
-  https://github.com/merchloubna70-dot/autodev-ai/settings/secrets/actions
+  https://github.com/merchloubna70-dot/autodev-x/settings/secrets/actions
   ```
   Confirm `PYPI_API_TOKEN` appears in the repository secrets list.
 
-  - The token must have **`pypi-autodev-ai` project scope** or be an account-wide
-    token with permission to upload to the `autodev-ai` project on PyPI.
+  - The token must have **`pypi-autodev-x` project scope** or be an account-wide
+    token with permission to upload to the `autodev-x` project on PyPI.
   - If the secret is absent: **STOP.** Add it before continuing. Generate a new API
     token at https://pypi.org/manage/account/token/ and paste it as the secret value.
 
@@ -103,7 +103,7 @@ git status --short
 # B-2. Create the annotated tag.
 # If your GPG signing key is configured, add -s to produce a signed tag.
 # Omit -s if no GPG key is available — an unsigned annotated tag is acceptable for an alpha.
-git tag -a v0.1.0a1 -m "autodev-ai v0.1.0a1 — first PyPI RC"
+git tag -a v0.1.0a1 -m "autodev-x v0.1.0a1 — first PyPI RC"
 ```
 
 ```bash
@@ -116,14 +116,14 @@ git push origin v0.1.0a1
 ```bash
 # B-4. Watch the workflow run live until it completes.
 # The command blocks until the run finishes and prints the result.
-gh run watch --repo merchloubna70-dot/autodev-ai
+gh run watch --repo merchloubna70-dot/autodev-x
 # Expected final status: "completed" with conclusion "success".
 # If it fails, see the Rollback Plan before taking any further action.
 ```
 
 ```bash
 # B-5. After the workflow shows green, verify the version is visible on PyPI.
-pip index versions autodev-ai --pre
+pip index versions autodev-x --pre
 # Expected output includes: 0.1.0a1
 # Note: PyPI CDN propagation can take 1-2 min after the upload job completes.
 ```
@@ -139,7 +139,7 @@ Complete all ten steps. Record actual output next to each step as evidence.
   ```bash
   python3 -m venv /tmp/autodev-verify-venv
   source /tmp/autodev-verify-venv/bin/activate
-  pip install --pre autodev-ai==0.1.0a1
+  pip install --pre autodev-x==0.1.0a1
   ```
   Test against Python 3.10, 3.11, and 3.12 if possible.
   A failure on any supported minor version is a rollback trigger.
@@ -151,7 +151,7 @@ Complete all ten steps. Record actual output next to each step as evidence.
   ```
   Expected output (exact):
   ```
-  autodev-ai 0.1.0a1
+  autodev-x 0.1.0a1
   ```
 
 - [ ] **C-3 Confirm help text is present**
@@ -169,7 +169,7 @@ Complete all ten steps. Record actual output next to each step as evidence.
   ```
   Expected output (exact):
   ```
-  autodev-ai 0.1.0a1
+  autodev-x 0.1.0a1
   ```
   Must match C-2 exactly.
 
@@ -185,7 +185,7 @@ Complete all ten steps. Record actual output next to each step as evidence.
 
   Open and confirm the page loads:
   ```
-  https://pypi.org/project/autodev-ai/0.1.0a1/#files
+  https://pypi.org/project/autodev-x/0.1.0a1/#files
   ```
   Record the full URL here for audit trail: `_______________`
 
@@ -198,14 +198,14 @@ Complete all ten steps. Record actual output next to each step as evidence.
   byte counts in edge cases.
 
   ```bash
-  curl -L "https://files.pythonhosted.org/packages/source/a/autodev-ai/autodev_ai-0.1.0a1.tar.gz" \
+  curl -L "https://files.pythonhosted.org/packages/source/a/autodev-x/autodev_x-0.1.0a1.tar.gz" \
     | shasum -a 256
   ```
   Record the output hash: `_______________`
 
 - [ ] **C-8 Update the Homebrew formula**
 
-  Open `packaging/homebrew/Formula/autodev-ai.rb`.
+  Open `packaging/homebrew/Formula/autodev-x.rb`.
   Update:
   - `url` → the published PyPI source URL (from C-6 `#files` page, copy the `.tar.gz` link)
   - `sha256` → the value computed in C-7
@@ -216,7 +216,7 @@ Complete all ten steps. Record actual output next to each step as evidence.
 - [ ] **C-9 Audit the Homebrew formula**
 
   ```bash
-  brew audit --formula packaging/homebrew/Formula/autodev-ai.rb
+  brew audit --formula packaging/homebrew/Formula/autodev-x.rb
   ```
   Expected: no errors, no warnings.
   Audit failures must be resolved before the Homebrew tap PR is opened.

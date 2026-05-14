@@ -23,7 +23,7 @@ from pathlib import Path
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-FORMULA_PATH = REPO_ROOT / "packaging" / "homebrew" / "Formula" / "autodev-ai.rb"
+FORMULA_PATH = REPO_ROOT / "packaging" / "homebrew" / "Formula" / "autodev-x.rb"
 CHECKLIST_PATH = REPO_ROOT / "packaging" / "homebrew" / "PUBLISH_CHECKLIST.md"
 
 
@@ -112,7 +112,7 @@ def test_formula_url_points_at_correct_source(formula_text: str) -> None:
     assert "macworkers" not in url_value, f"Formula url must NOT reference stale 'macworkers'; got: {url_value}"
 
     is_pypi = "files.pythonhosted.org" in url_value
-    is_gh_release = "merchloubna70-dot/autodev-ai/releases" in url_value
+    is_gh_release = "merchloubna70-dot/autodev-x/releases" in url_value
     assert is_pypi or is_gh_release, (
         f"Formula url must point at canonical PyPI OR merchloubna70-dot GitHub Release; got: {url_value}"
     )

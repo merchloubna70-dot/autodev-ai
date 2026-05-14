@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# autodev-ai 桌面入口（modeled after codex-fanout-open.sh）
+# autodev-x 桌面入口（modeled after codex-fanout-open.sh）
 # 双击桌面 .app → launcher stub → 此脚本 → Ghostty + tmux 三栏
 #
-# 启动日志：~/.autodev-ai/.launcher.log（每次启动追加，便于排查"双击没反应/报错"）
+# 启动日志：~/.autodev-x/.launcher.log（每次启动追加，便于排查"双击没反应/报错"）
 
-LAUNCHER_LOG="$HOME/.autodev-ai/.launcher.log"
+LAUNCHER_LOG="$HOME/.autodev-x/.launcher.log"
 mkdir -p "$(dirname "$LAUNCHER_LOG")"
 {
   echo "==== $(date +%Y-%m-%dT%H:%M:%S%z) launcher start ===="
@@ -38,16 +38,16 @@ echo "  WORKDIR resolved: $WORKDIR" >> "$LAUNCHER_LOG"
 for bin in "$TMUX" /Applications/Ghostty.app; do
   if [ ! -e "$bin" ]; then
     echo "ERROR: $bin not found" | tee -a "$LAUNCHER_LOG" >&2
-    osascript -e "display alert \"autodev-ai 启动失败\" message \"找不到 $bin，请检查安装。\" as critical" 2>/dev/null
+    osascript -e "display alert \"autodev-x 启动失败\" message \"找不到 $bin，请检查安装。\" as critical" 2>/dev/null
     exit 1
   fi
 done
 
 # 横幅写文件（避免 send-keys 多行转义陷阱）
-BANNER_FILE="$HOME/.autodev-ai/.banner.txt"
+BANNER_FILE="$HOME/.autodev-x/.banner.txt"
 mkdir -p "$(dirname "$BANNER_FILE")"
 cat > "$BANNER_FILE" <<'BANNER'
-🤖 autodev-ai (AI software factory)
+🤖 autodev-x (AI software factory)
 ────────────────────────────────────────
 Main:
   autodev scan --repo-path .
@@ -100,7 +100,7 @@ echo "  attaching to session $SESSION" >> "$LAUNCHER_LOG"
 
 # 打开 Ghostty 并 attach
 open -na Ghostty.app --args \
-    --title="autodev-ai" \
+    --title="autodev-x" \
     -e "$TMUX" attach-session -t "$SESSION" 2>>"$LAUNCHER_LOG"
 
 echo "==== launcher done ====" >> "$LAUNCHER_LOG"

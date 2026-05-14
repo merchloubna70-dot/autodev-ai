@@ -33,10 +33,10 @@ def _version_callback(value: bool) -> None:
         from importlib.metadata import version as _pkg_version
 
         try:
-            v = _pkg_version("autodev-ai")
+            v = _pkg_version("autodev-x")
         except PackageNotFoundError:
             v = "unknown"
-        typer.echo(f"autodev-ai {v}")
+        typer.echo(f"autodev-x {v}")
         raise typer.Exit()
 
 
@@ -1091,12 +1091,12 @@ def sprint_correct_cmd(
 def dashboard_cmd(
     root: str = typer.Option(".dev-factory", "--root", help="dev-factory root directory"),
 ) -> None:
-    """Launch the Textual TUI dashboard (requires: pip install autodev-ai[tui])."""
+    """Launch the Textual TUI dashboard (requires: pip install autodev-x[tui])."""
     try:
         from .tui.dashboard import run as _run  # lazy import — textual is optional
     except ImportError:
         typer.echo(
-            "[autodev] Textual is not installed. Run: pip install autodev-ai[tui]",
+            "[autodev] Textual is not installed. Run: pip install autodev-x[tui]",
             err=True,
         )
         raise typer.Exit(code=1) from None

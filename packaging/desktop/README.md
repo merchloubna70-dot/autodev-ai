@@ -1,6 +1,6 @@
-# autodev-ai macOS Desktop Launcher
+# autodev-x macOS Desktop Launcher
 
-Double-click `autodev-ai.app` on your Desktop to open a Ghostty window with a tmux 3-pane layout for the autodev-ai AI software factory.
+Double-click `autodev-x.app` on your Desktop to open a Ghostty window with a tmux 3-pane layout for the autodev-x AI software factory.
 
 ## Prerequisites
 
@@ -8,7 +8,7 @@ Double-click `autodev-ai.app` on your Desktop to open a Ghostty window with a tm
 |---|---|
 | [Ghostty](https://ghostty.org/) | Download `.dmg` from ghostty.org or `brew install --cask ghostty` |
 | [tmux](https://github.com/tmux/tmux) | `brew install tmux` |
-| autodev-ai Python package | `pip install autodev-ai` or install from source with `.venv/` |
+| autodev-x Python package | `pip install autodev-x` or install from source with `.venv/` |
 
 ## Installation
 
@@ -19,8 +19,8 @@ bash packaging/desktop/install.sh
 ```
 
 This script:
-1. Copies `autodev-ai.app` → `~/Desktop/`
-2. Copies `autodev-ai-open.sh` → `~/bin/`
+1. Copies `autodev-x.app` → `~/Desktop/`
+2. Copies `autodev-x-open.sh` → `~/bin/`
 3. `chmod +x` both files
 4. Strips the macOS quarantine flag so first launch skips the Gatekeeper "unidentified developer" warning
 
@@ -42,7 +42,7 @@ This script:
 
 ## Customizing Without Re-signing
 
-The `.app` launcher stub immediately delegates to `~/bin/autodev-ai-open.sh`. Edit that file to change pane contents, session name, or banner — no code signing needed.
+The `.app` launcher stub immediately delegates to `~/bin/autodev-x-open.sh`. Edit that file to change pane contents, session name, or banner — no code signing needed.
 
 ## Common Issues
 
@@ -51,20 +51,20 @@ Install tmux: `brew install tmux`
 
 Ghostty must also be installed at `/Applications/Ghostty.app`.
 
-### "找不到 ~/bin/autodev-ai-open.sh"
+### "找不到 ~/bin/autodev-x-open.sh"
 Run `bash packaging/desktop/install.sh` from the project root first.
 
 ### Double-click does nothing / "unidentified developer" warning
 Run step 5 of install.sh manually:
 ```bash
-xattr -dr com.apple.quarantine ~/Desktop/autodev-ai.app
+xattr -dr com.apple.quarantine ~/Desktop/autodev-x.app
 ```
 
 ### Re-launch attaches to existing session
 This is by design — the tmux session is named `autodev` and reused. Kill it with `tmux kill-session -t autodev` to start fresh.
 
 ### Launcher log
-Diagnostic log is written to `~/.autodev-ai/.launcher.log` on every launch.
+Diagnostic log is written to `~/.autodev-x/.launcher.log` on every launch.
 
 ## AppIcon
 

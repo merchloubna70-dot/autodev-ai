@@ -16,8 +16,8 @@ realistic audit artifacts without spending any API quota.
 ## Step 1 — Install
 
 ```bash
-git clone https://github.com/merchloubna70-dot/autodev-ai.git
-cd autodev-ai
+git clone https://github.com/merchloubna70-dot/autodev-x.git
+cd autodev-x
 pip install -e ".[dev]"
 ```
 

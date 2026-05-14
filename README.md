@@ -1,8 +1,8 @@
-# autodev-ai
+# autodev-x
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python ≥3.10](https://img.shields.io/badge/python-%E2%89%A53.10-blue)](https://www.python.org)
-[![PyPI](https://img.shields.io/pypi/v/autodev-ai)](https://pypi.org/project/autodev-ai/)
+[![PyPI](https://img.shields.io/pypi/v/autodev-x)](https://pypi.org/project/autodev-x/)
 
 **A multi-CLI software factory powered by CrewAI agents, Codex CLI, and Claude Code CLI.**
 
@@ -18,14 +18,14 @@ audit trail, A2A agent networking, MCP server support, and sprint-mode planning.
 
 ## Install
 
-> **Status**: alpha — [`v0.1.0a4`](https://github.com/merchloubna70-dot/autodev-ai/releases/tag/v0.1.0a4) on GitHub Releases. Where we're going: [v0.1.0 GA PRD](docs/prd/v0.1.0_GA.md).
+> **Status**: alpha — [`v0.1.0a4`](https://github.com/merchloubna70-dot/autodev-x/releases/tag/v0.1.0a4) on GitHub Releases. Where we're going: [v0.1.0 GA PRD](docs/prd/v0.1.0_GA.md).
 
 From PyPI (recommended):
 
 ```bash
-pip install --pre autodev-ai==0.1.0a4
+pip install --pre autodev-x==0.1.0a4
 # or latest pre-release:
-pip install --pre autodev-ai
+pip install --pre autodev-x
 ```
 
 ### Status (Alpha)
@@ -36,7 +36,7 @@ This is a public alpha. v0.1.0a4 closed most of the supply-chain and coverage ga
 |---|---|
 | **SLSA L3 provenance** | Live — `slsa-framework/slsa-github-generator` attests every wheel/sdist on tag push (see `docs/release/slsa_verification.md`). |
 | **SBOM** | Live — CycloneDX 1.5 + SPDX 2.3 attached to every Release (see `docs/release/sbom_consumption.md`). |
-| **cosign image signing** | Live — keyless Fulcio OIDC + Rekor for `ghcr.io/merchloubna70-dot/autodev-ai` (see `docs/release/cosign_verification.md`). |
+| **cosign image signing** | Live — keyless Fulcio OIDC + Rekor for `ghcr.io/merchloubna70-dot/autodev-x` (see `docs/release/cosign_verification.md`). |
 | **MCP per-caller auth** | Live — `IdentityRegistry` with scope-based RBAC and triple-gate apply mode (see `docs/mcp_server_per_caller_auth.md`). |
 | **Coverage** | 91.8% line+branch; all 11 release-critical modules ≥85%, all 3 security-critical modules ≥90%. |
 | **Enterprise use** | Still alpha — production deployments are not yet supported. See [`docs/release_notes/v0.1.0a1.md`](docs/release_notes/v0.1.0a1.md) for the full scope statement. |
@@ -44,23 +44,23 @@ This is a public alpha. v0.1.0a4 closed most of the supply-chain and coverage ga
 From source:
 
 ```bash
-git clone https://github.com/merchloubna70-dot/autodev-ai.git
-cd autodev-ai
+git clone https://github.com/merchloubna70-dot/autodev-x.git
+cd autodev-x
 pip install -e ".[dev]"
 ```
 
 Docker (codex + claude pre-installed, ~2 GB):
 
 ```bash
-docker pull ghcr.io/merchloubna70-dot/autodev-ai:0.1.0a4
-docker run --rm ghcr.io/merchloubna70-dot/autodev-ai:0.1.0a4 --help
+docker pull ghcr.io/merchloubna70-dot/autodev-x:0.1.0a4
+docker run --rm ghcr.io/merchloubna70-dot/autodev-x:0.1.0a4 --help
 ```
 
 ### Homebrew (macOS / Linux)
 
 ```bash
 brew tap merchloubna70-dot/autodev
-brew install autodev-ai
+brew install autodev-x
 autodev --version
 ```
 
@@ -287,7 +287,7 @@ autodev plan-project       — Generate a project plan from PRD
 autodev plan-milestones    — Generate milestones from a project plan
 autodev plan-tasks         — Generate tasks from milestones
 autodev review             — Approve/reject a paused human-review gate
-autodev dashboard          — Launch the Textual TUI dashboard (requires: pip install autodev-ai[tui])
+autodev dashboard          — Launch the Textual TUI dashboard (requires: pip install autodev-x[tui])
 ```
 
 ---

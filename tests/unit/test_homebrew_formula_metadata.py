@@ -4,8 +4,8 @@ import re
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-FORMULA_PATH = REPO_ROOT / "packaging" / "homebrew" / "Formula" / "autodev-ai.rb"
-PLIST_PATH = REPO_ROOT / "packaging" / "desktop" / "autodev-ai.app" / "Contents" / "Info.plist"
+FORMULA_PATH = REPO_ROOT / "packaging" / "homebrew" / "Formula" / "autodev-x.rb"
+PLIST_PATH = REPO_ROOT / "packaging" / "desktop" / "autodev-x.app" / "Contents" / "Info.plist"
 
 STALE_SHA256 = "744375fb1fcc6b6e02b9f6b53322999dd8486d2cdd666dd1eddb4239847a52da"
 
@@ -30,7 +30,7 @@ def test_formula_homepage_uses_correct_org():
     homepage_match = re.search(r'^\s*homepage\s+"([^"]+)"', preamble, re.MULTILINE)
     assert homepage_match, "No homepage line found in formula preamble"
     value = homepage_match.group(1)
-    assert "macworkers/autodev-ai" not in value, f"stale 'macworkers' org: {value!r}"
+    assert "macworkers/autodev-x" not in value, f"stale 'macworkers' org: {value!r}"
     assert "merchloubna70-dot" in value, f"expected 'merchloubna70-dot' org: {value!r}"
 
 
@@ -41,10 +41,10 @@ def test_formula_url_points_at_canonical_source():
     url_match = re.search(r'^\s*url\s+"([^"]+)"', preamble, re.MULTILINE)
     assert url_match, "No top-level url in formula preamble"
     value = url_match.group(1)
-    assert "macworkers/autodev-ai" not in value, f"stale 'macworkers' org: {value!r}"
+    assert "macworkers/autodev-x" not in value, f"stale 'macworkers' org: {value!r}"
     # Post-publish: PyPI canonical; OR pre-publish: GitHub Release under correct org
     is_pypi = "files.pythonhosted.org" in value
-    is_gh_release = "merchloubna70-dot/autodev-ai/releases" in value
+    is_gh_release = "merchloubna70-dot/autodev-x/releases" in value
     assert is_pypi or is_gh_release, (
         f"url must be canonical PyPI (post-publish) or merchloubna70-dot GitHub Release (pre-publish), got {value!r}"
     )
@@ -152,6 +152,6 @@ def test_plist_other_keys_intact():
     """Other Info.plist keys must remain untouched."""
     with PLIST_PATH.open("rb") as f:
         data = plistlib.load(f)
-    assert data.get("CFBundleIdentifier") == "com.macworkers.autodev-ai"
+    assert data.get("CFBundleIdentifier") == "com.macworkers.autodev-x"
     assert data.get("CFBundleExecutable") == "launcher"
     assert data.get("CFBundlePackageType") == "APPL"

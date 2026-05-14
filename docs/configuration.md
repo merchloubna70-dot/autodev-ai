@@ -1,6 +1,6 @@
 # Configuration Reference
 
-This page covers every configurable knob in autodev-ai: TOML layers, environment
+This page covers every configurable knob in autodev-x: TOML layers, environment
 variables, CLI flags, and external tool (Codex CLI / Claude Code CLI / MCP / A2A)
 integration settings.
 

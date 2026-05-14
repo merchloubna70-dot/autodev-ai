@@ -1,7 +1,7 @@
 # PyPI Token Rotation Checklist
 
 > **When to do this**: any time a PyPI API token MAY have been exposed.
-> **For autodev-ai specifically**: the original v0.1.0a2 publish token was pasted into a chat session once. The token was set via `printf | gh secret set` (no file write, no echo, no argv exposure), and the repo audit (R4.5-F) confirmed zero token traces in git-tracked content. As defense-in-depth best practice, rotate.
+> **For autodev-x specifically**: the original v0.1.0a2 publish token was pasted into a chat session once. The token was set via `printf | gh secret set` (no file write, no echo, no argv exposure), and the repo audit (R4.5-F) confirmed zero token traces in git-tracked content. As defense-in-depth best practice, rotate.
 
 ---
 
@@ -24,12 +24,12 @@ The chat exposure is the only real residual. Treat it as a "lateral channel" lea
 
 ### 1. Generate a new project-scoped token (preferred — minimum privilege)
 
-The original token was **Entire account** scope (necessary for first publish since the project didn't exist on PyPI yet). Now that `autodev-ai 0.1.0a2` is published, you can scope a new token to JUST that project.
+The original token was **Entire account** scope (necessary for first publish since the project didn't exist on PyPI yet). Now that `autodev-x 0.1.0a2` is published, you can scope a new token to JUST that project.
 
 1. Go to https://pypi.org/manage/account/token/
 2. Click **Add API token**
-3. Token name: `autodev-ai-project-scoped`
-4. Scope: dropdown → **Project: autodev-ai** (now available since the project exists)
+3. Token name: `autodev-x-project-scoped`
+4. Scope: dropdown → **Project: autodev-x** (now available since the project exists)
 5. **Create token**
 6. Copy the new `pypi-...` value — **page closes = token lost**
 
@@ -39,10 +39,10 @@ Open a terminal on your local machine (DO NOT paste the token into chat or any f
 
 ```bash
 printf '%s' '<paste the new pypi-... token here>' | \
-  gh secret set PYPI_API_TOKEN --repo merchloubna70-dot/autodev-ai
+  gh secret set PYPI_API_TOKEN --repo merchloubna70-dot/autodev-x
 
 # Verify (name only — value is invisible to API by design):
-gh api repos/merchloubna70-dot/autodev-ai/actions/secrets \
+gh api repos/merchloubna70-dot/autodev-x/actions/secrets \
   --jq '.secrets[] | "\(.name)  updated=\(.updated_at)"'
 # Expected output: PYPI_API_TOKEN  updated=<ISO timestamp of right now>
 ```
@@ -52,7 +52,7 @@ The `printf | gh secret set` form keeps the token in stdin only — never in `ar
 ### 3. Revoke the OLD token on PyPI
 
 1. Go to https://pypi.org/manage/account/token/
-2. Find the token named `autodev-ai-publish` (the original, Entire account scope)
+2. Find the token named `autodev-x-publish` (the original, Entire account scope)
 3. Click **Remove**
 4. Confirm
 
@@ -81,7 +81,7 @@ Anytime:
 - Token has been visible in any other context (CI log, terminal screenshot, support session)
 - A team member with token access leaves
 - 90 days have passed (general best practice for long-lived bearer credentials)
-- You see a `pip install autodev-ai==<unexpected-version>` published from an unknown source
+- You see a `pip install autodev-x==<unexpected-version>` published from an unknown source
 
 ---
 
@@ -90,4 +90,4 @@ Anytime:
 - **Old token (chat-exposed)**: STILL ACTIVE (not yet revoked)
 - **New token**: NOT YET CREATED
 - **Recommendation**: do the 4 steps above when convenient (5 minutes)
-- **autodev-ai release pipeline status**: works with current token; rotation is hygiene, not blocking
+- **autodev-x release pipeline status**: works with current token; rotation is hygiene, not blocking

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Local smoke-test helper for the autodev-ai Docker image.
+# Local smoke-test helper for the autodev-x Docker image.
 # Run from the repo root: bash packaging/docker/build.sh
 set -euo pipefail
 
-IMAGE="autodev-ai:dev"
+IMAGE="autodev-x:dev"
 
 echo "==> Building $IMAGE ..."
 docker build -f packaging/docker/Dockerfile -t "$IMAGE" .

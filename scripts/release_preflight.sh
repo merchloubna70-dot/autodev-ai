@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# release_preflight.sh — one-shot pre-tag gate for autodev-ai
+# release_preflight.sh — one-shot pre-tag gate for autodev-x
 #
 # Runs the same checks as CI + release_readiness_gate against the local tree.
 # Exits non-zero on the first failure. Run this BEFORE `git tag v*` to catch
@@ -44,7 +44,7 @@ step "6/8  release_readiness_gate --strict-rc (most stringent mode)"
 step "7/8  version-drift cross-check"
 PYPROJECT_VER=$(grep -E '^version = ' pyproject.toml | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
 MODULE_VER=$("$PYBIN" -c 'import autodev; print(autodev.__version__)')
-PLIST_VER=$(grep -A1 'CFBundleShortVersionString' packaging/desktop/autodev-ai.app/Contents/Info.plist | tail -1 | sed -E 's/.*<string>([^<]+)<\/string>.*/\1/')
+PLIST_VER=$(grep -A1 'CFBundleShortVersionString' packaging/desktop/autodev-x.app/Contents/Info.plist | tail -1 | sed -E 's/.*<string>([^<]+)<\/string>.*/\1/')
 echo "  pyproject : $PYPROJECT_VER"
 echo "  module    : $MODULE_VER"
 echo "  Info.plist: $PLIST_VER"

@@ -156,7 +156,7 @@ infrastructure.
 **Symptom:** CI fails with mypy errors, or you want to verify types locally.
 
 ```bash
-cd /path/to/autodev-ai
+cd /path/to/autodev-x
 source .venv/bin/activate
 python -m mypy src/autodev
 ```
@@ -192,15 +192,15 @@ The project uses ruff with the `E`, `F`, `I`, `UP` rule sets. Common culprits:
 ## 8. Docker build — "wheel not found"
 
 **Symptom:** `docker build` fails with
-`ERROR: autodev_ai-0.1.0a1-py3-none-any.whl: No such file or directory`.
+`ERROR: autodev_x-0.1.0a1-py3-none-any.whl: No such file or directory`.
 
 The `Dockerfile` (and Helm chart) expect the wheel to be present in `dist/`
 **before** the build context is sent to the daemon.
 
 **Fix:**
 ```bash
-python -m build          # produces dist/autodev_ai-0.1.0a1-py3-none-any.whl
-docker build -t autodev-ai:local .
+python -m build          # produces dist/autodev_x-0.1.0a1-py3-none-any.whl
+docker build -t autodev-x:local .
 ```
 
 If `python -m build` is missing, install it:
@@ -212,12 +212,12 @@ pip install --upgrade build
 
 ## 9. Homebrew install
 
-The Homebrew tap is now live. Install autodev-ai via Homebrew on macOS or Linux
+The Homebrew tap is now live. Install autodev-x via Homebrew on macOS or Linux
 (Linuxbrew):
 
 ```bash
 brew tap merchloubna70-dot/autodev
-brew install autodev-ai
+brew install autodev-x
 autodev --version
 ```
 
@@ -229,13 +229,13 @@ tracks `stable 0.1.0a3`.
 ```bash
 brew update
 brew tap --repair merchloubna70-dot/autodev
-brew install autodev-ai
+brew install autodev-x
 ```
 
 As a fallback, install directly from PyPI:
 
 ```bash
-pip install --pre autodev-ai==0.1.0a3
+pip install --pre autodev-x==0.1.0a3
 ```
 
 ---
@@ -269,27 +269,27 @@ pyinstaller autodev.spec
 ## 11. `autodev dashboard` exits immediately
 
 **Symptom:** `autodev dashboard` prints
-`Error: 'textual' package not found. Install with: pip install autodev-ai[tui]`
+`Error: 'textual' package not found. Install with: pip install autodev-x[tui]`
 and exits.
 
 **Explanation:** `textual` (the TUI framework) is an optional dependency. It is
-not installed by the default `pip install autodev-ai` command.
+not installed by the default `pip install autodev-x` command.
 
 **Fix:**
 ```bash
-pip install "autodev-ai[tui]"
+pip install "autodev-x[tui]"
 # or for a source install:
 pip install -e ".[tui]"
 ```
 
 ---
 
-## 12. `pip install --upgrade autodev-ai==0.1.0a1` — no matching distribution
+## 12. `pip install --upgrade autodev-x==0.1.0a1` — no matching distribution
 
 **Symptom:**
 ```
-ERROR: Could not find a satisfying requirement for autodev-ai==0.1.0a1
-No matching distribution found for autodev-ai==0.1.0a1
+ERROR: Could not find a satisfying requirement for autodev-x==0.1.0a1
+No matching distribution found for autodev-x==0.1.0a1
 ```
 
 **Explanation:** `0.1.0a1` is a pre-release version. By default `pip` skips
@@ -297,9 +297,9 @@ pre-releases.
 
 **Fix:** add the `--pre` flag:
 ```bash
-pip install --pre "autodev-ai==0.1.0a1"
+pip install --pre "autodev-x==0.1.0a1"
 # or install the latest pre-release:
-pip install --pre autodev-ai
+pip install --pre autodev-x
 ```
 
 When pinning in `requirements.txt` or `pyproject.toml` you do **not** need
@@ -314,7 +314,7 @@ When pinning in `requirements.txt` or `pyproject.toml` you do **not** need
 - Read [Architecture reference](architecture.md) to understand why a command
   behaves a certain way.
 - Open an issue at
-  [github.com/merchloubna70-dot/autodev-ai/issues](https://github.com/merchloubna70-dot/autodev-ai/issues).
+  [github.com/merchloubna70-dot/autodev-x/issues](https://github.com/merchloubna70-dot/autodev-x/issues).
 - Enable verbose logging for any command:
   ```bash
   FACTORY_LOG=DEBUG autodev <subcommand> ... 2>&1 | less

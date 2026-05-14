@@ -1,6 +1,6 @@
 # SLSA L3 Provenance Verification
 
-`autodev-ai` publishes **SLSA Level 3** provenance attestations with every
+`autodev-x` publishes **SLSA Level 3** provenance attestations with every
 tagged release (`v*.*.*`). This document explains what that means and how to
 verify a release artifact as a consumer.
 
@@ -48,10 +48,10 @@ a SLSA `provenance` predicate encoded as a JSON envelope signed with DSSE
 After a tag push `v*.*.*` the GitHub Release will contain:
 
 ```
-autodev_ai-0.1.0a3-py3-none-any.whl
-autodev_ai-0.1.0a3.tar.gz
-autodev_ai-0.1.0a3-py3-none-any.whl.intoto.jsonl
-autodev_ai-0.1.0a3.tar.gz.intoto.jsonl
+autodev_x-0.1.0a3-py3-none-any.whl
+autodev_x-0.1.0a3.tar.gz
+autodev_x-0.1.0a3-py3-none-any.whl.intoto.jsonl
+autodev_x-0.1.0a3.tar.gz.intoto.jsonl
 ```
 
 The `.intoto.jsonl` files are the signed provenance envelopes — one per
@@ -73,9 +73,9 @@ brew install slsa-framework/tap/slsa-verifier
 Verify a wheel:
 
 ```bash
-slsa-verifier verify-artifact autodev_ai-0.1.0a3-py3-none-any.whl \
-  --provenance-path autodev_ai-0.1.0a3-py3-none-any.whl.intoto.jsonl \
-  --source-uri github.com/merchloubna70-dot/autodev-ai \
+slsa-verifier verify-artifact autodev_x-0.1.0a3-py3-none-any.whl \
+  --provenance-path autodev_x-0.1.0a3-py3-none-any.whl.intoto.jsonl \
+  --source-uri github.com/merchloubna70-dot/autodev-x \
   --source-tag v0.1.0a3
 ```
 

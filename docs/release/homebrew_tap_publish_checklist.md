@@ -1,6 +1,6 @@
 # Homebrew Tap Publish Checklist
 
-> **What this is**: step-by-step to actually expose autodev-ai via Homebrew so users can `brew install autodev-ai`. Today (R5 prep round) the formula is staged at `packaging/homebrew/tap/Formula/autodev-ai.rb` but NO public tap repo exists yet.
+> **What this is**: step-by-step to actually expose autodev-x via Homebrew so users can `brew install autodev-x`. Today (R5 prep round) the formula is staged at `packaging/homebrew/tap/Formula/autodev-x.rb` but NO public tap repo exists yet.
 
 ## Prerequisites (already done)
 
@@ -26,13 +26,13 @@ The repo MUST be named `homebrew-<tapname>`. Homebrew convention: `<user>/homebr
 ### 2. Push the staged tap content
 
 ```bash
-# From the autodev-ai repo:
+# From the autodev-x repo:
 cd /Users/macworkers/autodev/packaging/homebrew/tap
 
 # Initialize a fresh local repo pointing at the new tap remote
 git init
-git add Formula/autodev-ai.rb README.md
-git -c user.email=tap@example.com -c user.name=tap commit -m "feat: initial tap with autodev-ai 0.1.0a2 formula"
+git add Formula/autodev-x.rb README.md
+git -c user.email=tap@example.com -c user.name=tap commit -m "feat: initial tap with autodev-x 0.1.0a2 formula"
 git branch -M main
 git remote add origin https://github.com/merchloubna70-dot/homebrew-autodev.git
 git push -u origin main
@@ -42,25 +42,25 @@ git push -u origin main
 
 ```bash
 brew tap merchloubna70-dot/autodev
-brew install autodev-ai
-autodev --version    # → autodev-ai 0.1.0a2
-brew test autodev-ai
+brew install autodev-x
+autodev --version    # → autodev-x 0.1.0a2
+brew test autodev-x
 ```
 
-If `brew install` fails on a transitive resource sha256, run R5-D's verification script (or `homebrew-pypi-poet -f autodev-ai`) to regenerate the formula's resource blocks.
+If `brew install` fails on a transitive resource sha256, run R5-D's verification script (or `homebrew-pypi-poet -f autodev-x`) to regenerate the formula's resource blocks.
 
 ### 4. Future updates
 
 After each PyPI publish (e.g. 0.1.0a3):
 ```bash
-# In autodev-ai repo: bump packaging/homebrew/Formula/autodev-ai.rb (version + url + sha256)
-# Mirror to tap dir: cp packaging/homebrew/Formula/autodev-ai.rb packaging/homebrew/tap/Formula/
+# In autodev-x repo: bump packaging/homebrew/Formula/autodev-x.rb (version + url + sha256)
+# Mirror to tap dir: cp packaging/homebrew/Formula/autodev-x.rb packaging/homebrew/tap/Formula/
 # In homebrew-autodev repo: copy + commit + push
 ```
 
 ## What This Round (R5 prep) Does
 
-- ✅ Creates `packaging/homebrew/tap/Formula/autodev-ai.rb` (mirror of the canonical formula)
+- ✅ Creates `packaging/homebrew/tap/Formula/autodev-x.rb` (mirror of the canonical formula)
 - ✅ Creates `packaging/homebrew/tap/README.md` (tap-side README)
 - ❌ Does NOT create the GitHub tap repo
 - ❌ Does NOT push to a tap repo

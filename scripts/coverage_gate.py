@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""autodev-ai Coverage Threshold Gate.
+"""autodev-x Coverage Threshold Gate.
 
 Reads ``coverage.json`` and validates three thresholds:
 
@@ -166,7 +166,7 @@ def run_gate(repo_root: Path, overall_threshold: float, release_threshold: float
 
 
 def main(argv: list[str] | None = None) -> dict[str, Any]:
-    parser = argparse.ArgumentParser(description="autodev-ai coverage threshold gate")
+    parser = argparse.ArgumentParser(description="autodev-x coverage threshold gate")
     parser.add_argument("--repo-path", default=".")
     parser.add_argument("--overall-threshold", type=float, default=80.0)
     parser.add_argument("--release-threshold", type=float, default=85.0)

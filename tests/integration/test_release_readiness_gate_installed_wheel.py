@@ -1,7 +1,7 @@
 """
 Integration test: python -m autodev.release_readiness_gate works from a wheel install.
 
-Builds dist/autodev_ai-*.whl (if not present), installs it into a fresh temp venv,
+Builds dist/autodev_x-*.whl (if not present), installs it into a fresh temp venv,
 then runs `python -m autodev.release_readiness_gate` from that venv to confirm the
 gate ships inside the wheel and exits 0.
 
@@ -28,7 +28,7 @@ DIST_DIR = REPO_ROOT / "dist"
 
 def _find_or_build_wheel() -> Path | None:
     """Return the first *.whl in dist/, building with `python -m build` if absent."""
-    wheels = sorted(DIST_DIR.glob("autodev_ai-*.whl"))
+    wheels = sorted(DIST_DIR.glob("autodev_x-*.whl"))
     if wheels:
         return wheels[-1]  # newest
 
@@ -43,7 +43,7 @@ def _find_or_build_wheel() -> Path | None:
     if result.returncode != 0:
         return None  # caller will skip
 
-    wheels = sorted(DIST_DIR.glob("autodev_ai-*.whl"))
+    wheels = sorted(DIST_DIR.glob("autodev_x-*.whl"))
     return wheels[-1] if wheels else None
 
 
@@ -58,7 +58,7 @@ def installed_venv_python():
     wheel = _find_or_build_wheel()
     if wheel is None:
         pytest.skip(
-            "Could not find or build a wheel for autodev-ai — "
+            "Could not find or build a wheel for autodev-x — "
             "run `python -m build` first or ensure `build` is installed."
         )
 

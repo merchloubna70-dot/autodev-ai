@@ -3,21 +3,21 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDisplayName</key>
-	<string>autodev-ai</string>
+	<string>autodev-x</string>
 	<key>CFBundleExecutable</key>
 	<string>launcher</string>
 	<key>CFBundleIconFile</key>
 	<string>AppIcon</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.macworkers.autodev-ai</string>
+	<string>com.macworkers.autodev-x</string>
 	<key>CFBundleName</key>
-	<string>autodev-ai</string>
+	<string>autodev-x</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>0.1.0a4</string>
+	<string>0.1.0a5</string>
 	<key>CFBundleVersion</key>
-	<string>0.1.0a4</string>
+	<string>0.1.0a5</string>
 	<key>LSUIElement</key>
 	<true/>
 </dict>

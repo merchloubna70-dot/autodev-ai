@@ -1615,7 +1615,7 @@ class TestVersionCallbackNotFound:
 
         # _pkg_version is imported lazily inside _version_callback;
         # patch it via importlib.metadata.version at the module level
-        with patch("importlib.metadata.version", side_effect=_PNFE("autodev-ai")):
+        with patch("importlib.metadata.version", side_effect=_PNFE("autodev-x")):
             result = runner.invoke(app, ["--version"])
 
         assert result.exit_code == 0, result.output
