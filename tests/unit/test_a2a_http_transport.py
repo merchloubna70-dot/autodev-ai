@@ -161,7 +161,7 @@ def test_send_task_completed_immediately() -> None:
     completed = _completed_task_dict(task.id, task.context_id)
     base, srv, _ = _start_server({"/tasks/send": (200, completed)})
     try:
-        transport = A2AHttpTransport(base, poll_interval=0.05, max_poll_attempts=5)
+        transport = A2AHttpTransport(base, poll_interval=0.05, max_poll_attempts=5, allow_private_networks=True)
         result = transport.send_task(_make_card(base), task)
         assert result.status == A2ATaskStatus.COMPLETED
         assert any(a.text == "done!" for a in result.artifacts)
@@ -228,7 +228,7 @@ def test_send_task_polls_until_completed() -> None:
     time.sleep(0.05)
     base = f"http://127.0.0.1:{port}"
     try:
-        transport = A2AHttpTransport(base, poll_interval=0.05, max_poll_attempts=10)
+        transport = A2AHttpTransport(base, poll_interval=0.05, max_poll_attempts=10, allow_private_networks=True)
         result = transport.send_task(_make_card(base), task)
         assert result.status == A2ATaskStatus.COMPLETED
         assert call_count["n"] >= 2
@@ -246,7 +246,7 @@ def test_send_task_unreachable_returns_failed() -> None:
     # Use a port that is definitely not listening
     base = "http://127.0.0.1:1"  # port 1 refuses connections on macOS/Linux
     task = _make_task("hi")
-    transport = A2AHttpTransport(base, poll_interval=0.05, max_poll_attempts=2)
+    transport = A2AHttpTransport(base, poll_interval=0.05, max_poll_attempts=2, allow_private_networks=True)
     result = transport.send_task(_make_card(base), task)
     assert result.status == A2ATaskStatus.FAILED
     assert any("A2A-HTTP" in (a.text or "") for a in result.artifacts)
@@ -270,7 +270,7 @@ def test_discover_agent_card_returns_card() -> None:
     }
     base, srv, _ = _start_server({"/.well-known/agent.json": (200, card_data)})
     try:
-        transport = A2AHttpTransport(base)
+        transport = A2AHttpTransport(base, allow_private_networks=True)
         card = transport.discover_agent_card()
         assert card is not None
         assert card.name == "remote-agent"
@@ -288,7 +288,7 @@ def test_discover_agent_card_broken_json_returns_none() -> None:
     """Broken JSON body → discover_agent_card returns None, no exception."""
     base, srv, _ = _start_server({"/.well-known/agent.json": (200, b"not json {{{{")})
     try:
-        transport = A2AHttpTransport(base)
+        transport = A2AHttpTransport(base, allow_private_networks=True)
         card = transport.discover_agent_card()
         assert card is None
     finally:
@@ -330,7 +330,7 @@ def test_auth_token_sent_in_header() -> None:
     time.sleep(0.05)
     base = f"http://127.0.0.1:{port}"
     try:
-        transport = A2AHttpTransport(base, auth_token="my-secret-token")
+        transport = A2AHttpTransport(base, auth_token="my-secret-token", allow_private_networks=True)
         transport.send_task(_make_card(base), task)
         assert len(captured_headers) >= 1
         auth_header = captured_headers[0].get("Authorization", "")

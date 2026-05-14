@@ -9,7 +9,31 @@ permissions:
   contents: write
 
 jobs:
-  build-and-release:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install package with dev extras
+        run: pip install -e .[dev]
+
+      - name: Lint with ruff
+        run: ruff check .
+
+      - name: Type-check with mypy
+        run: mypy src/autodev
+
+      - name: Run pytest suite
+        run: python -m pytest tests/ -q
+
+  publish:
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -21,10 +45,13 @@ jobs:
           cache: pip
 
       - name: Install build tools
-        run: pip install build twine
+        run: pip install --upgrade build twine
 
       - name: Build wheel and sdist
         run: python -m build
+
+      - name: Check distribution artifacts
+        run: python -m twine check dist/*
 
       - name: Attach to GitHub Release
         uses: softprops/action-gh-release@v2
@@ -33,7 +60,7 @@ jobs:
           generate_release_notes: true
 
       - name: Publish to PyPI
-        if: env.PYPI_API_TOKEN != ''
+        if: ${{ secrets.PYPI_API_TOKEN != '' }}
         env:
           PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
         run: twine upload --non-interactive -u __token__ -p "$PYPI_API_TOKEN" dist/*

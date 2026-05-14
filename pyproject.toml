@@ -4,13 +4,14 @@ build-backend = "hatchling.build"
 
 [project]
 name = "autodev-ai"
-version = "0.1.0"
+version = "0.1.0a1"
 description = "AI-driven software factory: CrewAI + Codex CLI + Claude Code CLI with multi-CLI router, A2A roundtable, MCP server, scale-adaptive delivery from brief to release-ready project."
 keywords = ["ai", "agent", "codex", "claude", "crewai", "a2a", "mcp", "software-factory"]
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [{ name = "Software Factory" }]
 license = { text = "MIT" }
+license-files = ["LICENSE"]
 dependencies = [
     "pydantic>=2.5,<3.0",
     "typer[all]>=0.9",

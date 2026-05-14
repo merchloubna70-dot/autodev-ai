@@ -1,0 +1,129 @@
+{
+  "finding_id": "HIGH-SEC-01",
+  "title": "A2A HTTP Transport SSRF Hardening",
+  "verdict": "hardened_with_known_residual_risk",
+  "date": "2026-05-14",
+  "test_pass_count": 13,
+  "test_total_count": 13,
+  "full_suite_pass_count": 969,
+  "full_suite_xfailed": 4,
+  "files_changed": [
+    "src/autodev/adapters/a2a/transports/http.py",
+    "tests/unit/test_a2a_http_ssrf_hardening.py",
+    "tests/unit/test_a2a_http_transport.py",
+    "tests/conftest.py"
+  ],
+  "attack_vectors_blocked": [
+    {
+      "id": 1,
+      "vector": "file:///etc/passwd",
+      "description": "Non-http/https scheme (file://)",
+      "mechanism": "scheme_check"
+    },
+    {
+      "id": 2,
+      "vector": "ftp://example.com",
+      "description": "Non-http/https scheme (ftp://)",
+      "mechanism": "scheme_check"
+    },
+    {
+      "id": 3,
+      "vector": "http://127.0.0.1:8080/",
+      "description": "Loopback IPv4 literal",
+      "mechanism": "literal_ip_fastpath"
+    },
+    {
+      "id": 4,
+      "vector": "http://169.254.169.254/",
+      "description": "AWS/GCP cloud metadata endpoint",
+      "mechanism": "literal_ip_fastpath"
+    },
+    {
+      "id": 5,
+      "vector": "http://localhost/",
+      "description": "DNS name resolving to loopback",
+      "mechanism": "dns_resolution_check"
+    },
+    {
+      "id": 6,
+      "vector": "http://0.0.0.0/",
+      "description": "Unspecified address literal",
+      "mechanism": "literal_ip_fastpath"
+    },
+    {
+      "id": 7,
+      "vector": "http://10.0.0.1/",
+      "description": "RFC-1918 class A private address literal",
+      "mechanism": "literal_ip_fastpath"
+    },
+    {
+      "id": 8,
+      "vector": "http://192.168.1.1/",
+      "description": "RFC-1918 class C private address literal",
+      "mechanism": "literal_ip_fastpath"
+    },
+    {
+      "id": 9,
+      "vector": "http://[::1]/",
+      "description": "Loopback IPv6 literal",
+      "mechanism": "literal_ip_fastpath"
+    },
+    {
+      "id": 10,
+      "vector": "http://internal.corp.example.com/ (DNS -> 127.0.0.1)",
+      "description": "DNS name monkeypatched to resolve to loopback",
+      "mechanism": "dns_resolution_check"
+    },
+    {
+      "id": 11,
+      "vector": "http://example.com/ (DNS -> 93.184.216.34)",
+      "description": "Public hostname allowed through — verifies no over-blocking",
+      "mechanism": "allow"
+    },
+    {
+      "id": 12,
+      "vector": "any private URL with allow_private=True",
+      "description": "Explicit escape hatch for local test environments",
+      "mechanism": "allow_private_bypass"
+    },
+    {
+      "id": 13,
+      "vector": "302 redirect from example.com to http://169.254.169.254/secret",
+      "description": "Open redirect to cloud metadata endpoint via Location header",
+      "mechanism": "redirect_revalidation"
+    }
+  ],
+  "residual_risks": [
+    {
+      "id": "RR-1",
+      "title": "DNS Rebinding / TOCTOU",
+      "severity": "medium",
+      "description": "Validation resolves DNS before the TCP connect. An attacker controlling an authoritative DNS server can return a public IP at validation time and switch to a private IP by connection time. Requires network-layer egress control or IP-pinning to fully close.",
+      "mitigated": false
+    },
+    {
+      "id": "RR-2",
+      "title": "IPv6-Mapped IPv4 and Exotic Encodings",
+      "severity": "low",
+      "description": "Exotic IPv6-mapped IPv4 addresses (::ffff:192.168.1.1) or decimal-encoded IPs are normalised by the ipaddress library. Edge cases in future Python versions may surface novel bypass paths.",
+      "mitigated": false
+    }
+  ],
+  "new_symbols": [
+    "A2AHttpSSRFError",
+    "_validate_url",
+    "_is_private_address",
+    "_NoRedirectHandler",
+    "_PRIVATE_NETWORKS",
+    "_ALLOWED_SCHEMES"
+  ],
+  "modified_constructor_params": [
+    {
+      "class": "A2AHttpTransport",
+      "param": "allow_private_networks",
+      "type": "bool",
+      "default": false,
+      "description": "Bypasses SSRF address-range checks; also honoured via AUTODEV_A2A_ALLOW_PRIVATE_NETWORKS env var"
+    }
+  ]
+}

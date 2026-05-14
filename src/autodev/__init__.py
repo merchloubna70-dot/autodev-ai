@@ -1,5 +1,11 @@
-"""CrewAI + Codex CLI + Claude Code CLI multi-CLI software factory."""
+"""autodev-ai package."""
 from __future__ import annotations
 
-__version__ = "0.1.0"
+from importlib.metadata import version as _v
+
+try:
+    __version__ = _v("autodev-ai")
+except Exception:
+    __version__ = "0.0.0+local"
+
 __all__ = ["__version__"]

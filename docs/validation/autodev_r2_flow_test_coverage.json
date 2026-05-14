@@ -1,0 +1,57 @@
+{
+  "round": "autodev-ai R2 PyPI Release Blocker Closure",
+  "date": "2026-05-14",
+  "blocker_ids": ["HIGH-COV-01", "HIGH-ORPHAN-01"],
+  "verdict": "closed",
+  "files_added": [
+    "tests/unit/test_milestone_flow.py",
+    "tests/unit/test_release_flow.py"
+  ],
+  "test_counts": {
+    "test_milestone_flow.py": 8,
+    "test_release_flow.py": 7,
+    "new_tests_total": 15,
+    "new_tests_passed": 15,
+    "new_tests_failed": 0,
+    "new_tests_skipped": 0
+  },
+  "full_suite": {
+    "before_additions": {
+      "passed": 951,
+      "failed": 3,
+      "xfailed": 4
+    },
+    "after_additions": {
+      "passed": 966,
+      "failed": 3,
+      "xfailed": 4
+    }
+  },
+  "pre_existing_failures": [
+    "tests/integration/test_a2a_http_roundtrip.py::test_roundtrip_send_task_via_transport",
+    "tests/integration/test_a2a_http_roundtrip.py::test_roundtrip_via_a2a_client_dispatch",
+    "tests/unit/test_homebrew_formula_metadata.py::test_formula_url_contains_correct_org",
+    "tests/unit/test_a2a_http_ssrf_hardening.py::test_redirect_to_private_is_rejected"
+  ],
+  "milestone_flow_tests": [
+    "test_milestone_flow_initialization",
+    "test_milestone_flow_initialization_custom_config",
+    "test_milestone_flow_happy_path_mock",
+    "test_milestone_flow_failure_path",
+    "test_milestone_flow_report_artifact",
+    "test_milestone_flow_empty_milestone_list",
+    "test_milestone_flow_skip_m0_collapse",
+    "test_milestone_flow_raises_when_no_plan"
+  ],
+  "release_flow_tests": [
+    "test_release_flow_initialization",
+    "test_release_flow_release_check_happy_path",
+    "test_release_flow_blocker_finding_blocks_release",
+    "test_release_flow_writes_release_report",
+    "test_release_flow_no_external_cli_required",
+    "test_release_flow_persists_release_check_to_run_state",
+    "test_release_flow_saves_release_check_json_artifact"
+  ],
+  "tests_skipped_due_to_signature_mismatch": [],
+  "notes": "ReleaseFlow.__init__ takes no arguments; mock applied via patch.object after construction. MilestoneFlow uses MilestoneFlowInput dataclass; RunState.load + state mutation run for real in all tests. Pre-existing 3-4 failures are unrelated to this round."
+}

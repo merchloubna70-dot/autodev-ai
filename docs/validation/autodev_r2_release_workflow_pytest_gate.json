@@ -1,0 +1,55 @@
+{
+  "id": "HIGH-CI-01",
+  "agent": "R2-F",
+  "date": "2026-05-14",
+  "verdict": "pytest_gate_added",
+  "workflow_file": ".github/workflows/release.yml",
+  "trigger": "push: tags: ['v*.*.*']",
+  "job_chain": ["test", "publish"],
+  "publish_needs": ["test"],
+  "test_job_steps": [
+    "actions/checkout@v4",
+    "actions/setup-python@v5 (3.12)",
+    "pip install -e .[dev]",
+    "ruff check .",
+    "mypy src/autodev",
+    "python -m pytest tests/ -q"
+  ],
+  "publish_job_steps": [
+    "actions/checkout@v4",
+    "actions/setup-python@v5 (3.12)",
+    "pip install --upgrade build twine",
+    "python -m build",
+    "python -m twine check dist/*",
+    "softprops/action-gh-release@v2 (attach dist/*)",
+    "twine upload (if: secrets.PYPI_API_TOKEN != '')"
+  ],
+  "pypi_auto_publish": false,
+  "pypi_condition": "${{ secrets.PYPI_API_TOKEN != '' }}",
+  "policy_tests": {
+    "file": "tests/unit/test_release_workflow_policy.py",
+    "total": 7,
+    "passed": 7,
+    "failed": 0,
+    "tests": [
+      "test_workflow_file_exists",
+      "test_workflow_yaml_loads_cleanly",
+      "test_workflow_contains_pytest_step",
+      "test_publish_job_needs_test",
+      "test_no_bypass_shortcuts_in_step_conditions",
+      "test_pypi_upload_gated_on_secret",
+      "test_test_job_has_ruff_and_mypy_steps"
+    ]
+  },
+  "full_suite": {
+    "passed": 966,
+    "failed": 3,
+    "xfailed": 4,
+    "pre_existing_failures": [
+      "tests/integration/test_a2a_http_roundtrip.py::test_roundtrip_send_task_via_transport",
+      "tests/integration/test_a2a_http_roundtrip.py::test_roundtrip_via_a2a_client_dispatch",
+      "tests/unit/test_a2a_http_ssrf_hardening.py::test_redirect_to_private_is_rejected"
+    ],
+    "regressions_introduced": 0
+  }
+}
