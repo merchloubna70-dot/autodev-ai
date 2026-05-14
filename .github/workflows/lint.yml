@@ -26,3 +26,9 @@ jobs:
 
       - name: mypy
         run: mypy src/autodev --ignore-missing-imports --no-strict-optional
+
+      - name: pytest with coverage
+        run: pytest tests/ --cov=src/autodev --cov-report=json --cov-report=term -q
+
+      - name: coverage gate
+        run: python scripts/coverage_gate.py --strict
