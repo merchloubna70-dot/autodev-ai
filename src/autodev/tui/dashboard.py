@@ -238,7 +238,7 @@ class DashboardApp(App):
     def action_refresh(self) -> None:
         self._load_data()
 
-    def action_quit(self) -> None:
+    async def action_quit(self) -> None:
         self.exit()
 
 
