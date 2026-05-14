@@ -20,7 +20,7 @@ def repo(tmp_path: Path) -> Path:
         "totals": {"percent_covered": 82.5, "num_statements": 100, "missing_lines": 18},
         "files": {
             "src/autodev/cli.py": {"summary": {"percent_covered": 88.0}},
-            "src/autodev/release_readiness_gate.py": {"summary": {"percent_covered": 0.0}},
+            "src/autodev/release_readiness_gate.py": {"summary": {"percent_covered": 97.0}},
             "src/autodev/mcp_server/server.py": {"summary": {"percent_covered": 90.0}},
             "src/autodev/mcp_server/tools.py": {"summary": {"percent_covered": 92.0}},
             "src/autodev/adapters/a2a/server.py": {"summary": {"percent_covered": 95.0}},
@@ -63,11 +63,17 @@ def test_security_critical_modules_evaluated(repo: Path) -> None:
     assert len(security_checks) == len(gate.SECURITY_CRITICAL)
 
 
-def test_exempt_module_does_not_fail(repo: Path) -> None:
-    """release_readiness_gate.py is exempt — its 0% coverage should not fail the gate."""
+def test_exempt_module_does_not_fail(repo: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A tier-listed module with 0% coverage should not fail the gate when exempted."""
+    cov_path = repo / "coverage.json"
+    cov = json.loads(cov_path.read_text())
+    cov["files"]["src/autodev/cli.py"]["summary"]["percent_covered"] = 0.0
+    cov_path.write_text(json.dumps(cov))
+    monkeypatch.setitem(gate.EXEMPTIONS, "src/autodev/cli.py", "test-only exemption")
+
     result = gate.run_gate(repo, overall_threshold=80, release_threshold=85, security_threshold=90)
     exempt = next(c for c in result["checks"]
-                  if c["name"] == "release::src/autodev/release_readiness_gate.py")
+                  if c["name"] == "release::src/autodev/cli.py")
     assert exempt["status"] == "exempt"
     assert exempt["detail"]
 
