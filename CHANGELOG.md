@@ -13,6 +13,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   `v*.*.*` tag push and on manual dispatch. Supports EU CRA / US EO 14028
   compliance toolchains (grype, trivy, syft).
 - cosign keyless image signing (Sigstore) on every tag push — `ghcr.io/merchloubna70-dot/autodev-ai` images now carry detached Fulcio OIDC signatures recorded in the Rekor transparency log; see `docs/release/cosign_verification.md`.
+- SLSA L3 provenance attestation (slsa-framework generator) on tag push — `.github/workflows/slsa.yml` produces an in-toto attestation backed by GitHub Actions OIDC for every wheel/sdist; see `docs/release/slsa_verification.md`.
 ---
 
 ## [0.1.0a3] — 2026-05-14 (Pre-Release)
